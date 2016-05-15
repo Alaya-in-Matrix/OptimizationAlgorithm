@@ -1,4 +1,5 @@
-#include "Obj.h"
+#include "obj.h"
+#include <limits>
 using namespace std;
 
 Solution::Solution(const vector<double>& s, const vector<double>& cv, double fom) noexcept

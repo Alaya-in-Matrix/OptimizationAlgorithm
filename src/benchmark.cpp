@@ -7,6 +7,16 @@
 #include <string>
 using namespace std;
 
+Solution linear(const vector<double>& inp) noexcept
+{
+    if(inp.empty())
+        return Solution(inp, "Empty input for linear function");
+
+    double y = 0;
+    for(auto x : inp)
+        y += x;
+    return Solution(inp, {0}, y);
+}
 Solution sphere(const vector<double>& inp) noexcept
 {
     if(inp.empty())

@@ -1,5 +1,6 @@
 #pragma once
-#include "Obj.h"
+#include "obj.h"
 
+Solution linear(const std::vector<double>& inp) noexcept;
 Solution sphere(const std::vector<double>& inp) noexcept;
 Solution rosenbrock(const std::vector<double>& inp) noexcept;
