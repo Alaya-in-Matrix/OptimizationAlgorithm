@@ -21,5 +21,12 @@ class FibOptimizer : public Optimizer
 public:
     FibOptimizer(ObjFunc f, Range r) noexcept : Optimizer(f, r) {}
     Solution optimize() const noexcept;
-    ~FibOptimizer(){}
+    ~FibOptimizer() {}
+};
+class GoldenSelection : public Optimizer
+{
+public:
+    GoldenSelection(ObjFunc f, Range r) noexcept : Optimizer(f, r) {}
+    Solution optimize() const noexcept;
+    ~GoldenSelection() {}
 };
