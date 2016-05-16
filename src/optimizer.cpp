@@ -1,7 +1,9 @@
 #include "optimizer.h"
 #include <random>
-#include <cstdio>
 #include <iostream>
+#include <cstdio>
+#include <cassert>
+#include <cmath>
 using namespace std;
 // #define DEBUG_OPTIMIZER
 #ifdef DEBUG_OPTIMIZER
@@ -156,4 +158,40 @@ Solution Extrapolation::optimize() const noexcept
     }
     GoldenSelection gso(_func, {{xa, xc}});
     return gso.optimize();
+}
+vector<double>GradientMethod::get_gradient(const Paras& p) const noexcept
+{
+    assert(_epsilon > 0);
+    const size_t dim = _ranges.size();
+    vector<double> grad(dim, 0);
+    const double y = _func(p).fom();
+    for(size_t i = 0; i < p.size(); ++i)
+    {
+        Paras pp = p;
+        pp[i] += _epsilon;
+        const double yy = _func(pp).fom();
+        grad[i] = (yy - y) / _epsilon;
+    }
+    return grad;
+}
+bool GradientMethod::in_range(const Paras& p) const noexcept
+{
+    assert(p.size() == _ranges.size());
+    for(size_t i = 0; i < p.size(); ++i)
+    {
+        const double lb = _ranges[i].first;
+        const double ub = _ranges[i].second;
+        assert(lb <= ub);
+
+        const double x  = p[i];
+        if(! (lb <= x && x <= ub)) return false;
+    }
+    return true;
+}
+double GradientMethod::vec_norm(const vector<double>& vec) const noexcept
+{
+    double sum_square = 0;
+    for(auto v : vec)
+        sum_square += v * v;
+    return sqrt(sum_square);
 }

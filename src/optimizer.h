@@ -1,6 +1,7 @@
 #pragma once
 #include "obj.h"
 #include <utility>
+#include <iostream>
 class Optimizer
 {
 protected:
@@ -37,4 +38,25 @@ public:
     Extrapolation(ObjFunc f, Range r) noexcept : Optimizer(f, r) {}
     Solution optimize() const noexcept;
     ~Extrapolation() {}
+};
+
+// Abstract class for all gradient method: GradientDescent\Newton\BFGS...
+class GradientMethod : public Optimizer
+{
+protected:
+    const double _epsilon;
+    double vec_norm(const std::vector<double>& vec) const noexcept;
+    bool in_range(const Paras& p) const noexcept;
+    virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
+
+public:
+    GradientMethod(ObjFunc f, Range r, double epsilon) noexcept : Optimizer(f, r), _epsilon(epsilon)
+    {
+        if (_epsilon <= 0)
+        {
+            std::cerr << "epsilon <= 0" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    virtual ~GradientMethod(){}
 };
