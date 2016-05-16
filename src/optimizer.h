@@ -20,15 +20,17 @@ public:
 
 class FibOptimizer : public Optimizer
 {
+    const size_t _iter;
 public:
-    FibOptimizer(ObjFunc f, Range r) noexcept : Optimizer(f, r) {}
+    FibOptimizer(ObjFunc f, Range r, size_t iter = 16) noexcept : Optimizer(f, r), _iter(iter) {}
     Solution optimize() const noexcept;
     ~FibOptimizer() {}
 };
 class GoldenSelection : public Optimizer
 {
+    const size_t _iter;
 public:
-    GoldenSelection(ObjFunc f, Range r) noexcept : Optimizer(f, r) {}
+    GoldenSelection(ObjFunc f, Range r, size_t iter = 16) noexcept : Optimizer(f, r), _iter(iter) {}
     Solution optimize() const noexcept;
     ~GoldenSelection() {}
 };
@@ -58,5 +60,12 @@ public:
             exit(EXIT_FAILURE);
         }
     }
-    virtual ~GradientMethod(){}
+    virtual ~GradientMethod() {}
+};
+class GradientDescent : public GradientMethod
+{
+public:
+    GradientDescent(ObjFunc f, Range r, double epsilon) noexcept : GradientMethod(f, r, epsilon) {}
+    Solution optimize() const noexcept;
+    ~GradientDescent() {}
 };

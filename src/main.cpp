@@ -11,10 +11,18 @@ int main()
     FibOptimizer fbo(sphere, rg);
     GoldenSelection gso(sphere, rg);
     Extrapolation exo(sphere, rg);
-
     cout << "result of fib: " << fbo.optimize().solution().front() << endl;
     cout << "result of gso: " << gso.optimize().solution().front() << endl;
     cout << "result of exo: " << exo.optimize().solution().front() << endl;
+
+    vector<pair<double, double>> rgGradientDescend{{-10, 10}, {-10, 10}};
+    GradientDescent gdo(rosenbrock, rgGradientDescend, 1e-6);
+    Solution solGradientDescend = gdo.optimize();
+    cout << "result of gdo: " << endl;
+    for(double v : solGradientDescend.solution())
+    {
+        cout << v << endl;
+    }
 
     return EXIT_SUCCESS;
 }
