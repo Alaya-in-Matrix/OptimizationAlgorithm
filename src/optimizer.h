@@ -47,7 +47,6 @@ class GradientMethod : public Optimizer
 {
 protected:
     const double _epsilon;
-    double vec_norm(const std::vector<double>& vec) const noexcept;
     bool in_range(const Paras& p) const noexcept;
     virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
 
