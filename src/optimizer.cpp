@@ -205,13 +205,16 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
         if(max_step > step_ub)
             max_step = step_ub;
     }
-    const size_t gs_iter = 16;
+    size_t gs_iter =
+        1 + static_cast<size_t>(log10(_epsilon / (max_step * fabs(vec_norm_inf(direction)))) /
+                                log10(0.618));
+    if(gs_iter < 32) gs_iter = 32;
     GoldenSelection gso(
         [&](const vector<double> step) -> Solution
         {
             return _func(point + step[0] * direction);
         },
-        {{0, max_step}}, gs_iter);
+        {{_epsilon, max_step}}, gs_iter);
     return gso.optimize();
 }
 Solution GradientDescent::optimize() const noexcept
@@ -220,22 +223,47 @@ Solution GradientDescent::optimize() const noexcept
     const double zero_grad = 1e-3;
     vector<double> grad    = get_gradient(point);
     double grad_norm       = vec_norm(grad);
-    double step            = -1 * numeric_limits<double>::infinity();
-    while (grad_norm > zero_grad && in_range(point) && fabs(step) * grad_norm > 2 * _epsilon)
+    size_t counter = 0;
+    while (grad_norm > zero_grad && in_range(point))
     {
         const vector<double> direction = -1 * grad;
 
         point        = line_search(point, direction).solution();
         grad         = get_gradient(point);
         grad_norm    = vec_norm(grad);
+        ++counter;
+        // printf("y = %g, grad_norm = %g\n", _func(point).fom(), grad_norm);
     }
+    printf("counter is %zu\n", counter);
     return _func(point);
 }
-// Solution ConjugateGradient::optimize() const noexcept
-// {
-//     Paras point = _init;
-//     const double zero_grad = 1e-3;
-//     vector<double> grad = get_gradient(point);
-//     double grad_norm    = vec_norm(grad);
-//     double step         = -1 * numeric_limits<double>::infinity();
-// }
+Solution ConjugateGradient::optimize() const noexcept
+{
+    const size_t dim         = _ranges.size();
+    const double zero_grad   = 1e-3;
+    Paras point              = _init;
+    vector<double> grad      = get_gradient(point);
+    double grad_norm         = vec_norm(grad);
+
+    size_t counter = 0;
+    while(grad_norm > zero_grad && in_range(point))
+    {
+        vector<double> conj_grad = grad;
+        for(size_t i = 0; i < dim; ++i)
+        {
+            const vector<double> direction = -1 * conj_grad;
+            const Solution sol             = line_search(point, direction);
+            const Paras new_point          = sol.solution();
+            const vector<double> new_grad  = get_gradient(new_point);
+
+            conj_grad = new_grad + pow(vec_norm(new_grad) / vec_norm(grad), 2) * conj_grad;
+            grad      = new_grad;
+            point     = new_point;
+            ++counter;
+            // printf("y = %g, grad_norm = %g\n", _func(point).fom(), grad_norm);
+        }
+        grad_norm = vec_norm(grad);
+    }
+    printf("counter is %zu\n", counter);
+    return _func(point);
+}

@@ -62,12 +62,21 @@ public:
             exit(EXIT_FAILURE);
         }
     }
+    MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept : Optimizer(f, r, i), _epsilon(epsilon)
+    {
+        if (_epsilon <= 0)
+        {
+            std::cerr << "epsilon <= 0" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
     virtual ~MultiDimOptimizer() {}
 };
 class GradientDescent : public MultiDimOptimizer
 {
 public:
     GradientDescent(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}
+    GradientDescent(ObjFunc f, Range r, Paras i, double epsilon) noexcept : MultiDimOptimizer(f, r, i, epsilon) {}
     Solution optimize() const noexcept;
     ~GradientDescent() {}
 };
@@ -75,6 +84,7 @@ class ConjugateGradient : public MultiDimOptimizer
 {
 public:
     ConjugateGradient(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}
+    ConjugateGradient(ObjFunc f, Range r, Paras i, double epsilon) noexcept : MultiDimOptimizer(f, r, i, epsilon) {}
     Solution optimize() const noexcept;
     ~ConjugateGradient() {}
 };

@@ -1,5 +1,6 @@
 #include "linear_algebra.h"
 #include <iostream>
+#include <algorithm>
 #include <cmath>
 using namespace std;
 vector<double> operator-(const vector<double>& v1, const vector<double>& v2) noexcept
@@ -41,4 +42,8 @@ double vec_norm(const vector<double>& vec) noexcept
     double sum_square = 0;
     for (auto v : vec) sum_square += v * v;
     return sqrt(sum_square);
+}
+double vec_norm_inf(const vector<double>& vec) noexcept
+{
+    return *max_element(vec.begin(), vec.end());
 }
