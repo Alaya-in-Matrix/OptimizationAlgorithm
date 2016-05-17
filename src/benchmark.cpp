@@ -42,3 +42,42 @@ Solution rosenbrock(const vector<double>& inp) noexcept
     const double fom = pow(1-x, 2) + 100 * pow((y - pow(x, 2)), 2);
     return Solution(inp, {0}, fom);
 }
+Solution beale(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        return Solution(inp, "Beale function is 2-D function, while the input size is " +
+                                 to_string(inp.size()));
+    }
+
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = pow((1.5 - x + x * y), 2) + pow((2.25 - x + x * pow(y, 2)), 2) + pow((2.625 - x + x * pow(y, 3)), 2);
+    return Solution(inp, {0}, fom);
+}
+Solution booth(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        return Solution(inp, "Booth function is 2-D function, while the input size is " +
+                                 to_string(inp.size()));
+    }
+
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = pow(x - 2*y -7, 2) + pow(2*x + y - 5, 2);
+    return Solution(inp, {0}, fom);
+}
+Solution McCormick(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        return Solution(inp, "McCormick function is 2-D function, while the input size is " +
+                                 to_string(inp.size()));
+    }
+    // global: (-0.54719, 1.54719) => -1.9133
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = sin(x+y) + pow(x-y, 2) - 1.5*x + 2.5*y + 1;
+    return Solution(inp, {0}, fom);
+}

@@ -1,3 +1,4 @@
+#include "def.h"
 #include "optimizer.h"
 #include "linear_algebra.h"
 #include <random>
@@ -6,12 +7,7 @@
 #include <cassert>
 #include <cmath>
 using namespace std;
-// #define DEBUG_OPTIMIZER
-#ifdef DEBUG_OPTIMIZER
-mt19937_64 engine(10);
-#else
-mt19937_64 engine(random_device{}());
-#endif
+mt19937_64 engine(RAND_SEED);
 
 Paras Optimizer::random_init() const noexcept
 {
@@ -156,8 +152,10 @@ Solution Extrapolation::optimize() noexcept
 }
 vector<double> MultiDimOptimizer::get_gradient(const Paras& p) const noexcept
 {
-    assert(_epsilon > 0);
     const size_t dim = _ranges.size();
+
+    assert(_epsilon > 0);
+    assert(p.size() == dim);
     vector<double> grad(dim, 0);
     const double y = _func(p).fom();
     for (size_t i = 0; i < p.size(); ++i)
@@ -179,7 +177,8 @@ bool MultiDimOptimizer::in_range(const Paras& p) const noexcept
         assert(lb <= ub);
 
         const double x = p[i];
-        if (!(lb <= x && x <= ub)) return false;
+        if(x - lb < _epsilon || ub - x < _epsilon)
+            return false;
     }
     return true;
 }
@@ -207,17 +206,19 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
     size_t gs_iter;
     double rate = _epsilon / (max_step * vec_norm(direction));
     if(rate > 0.618)
-        gs_iter = 1;
+        gs_iter = 2;
     else
     {
-        gs_iter = log10(rate) / log10(0.618);
+        gs_iter = 1 + log10(rate) / log10(0.618);
     }
     GoldenSelection gso(
         [&](const vector<double> step) -> Solution
         {
+            auto debug = point + step[0] * direction;
+            Solution y = _func(point + step[0] * direction);
             return _func(point + step[0] * direction);
         },
-        {{_epsilon, max_step}}, gs_iter);
+        {{0, max_step}}, gs_iter);
     return gso.optimize();
 }
 Solution GradientDescent::optimize() noexcept
@@ -236,6 +237,8 @@ Solution GradientDescent::optimize() noexcept
         grad_norm    = vec_norm(grad);
         ++_counter;
     }
+    if(! in_range(point))
+        cerr << "out of range" << endl;
     return _func(point);
 }
 Solution ConjugateGradient::optimize() noexcept
@@ -266,5 +269,7 @@ Solution ConjugateGradient::optimize() noexcept
             if(! (grad_norm > zero_grad && in_range(point))) break;
         }
     }
+    if(! in_range(point))
+        cerr << "out of range" << endl;
     return _func(point);
 }
