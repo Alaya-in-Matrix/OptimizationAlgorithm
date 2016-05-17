@@ -18,11 +18,20 @@ int main()
     vector<pair<double, double>> rgGradientDescend{{-10, 10}, {-10, 10}};
     GradientDescent gdo(rosenbrock, rgGradientDescend, 1e-6);
     Solution solGradientDescend = gdo.optimize();
-    cout << "result of gdo: " << endl;
+    cout << "result of gdo: " ;
     for(double v : solGradientDescend.solution())
     {
-        cout << v << endl;
+        cout << v << ' ';
     }
+    cout << endl;
+    GradientDescent gdo_sphere(sphere, {{-1, 3}, {-1, 3}, {-1, 3}}, 1e-4);
+    Solution sol_sphere = gdo_sphere.optimize();
+    cout << "result of gdo_sphere: ";
+    for(auto v : sol_sphere.solution())
+    {
+        cout << v << ' ';
+    }
+    cout << endl;
 
     return EXIT_SUCCESS;
 }

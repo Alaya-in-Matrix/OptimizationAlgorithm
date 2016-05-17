@@ -225,26 +225,23 @@ vector<double> operator-(const vector<double>& v1, const vector<double>& v2) noe
 }
 Solution GradientDescent::optimize() const noexcept
 {
-    assert(in_range(_init));
     Paras point = _init;
-    assert(in_range(point));
     const double zero_grad = 1e-3;
-    vector<double> grad = get_gradient(point);
-    double grad_norm    = vec_norm(grad);
-    double step         = -1 * numeric_limits<double>::infinity();
+    vector<double> grad    = get_gradient(point);
+    double grad_norm       = vec_norm(grad);
+    double step            = -1 * numeric_limits<double>::infinity();
     while (grad_norm > zero_grad && in_range(point) && fabs(step) * grad_norm > 2 * _epsilon)
     {
         double min_step = -10;
         for (size_t i = 0; i < _ranges.size(); ++i)
         {
-            const double lb = _ranges[i].first;
-            const double ub = _ranges[i].second;
-            const double g = grad[i];
-            double step_lb = g > 0 ? (lb - point[i]) / g : (ub - point[i]) / g;
+            const double lb      = _ranges[i].first;
+            const double ub      = _ranges[i].second;
+            const double g       = grad[i];
+            const double step_lb = g > 0 ? (lb - point[i]) / g : (ub - point[i]) / g;
             if (min_step < step_lb) min_step = step_lb;
         }
         const size_t iter = static_cast<size_t>(log10(_epsilon / (fabs(min_step) * grad_norm)) / log10(0.618));
-        printf("iter: %zu\n", iter);
         GoldenSelection gso(
             [&](const vector<double> step) -> Solution
             {
@@ -258,12 +255,12 @@ Solution GradientDescent::optimize() const noexcept
         point        = point + step * grad;
         grad         = get_gradient(point);
         grad_norm    = vec_norm(grad);
-        printf("point: (%g, %g)\n", point[0], point[1]);
-        printf("grad:  (%g, %g)\n", grad[0], grad[1]);
-        printf("min_step: %g\n", min_step);
-        printf("y:%g\n", sol.fom());
-        printf("step: %g\n", step);
-        printf("=============================\n");
+        // printf("point: (%g, %g)\n", point[0], point[1]);
+        // printf("grad:  (%g, %g)\n", grad[0], grad[1]);
+        // printf("min_step: %g\n", min_step);
+        // printf("y:%g\n", sol.fom());
+        // printf("step: %g\n", step);
+        // printf("=============================\n");
     }
     return _func(point);
 }
