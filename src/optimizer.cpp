@@ -22,7 +22,7 @@ Paras Optimizer::random_init() const noexcept
     }
     return init;
 }
-Solution FibOptimizer::optimize() const noexcept
+Solution FibOptimizer::optimize() noexcept
 {
     // 1-D function
     // function shoulde be convex function
@@ -59,7 +59,7 @@ Solution FibOptimizer::optimize() const noexcept
     }
     return _func({a1});
 }
-Solution GoldenSelection::optimize() const noexcept
+Solution GoldenSelection::optimize() noexcept
 {
     // 1-D function
     // function shoulde be convex function
@@ -87,11 +87,10 @@ Solution GoldenSelection::optimize() const noexcept
             a2 = a1 + rate * (a2 - a1);
         else
             a1 = a2 + rate * (a1 - a2);
-        // printf("[%g, %g]\n", a1, a2);
     }
     return _func({a1});
 }
-Solution Extrapolation::optimize() const noexcept
+Solution Extrapolation::optimize() noexcept
 {
     // 1-D function
     // function shoulde be convex function
@@ -205,10 +204,14 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
         if(max_step > step_ub)
             max_step = step_ub;
     }
-    size_t gs_iter =
-        1 + static_cast<size_t>(log10(_epsilon / (max_step * fabs(vec_norm_inf(direction)))) /
-                                log10(0.618));
-    if(gs_iter < 32) gs_iter = 32;
+    size_t gs_iter;
+    double rate = _epsilon / (max_step * vec_norm(direction));
+    if(rate > 0.618)
+        gs_iter = 1;
+    else
+    {
+        gs_iter = log10(rate) / log10(0.618);
+    }
     GoldenSelection gso(
         [&](const vector<double> step) -> Solution
         {
@@ -217,13 +220,13 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
         {{_epsilon, max_step}}, gs_iter);
     return gso.optimize();
 }
-Solution GradientDescent::optimize() const noexcept
+Solution GradientDescent::optimize() noexcept
 {
+    _counter = 0;
     Paras point = _init;
-    const double zero_grad = 1e-3;
+    const double zero_grad = 1e-2;
     vector<double> grad    = get_gradient(point);
     double grad_norm       = vec_norm(grad);
-    size_t counter = 0;
     while (grad_norm > zero_grad && in_range(point))
     {
         const vector<double> direction = -1 * grad;
@@ -231,21 +234,19 @@ Solution GradientDescent::optimize() const noexcept
         point        = line_search(point, direction).solution();
         grad         = get_gradient(point);
         grad_norm    = vec_norm(grad);
-        ++counter;
-        // printf("y = %g, grad_norm = %g\n", _func(point).fom(), grad_norm);
+        ++_counter;
     }
-    printf("counter is %zu\n", counter);
     return _func(point);
 }
-Solution ConjugateGradient::optimize() const noexcept
+Solution ConjugateGradient::optimize() noexcept
 {
+    _counter = 0;
     const size_t dim         = _ranges.size();
-    const double zero_grad   = 1e-3;
+    const double zero_grad   = 1e-2;
     Paras point              = _init;
     vector<double> grad      = get_gradient(point);
     double grad_norm         = vec_norm(grad);
 
-    size_t counter = 0;
     while(grad_norm > zero_grad && in_range(point))
     {
         vector<double> conj_grad = grad;
@@ -259,11 +260,11 @@ Solution ConjugateGradient::optimize() const noexcept
             conj_grad = new_grad + pow(vec_norm(new_grad) / vec_norm(grad), 2) * conj_grad;
             grad      = new_grad;
             point     = new_point;
-            ++counter;
-            // printf("y = %g, grad_norm = %g\n", _func(point).fom(), grad_norm);
+            grad_norm = vec_norm(grad);
+            ++_counter;
+
+            if(! (grad_norm > zero_grad && in_range(point))) break;
         }
-        grad_norm = vec_norm(grad);
     }
-    printf("counter is %zu\n", counter);
     return _func(point);
 }

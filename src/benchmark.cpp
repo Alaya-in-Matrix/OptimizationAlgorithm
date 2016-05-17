@@ -24,7 +24,7 @@ Solution sphere(const vector<double>& inp) noexcept
 
     double y = 0;
     for(auto x : inp)
-        y += x * x;
+        y += pow(x, 2);
     return Solution(inp, {0}, y);
 }
 Solution rosenbrock(const vector<double>& inp) noexcept

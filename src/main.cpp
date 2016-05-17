@@ -6,7 +6,8 @@
 #include <random>
 using namespace std;
 mt19937_64 main_engine(random_device{}());
-
+Paras rand_vec(const vector<pair<double, double>>& rg) noexcept;
+void compare(ObjFunc f, const vector<pair<double, double>>& range) noexcept;
 int main()
 {
     // vector<pair<double, double>> rg{{-1, 3}};
@@ -17,31 +18,39 @@ int main()
     // cout << "result of gso: " << gso.optimize().solution().front() << endl;
     // cout << "result of exo: " << exo.optimize().solution().front() << endl;
 
-    vector<pair<double, double>> rgRosenbrock{{-10, 10}, {-10, 10}};
-    Paras rand_init(rgRosenbrock.size(), 0);
-    for(size_t i = 0; i < rgRosenbrock.size(); ++i)
-    {
-        const double lb = rgRosenbrock[i].first;
-        const double ub = rgRosenbrock[i].second;
-        rand_init[i]    = uniform_real_distribution<double>(lb, ub)(main_engine);
-    }
-    GradientDescent gdo(rosenbrock, rgRosenbrock, rand_init, 1e-6);
-    Solution solGradientDescend = gdo.optimize();
-    cout << "result of gdo: " ;
-    for(double v : solGradientDescend.solution())
-    {
-        cout << v << ' ';
-    }
-    cout << endl;
+    vector<pair<double, double>> rg_rosenbrock(2, {-10, 10});
+    vector<pair<double, double>> rg_sphere(3, {-10, 10});
+    puts("Rosenbrock");
+    compare(rosenbrock, rg_rosenbrock);
+    puts("Sphere");
+    compare(sphere, rg_sphere);
 
-    ConjugateGradient cgo(rosenbrock, rgRosenbrock, rand_init, 1e-6);
-    Solution solConjGrad = cgo.optimize();
-    cout << "result of cgo: " ;
-    for(double v : solConjGrad.solution())
-    {
-        cout << v << ' ';
-    }
-    cout << endl;
 
     return EXIT_SUCCESS;
+}
+Paras rand_vec(const vector<pair<double, double>>& rg) noexcept
+{
+    Paras rand_init(rg.size(), 0);
+    for(size_t i = 0; i < rg.size(); ++i)
+    {
+        const double lb = rg[i].first;
+        const double ub = rg[i].second;
+        rand_init[i]    = uniform_real_distribution<double>(lb, ub)(main_engine);
+    }
+    return rand_init;
+}
+void compare(ObjFunc f, const vector<pair<double, double>>& range) noexcept
+{
+    const Paras  init         = rand_vec(range);
+    const double grad_epsilon = 1e-6;
+
+    GradientDescent   gdo(f, range, init, grad_epsilon);
+    ConjugateGradient cgo(f, range, init, grad_epsilon);
+
+    Solution sol_gd = gdo.optimize();
+    Solution sol_cg = cgo.optimize();
+
+    printf("fom of GradientDescent: %g, iter %zu\n", sol_gd.fom(), gdo.counter());
+    printf("fom of ConjugateGradient: %g, iter %zu\n", sol_cg.fom(), cgo.counter());
+    printf("===============================================\n");
 }

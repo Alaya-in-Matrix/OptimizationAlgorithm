@@ -45,5 +45,5 @@ double vec_norm(const vector<double>& vec) noexcept
 }
 double vec_norm_inf(const vector<double>& vec) noexcept
 {
-    return *max_element(vec.begin(), vec.end());
+    return fabs(*max_element(vec.begin(), vec.end()));
 }
