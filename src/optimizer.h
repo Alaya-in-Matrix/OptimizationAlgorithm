@@ -21,6 +21,7 @@ public:
 class FibOptimizer : public Optimizer
 {
     const size_t _iter;
+
 public:
     FibOptimizer(ObjFunc f, Range r, size_t iter = 16) noexcept : Optimizer(f, r), _iter(iter) {}
     Solution optimize() const noexcept;
@@ -29,6 +30,7 @@ public:
 class GoldenSelection : public Optimizer
 {
     const size_t _iter;
+
 public:
     GoldenSelection(ObjFunc f, Range r, size_t iter = 16) noexcept : Optimizer(f, r), _iter(iter) {}
     Solution optimize() const noexcept;
@@ -42,16 +44,17 @@ public:
     ~Extrapolation() {}
 };
 
-// Abstract class for all gradient method: GradientDescent\Newton\BFGS...
-class GradientMethod : public Optimizer
+class MultiDimOptimizer : public Optimizer
 {
 protected:
     const double _epsilon;
     bool in_range(const Paras& p) const noexcept;
     virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
+    virtual Solution line_search(const Paras& point, const std::vector<double>& direc) const
+        noexcept;
 
 public:
-    GradientMethod(ObjFunc f, Range r, double epsilon) noexcept : Optimizer(f, r), _epsilon(epsilon)
+    MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept : Optimizer(f, r), _epsilon(epsilon)
     {
         if (_epsilon <= 0)
         {
@@ -59,12 +62,19 @@ public:
             exit(EXIT_FAILURE);
         }
     }
-    virtual ~GradientMethod() {}
+    virtual ~MultiDimOptimizer() {}
 };
-class GradientDescent : public GradientMethod
+class GradientDescent : public MultiDimOptimizer
 {
 public:
-    GradientDescent(ObjFunc f, Range r, double epsilon) noexcept : GradientMethod(f, r, epsilon) {}
+    GradientDescent(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}
     Solution optimize() const noexcept;
     ~GradientDescent() {}
+};
+class ConjugateGradient : public MultiDimOptimizer
+{
+public:
+    ConjugateGradient(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}
+    Solution optimize() const noexcept;
+    ~ConjugateGradient() {}
 };

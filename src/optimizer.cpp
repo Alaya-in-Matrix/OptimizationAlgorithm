@@ -155,7 +155,7 @@ Solution Extrapolation::optimize() const noexcept
     GoldenSelection gso(_func, {{xa, xc}});
     return gso.optimize();
 }
-vector<double> GradientMethod::get_gradient(const Paras& p) const noexcept
+vector<double> MultiDimOptimizer::get_gradient(const Paras& p) const noexcept
 {
     assert(_epsilon > 0);
     const size_t dim = _ranges.size();
@@ -170,7 +170,7 @@ vector<double> GradientMethod::get_gradient(const Paras& p) const noexcept
     }
     return grad;
 }
-bool GradientMethod::in_range(const Paras& p) const noexcept
+bool MultiDimOptimizer::in_range(const Paras& p) const noexcept
 {
     assert(p.size() == _ranges.size());
     for (size_t i = 0; i < p.size(); ++i)
@@ -184,6 +184,36 @@ bool GradientMethod::in_range(const Paras& p) const noexcept
     }
     return true;
 }
+Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>& direction) const noexcept
+{
+    double max_step  = 1;
+    const double dim = _ranges.size();
+    assert(point.size() == dim && direction.size() == dim);
+
+    for(size_t i = 0; i < dim; ++i)
+    {
+        const double lb = _ranges[i].first;
+        const double ub = _ranges[i].second;
+        const double g  = direction[i];
+        const double x  = point[i];
+        double step_ub;
+        if(fabs(g) < _epsilon)
+            step_ub = numeric_limits<double>::infinity();
+        else 
+            step_ub = g > 0 ? (ub - x) / g : (lb - x) / g;
+
+        if(max_step > step_ub)
+            max_step = step_ub;
+    }
+    const size_t gs_iter = 16;
+    GoldenSelection gso(
+        [&](const vector<double> step) -> Solution
+        {
+            return _func(point + step[0] * direction);
+        },
+        {{0, max_step}}, gs_iter);
+    return gso.optimize();
+}
 Solution GradientDescent::optimize() const noexcept
 {
     Paras point = _init;
@@ -193,35 +223,19 @@ Solution GradientDescent::optimize() const noexcept
     double step            = -1 * numeric_limits<double>::infinity();
     while (grad_norm > zero_grad && in_range(point) && fabs(step) * grad_norm > 2 * _epsilon)
     {
-        double min_step = -10;
-        for (size_t i = 0; i < _ranges.size(); ++i)
-        {
-            const double lb      = _ranges[i].first;
-            const double ub      = _ranges[i].second;
-            const double g       = grad[i];
-            const double step_lb = g > 0 ? (lb - point[i]) / g : (ub - point[i]) / g;
-            if (min_step < step_lb) min_step = step_lb;
-        }
-        const size_t iter = static_cast<size_t>(log10(_epsilon / (fabs(min_step) * grad_norm)) / log10(0.618));
-        GoldenSelection gso(
-            [&](const vector<double> step) -> Solution
-            {
-                double y = _func(point + step[0] * grad).fom();
-                return Solution({step}, {0}, y);
-            },
-            {{min_step, 0}}, iter);
+        const vector<double> direction = -1 * grad;
 
-        Solution sol = gso.optimize();
-        step         = sol.solution().front();
-        point        = point + step * grad;
+        point        = line_search(point, direction).solution();
         grad         = get_gradient(point);
         grad_norm    = vec_norm(grad);
-        // printf("point: (%g, %g)\n", point[0], point[1]);
-        // printf("grad:  (%g, %g)\n", grad[0], grad[1]);
-        // printf("min_step: %g\n", min_step);
-        // printf("y:%g\n", sol.fom());
-        // printf("step: %g\n", step);
-        // printf("=============================\n");
     }
     return _func(point);
 }
+// Solution ConjugateGradient::optimize() const noexcept
+// {
+//     Paras point = _init;
+//     const double zero_grad = 1e-3;
+//     vector<double> grad = get_gradient(point);
+//     double grad_norm    = vec_norm(grad);
+//     double step         = -1 * numeric_limits<double>::infinity();
+// }
