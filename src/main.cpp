@@ -21,18 +21,22 @@ int main()
     // cout << "result of exo: " << exo.optimize().solution().front() << endl;
 
     vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
-    vector<pair<double, double>> rg_sphere(3, {-10, 10});
-    vector<pair<double, double>> rg_beale(2, {-4.5, 4.5});
-    vector<pair<double, double>> rg_booth(2, {-10, 10});
-    vector<pair<double, double>> rg_McCormick{{-1.5, 4}, {-3, 4}};
     puts("Rosenbrock");
     compare(rosenbrock, rg_rosenbrock);
+
+    vector<pair<double, double>> rg_sphere(3, {-10, 10});
     puts("Sphere");
     compare(sphere, rg_sphere);
+
+    vector<pair<double, double>> rg_beale(2, {-4.5, 4.5});
     puts("Beale");
     compare(beale, rg_beale);
+
+    vector<pair<double, double>> rg_booth(2, {-10, 10});
     puts("Booth");
     compare(booth, rg_beale);
+
+    vector<pair<double, double>> rg_McCormick{{-1.5, 4}, {-3, 4}};
     puts("McCormick");
     compare(McCormick, rg_McCormick);
 
