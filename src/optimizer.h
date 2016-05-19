@@ -2,6 +2,8 @@
 #include "obj.h"
 #include <utility>
 #include <iostream>
+#include <fstream>
+#include "Eigen/Dense"
 class Optimizer
 {
 protected:
@@ -15,7 +17,6 @@ public:
     Optimizer(ObjFunc func, Range r) noexcept : _func(func), _ranges(r), _init(random_init()) {}
     Optimizer(ObjFunc func, Range r, Paras i) noexcept : _func(func), _ranges(r), _init(i) {}
     virtual Solution optimize() noexcept = 0;
-    virtual ~Optimizer(){};
 };
 
 class FibOptimizer : public Optimizer
@@ -50,47 +51,38 @@ protected:
     const double _epsilon; // use _epsilon to calc gradient
     size_t _counter; // counter of line search
     bool in_range(const Paras& p) const noexcept;
-    virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
-    virtual Solution line_search(const Paras& point, const std::vector<double>& direc) const
-        noexcept;
+    std::vector<double> get_gradient(const Paras& p) const noexcept;
+    std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
+    Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;
+    std::ofstream _log;
 
 public:
-    MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept : Optimizer(f, r),
-                                                                     _epsilon(epsilon),
-                                                                     _counter(0)
-    {
-        if (_epsilon <= 0)
-        {
-            std::cerr << "epsilon <= 0" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-    MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept : Optimizer(f, r, i),
-                                                                              _epsilon(epsilon),
-                                                                              _counter(0)
-    {
-        if (_epsilon <= 0)
-        {
-            std::cerr << "epsilon <= 0" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
+    MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept;
+    MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept;
     size_t counter() const noexcept { return _counter; } 
-    virtual ~MultiDimOptimizer() {}
+    virtual ~MultiDimOptimizer() {
+        _log.close();
+    }
 };
+#define TYPICAL_DEF(ClassName)                                                                                  \
+    ClassName(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}                \
+    ClassName(ObjFunc f, Range r, Paras i, double epsilon) noexcept : MultiDimOptimizer(f, r, i, epsilon) {}    \
+    Solution optimize() noexcept;                                                                               \
+    ~ClassName() {} 
 class GradientDescent : public MultiDimOptimizer
 {
 public:
-    GradientDescent(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}
-    GradientDescent(ObjFunc f, Range r, Paras i, double epsilon) noexcept : MultiDimOptimizer(f, r, i, epsilon) {}
-    Solution optimize() noexcept;
-    ~GradientDescent() {}
+    TYPICAL_DEF(GradientDescent);
 };
 class ConjugateGradient : public MultiDimOptimizer
 {
 public:
-    ConjugateGradient(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}
-    ConjugateGradient(ObjFunc f, Range r, Paras i, double epsilon) noexcept : MultiDimOptimizer(f, r, i, epsilon) {}
-    Solution optimize() noexcept;
-    ~ConjugateGradient() {}
+    TYPICAL_DEF(ConjugateGradient);
+};
+class Newton : public MultiDimOptimizer
+{
+    Eigen::MatrixXd hessian(const Paras& point) const noexcept;
+
+public:
+    TYPICAL_DEF(Newton);
 };

@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cmath>
 using namespace std;
+using namespace Eigen;
 mt19937_64 engine(RAND_SEED);
 
 Paras Optimizer::random_init() const noexcept
@@ -150,20 +151,56 @@ Solution Extrapolation::optimize() noexcept
     GoldenSelection gso(_func, {{xa, xc}});
     return gso.optimize();
 }
+MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept
+    : Optimizer(f, r),
+      _epsilon(epsilon),
+      _counter(0),
+      _log("log", ios_base::app)
+{
+    if (_epsilon <= 0)
+    {
+        cerr << "epsilon <= 0" << endl;
+        exit(EXIT_FAILURE);
+    }
+    if (!_log.is_open())
+    {
+        cerr << "log is not open" << endl;
+        exit(EXIT_FAILURE);
+    }
+}
+MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept
+    : Optimizer(f, r, i),
+      _epsilon(epsilon),
+      _counter(0),
+      _log("log", ios_base::app)
+{
+    if (_epsilon <= 0)
+    {
+        std::cerr << "epsilon <= 0" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    if (!_log.is_open())
+    {
+        std::cerr << "log is not open" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
 vector<double> MultiDimOptimizer::get_gradient(const Paras& p) const noexcept
 {
-    const size_t dim = _ranges.size();
-
+    assert(_ranges.size() == p.size());
+    return get_gradient(_func, p);
+}
+vector<double> MultiDimOptimizer::get_gradient(ObjFunc f, const Paras& p) const noexcept
+{
+    const size_t dim = p.size();
     assert(_epsilon > 0);
-    assert(p.size() == dim);
     vector<double> grad(dim, 0);
-    const double y = _func(p).fom();
-    for (size_t i = 0; i < p.size(); ++i)
+    const double y = f(p).fom();
+    for(size_t i = 0; i < dim; ++i)
     {
         Paras pp = p;
-        pp[i] += _epsilon;
-        const double yy = _func(pp).fom();
-        grad[i] = (yy - y) / _epsilon;
+        pp[i]    = pp[i] + _epsilon;
+        grad[i]  = (f(pp).fom() - y) / _epsilon;
     }
     return grad;
 }
@@ -249,7 +286,6 @@ Solution ConjugateGradient::optimize() noexcept
     Paras point              = _init;
     vector<double> grad      = get_gradient(point);
     double grad_norm         = vec_norm(grad);
-
     while(grad_norm > zero_grad && in_range(point))
     {
         vector<double> conj_grad = grad;
