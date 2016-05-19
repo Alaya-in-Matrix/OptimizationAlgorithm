@@ -81,3 +81,16 @@ Solution McCormick(const Paras& inp) noexcept
     const double fom = sin(x+y) + pow(x-y, 2) - 1.5*x + 2.5*y + 1;
     return Solution(inp, {0}, fom);
 }
+Solution GoldsteinPrice(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        return Solution(inp, "GoldsteinPrice function is 2-D function, while the input size is " +
+                                 to_string(inp.size()));
+    }
+    // global: (0, -1) => 0
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = -3 + (1+pow(x+y+1, 2)*(19-14*x+3*pow(x, 2)-14*y+6*x*y+3*pow(y, 2))) * (30 + pow(2*x-3*y, 2)*(18-32*x+12*pow(x, 2)+48*y-36*x*y+27*pow(y, 2)));
+    return Solution(inp, {0}, fom);
+}

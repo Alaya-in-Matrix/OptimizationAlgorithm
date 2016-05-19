@@ -48,16 +48,20 @@ public:
 class MultiDimOptimizer : public Optimizer
 {
 protected:
-    const double _epsilon; // use _epsilon to calc gradient
-    size_t _counter; // counter of line search
+    const double  _epsilon; // use _epsilon to calc gradient
+    size_t        _counter; // counter of line search
+    size_t        _max_iter;
+    std::ofstream _log;
+    std::string   _func_name;
+
     bool in_range(const Paras& p) const noexcept;
     std::vector<double> get_gradient(const Paras& p) const noexcept;
     std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
     Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;
-    std::ofstream _log;
 
 public:
     void clear_counter() noexcept { _counter = 0; }
+    void set_func_name(std::string n) noexcept { _func_name = n; }
     MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept;
     MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept;
     size_t counter() const noexcept { return _counter; } 

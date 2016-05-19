@@ -42,17 +42,23 @@ Solution FibOptimizer::optimize() noexcept
         for (size_t i = 2; i < _iter; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
     }
 
+    double y1 = _func({a1}).fom();
+    double y2 = _func({a2}).fom();
     for (size_t i = _iter - 1; i > 0; --i)
     {
         const double rate = fib_list[i - 1] / fib_list[i];
 
-        const double y1 = _func({a1}).fom();
-        const double y2 = _func({a2}).fom();
 
         if (y1 < y2)
+        {
             a2 = a1 + rate * (a2 - a1);
+            y2 = _func({a2}).fom();
+        }
         else
+        {
             a1 = a2 + rate * (a1 - a2);
+            y1 = _func({a1}).fom();
+        }
     }
     return _func({a1});
 }
@@ -74,18 +80,22 @@ Solution GoldenSelection::optimize() noexcept
 
     const double rate = (sqrt(5) - 1) / 2;
 
-    double y1, y2;
+    double y1 = _func({a1}).fom();
+    double y2 = _func({a2}).fom();
     for (size_t i = _iter - 1; i > 0; --i)
     {
-        y1 = _func({a1}).fom();
-        y2 = _func({a2}).fom();
-
         if (y1 < y2)
+        {
             a2 = a1 + rate * (a2 - a1);
+            y2 = _func({a2}).fom();
+        }
         else
+        {
             a1 = a2 + rate * (a1 - a2);
+            y1 = _func({a1}).fom();
+        }
     }
-    return _func({a1});
+    return y1 < y2 ? _func({a1}) : _func({a2});
 }
 Solution Extrapolation::optimize() noexcept
 {
@@ -155,7 +165,9 @@ MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcep
     : Optimizer(f, r),
       _epsilon(epsilon),
       _counter(0),
-      _log("log", ios_base::app)
+      _max_iter(1000), 
+      _log("log", ios_base::app), 
+      _func_name("")
 {
     if (_epsilon <= 0)
     {
@@ -172,7 +184,9 @@ MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon
     : Optimizer(f, r, i),
       _epsilon(epsilon),
       _counter(0),
-      _log("log", ios_base::app)
+      _max_iter(1000), 
+      _log("log", ios_base::app), 
+      _func_name("")
 {
     if (_epsilon <= 0)
     {
@@ -221,7 +235,7 @@ bool MultiDimOptimizer::in_range(const Paras& p) const noexcept
 }
 Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>& direction) const noexcept
 {
-    double max_step  = 1;
+    double max_step  = 2;
     const double dim = _ranges.size();
     assert(point.size() == dim && direction.size() == dim);
 
@@ -245,26 +259,34 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
     if(rate > 0.618)
         gs_iter = 2;
     else
-    {
         gs_iter = 1 + log10(rate) / log10(0.618);
+
+    if(max_step <= 0)
+    {
+        return _func(point);
     }
-    GoldenSelection gso(
-        [&](const vector<double> step) -> Solution
-        {
-            auto debug = point + step[0] * direction;
-            Solution y = _func(point + step[0] * direction);
-            return _func(point + step[0] * direction);
-        },
-        {{0, max_step}}, gs_iter);
-    return gso.optimize();
+    else
+    {
+        GoldenSelection gso(
+                [&](const vector<double> step) -> Solution
+                {
+                auto debug = point + step[0] * direction;
+                Solution y = _func(point + step[0] * direction);
+                return _func(point + step[0] * direction);
+                },
+                {{0, max_step}}, gs_iter);
+        return gso.optimize();
+    }
 }
 Solution GradientDescent::optimize() noexcept
 {
+    clear_counter();
+
     Paras point = _init;
     const double zero_grad = 1e-2;
     vector<double> grad    = get_gradient(point);
     double grad_norm       = vec_norm(grad);
-    while (grad_norm > zero_grad && in_range(point))
+    while (grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
     {
         const vector<double> direction = -1 * grad;
 
@@ -275,16 +297,20 @@ Solution GradientDescent::optimize() noexcept
     }
     if(! in_range(point))
         cerr << "out of range" << endl;
+    if(_counter >= _max_iter)
+        cerr << "max iter reached" << endl;
     return _func(point);
 }
 Solution ConjugateGradient::optimize() noexcept
 {
+    clear_counter();
+
     const size_t dim         = _ranges.size();
     const double zero_grad   = 1e-2;
     Paras point              = _init;
     vector<double> grad      = get_gradient(point);
     double grad_norm         = vec_norm(grad);
-    while(grad_norm > zero_grad && in_range(point))
+    while(grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
     {
         vector<double> conj_grad = grad;
         for(size_t i = 0; i < dim; ++i)
@@ -305,6 +331,48 @@ Solution ConjugateGradient::optimize() noexcept
     }
     if(! in_range(point))
         cerr << "out of range" << endl;
+    if(_counter >= _max_iter)
+        cerr << "max iter reached" << endl;
+    return _func(point);
+}
+Solution Newton::optimize() noexcept
+{
+    clear_counter();
+
+    _log << "func: " << _func_name << endl;
+    const size_t dim       = _ranges.size();
+    const double zero_grad = 1e-2;
+    Paras point            = _init;
+    vector<double> grad    = get_gradient(point);
+    MatrixXd hess          = hessian(point);
+    double grad_norm       = vec_norm(grad);
+
+    while(grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
+    {
+        write_log(point);
+        VectorXd neg_g(dim);
+        for(size_t i = 0; i < dim; ++i)
+            neg_g(i) = -1 * grad[i];
+
+        VectorXd delta = hess.colPivHouseholderQr().solve(neg_g);
+
+        vector<double> direction(dim, 0);
+        for(size_t i = 0; i < dim; ++i)
+            direction[i] = delta(i);
+
+        point     = line_search(point, direction).solution();
+        grad      = get_gradient(point);
+        hess      = hessian(point);
+        grad_norm = vec_norm(grad);
+
+        ++_counter;
+    }
+    write_log(point);
+    _log << "=========================================" << endl;
+    if(! in_range(point))
+        cerr << "out of range" << endl;
+    if(_counter >= _max_iter)
+        cerr << "max iter reached" << endl;
     return _func(point);
 }
 MatrixXd Newton::hessian(const Paras& p) const noexcept
@@ -328,40 +396,6 @@ MatrixXd Newton::hessian(const Paras& p) const noexcept
         }
     }
     return h;
-}
-Solution Newton::optimize() noexcept
-{
-    
-    const size_t dim       = _ranges.size();
-    const double zero_grad = 1e-2;
-    Paras point            = _init;
-    vector<double> grad    = get_gradient(point);
-    MatrixXd hess          = hessian(point);
-    double grad_norm       = vec_norm(grad);
-
-    while(grad_norm > zero_grad && in_range(point))
-    {
-        write_log(point);
-        VectorXd neg_g(dim);
-        for(size_t i = 0; i < dim; ++i)
-            neg_g(i) = -1 * grad[i];
-
-        VectorXd delta = hess.colPivHouseholderQr().solve(neg_g);
-
-        for(size_t i = 0; i < dim; ++i)
-            point[i] = point[i] + delta(i);
-
-        grad      = get_gradient(point);
-        hess      = hessian(point);
-        grad_norm = vec_norm(grad);
-
-        ++_counter;
-    }
-    write_log(point);
-    _log << "=========================================" << endl;
-    if(! in_range(point))
-        cerr << "out of range" << endl;
-    return _func(point);
 }
 void Newton::write_log(Paras& point) noexcept
 {
