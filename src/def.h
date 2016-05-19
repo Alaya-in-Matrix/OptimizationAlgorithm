@@ -1,6 +1,6 @@
 #pragma once
 #include<random>
-#define DEBUG_OPTIMIZER
+// #define DEBUG_OPTIMIZER
 
 #ifndef RAND_SEED
 #ifdef DEBUG_OPTIMIZER

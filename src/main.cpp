@@ -57,7 +57,7 @@ Paras rand_vec(const vector<pair<double, double>>& rg) noexcept
 template<class Algorithm>
 void run_algo(ObjFunc f, const vector<pair<double, double>>& range, const Paras init, string algo_name, string fname) noexcept
 {
-    const double grad_epsilon = 1e-8;
+    const double grad_epsilon = 1e-5;
     Algorithm algo(f, range, init, grad_epsilon);
     algo.set_func_name(fname);
     Solution sol = algo.optimize();
