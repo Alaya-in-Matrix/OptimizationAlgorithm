@@ -57,6 +57,7 @@ protected:
     std::ofstream _log;
 
 public:
+    void clear_counter() noexcept { _counter = 0; }
     MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept;
     MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept;
     size_t counter() const noexcept { return _counter; } 
@@ -82,7 +83,7 @@ public:
 class Newton : public MultiDimOptimizer
 {
     Eigen::MatrixXd hessian(const Paras& point) const noexcept;
-
+    void write_log(Paras& p) noexcept;
 public:
     TYPICAL_DEF(Newton);
 };

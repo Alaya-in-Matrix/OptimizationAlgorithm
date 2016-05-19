@@ -14,7 +14,7 @@ class Solution
 
 public:
     Solution(const Paras& s, const std::vector<double>& cv, double fom) noexcept;
-    Solution(const Paras& s) noexcept;
+    explicit Solution(const Paras& s) noexcept;
     Solution() =delete;
     Solution(const Paras& s, std::string) noexcept;
     double fom() const noexcept;

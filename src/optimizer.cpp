@@ -260,7 +260,6 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
 }
 Solution GradientDescent::optimize() noexcept
 {
-    _counter = 0;
     Paras point = _init;
     const double zero_grad = 1e-2;
     vector<double> grad    = get_gradient(point);
@@ -280,7 +279,6 @@ Solution GradientDescent::optimize() noexcept
 }
 Solution ConjugateGradient::optimize() noexcept
 {
-    _counter = 0;
     const size_t dim         = _ranges.size();
     const double zero_grad   = 1e-2;
     Paras point              = _init;
@@ -308,4 +306,73 @@ Solution ConjugateGradient::optimize() noexcept
     if(! in_range(point))
         cerr << "out of range" << endl;
     return _func(point);
+}
+MatrixXd Newton::hessian(const Paras& p) const noexcept
+{
+    const size_t dim = _ranges.size();
+    assert(p.size() == dim);
+    MatrixXd h(dim, dim);
+    
+    for(size_t i = 0; i < dim; ++i)
+    {
+        ObjFunc partial_grad = [&](const Paras& p)->Solution{
+            Paras pp = p;
+            pp[i] += _epsilon;
+            double grad = (_func(pp).fom() - _func(p).fom()) / _epsilon;
+            return Solution(p, {0}, grad);
+        };
+        vector<double> sec_grad = get_gradient(partial_grad, p);
+        for(size_t j = 0; j < dim; ++j)
+        {
+            h(i, j) = sec_grad[j];
+        }
+    }
+    return h;
+}
+Solution Newton::optimize() noexcept
+{
+    
+    const size_t dim       = _ranges.size();
+    const double zero_grad = 1e-2;
+    Paras point            = _init;
+    vector<double> grad    = get_gradient(point);
+    MatrixXd hess          = hessian(point);
+    double grad_norm       = vec_norm(grad);
+
+    while(grad_norm > zero_grad && in_range(point))
+    {
+        write_log(point);
+        VectorXd neg_g(dim);
+        for(size_t i = 0; i < dim; ++i)
+            neg_g(i) = -1 * grad[i];
+
+        VectorXd delta = hess.colPivHouseholderQr().solve(neg_g);
+
+        for(size_t i = 0; i < dim; ++i)
+            point[i] = point[i] + delta(i);
+
+        grad      = get_gradient(point);
+        hess      = hessian(point);
+        grad_norm = vec_norm(grad);
+
+        ++_counter;
+    }
+    write_log(point);
+    _log << "=========================================" << endl;
+    if(! in_range(point))
+        cerr << "out of range" << endl;
+    return _func(point);
+}
+void Newton::write_log(Paras& point) noexcept
+{
+    const size_t dim = _ranges.size();
+    assert(point.size() == dim);
+    
+    auto grad = get_gradient(point);
+    auto hess = hessian(point);
+    _log << "point: "   << Map<MatrixXd>(&point[0], 1, dim) << endl;
+    _log << "fom: "     << _func(point).fom()               << endl;
+    _log << "grad:  "   << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
+    _log << "hessian: " << endl << hess << endl;
+    _log << endl;
 }
