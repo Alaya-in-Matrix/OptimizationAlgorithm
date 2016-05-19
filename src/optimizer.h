@@ -51,9 +51,10 @@ protected:
     const double  _epsilon; // use _epsilon to calc gradient
     size_t        _counter; // counter of line search
     size_t        _max_iter;
-    std::ofstream _log;
     std::string   _func_name;
+    std::ofstream _log;
 
+    void set_log(std::string fname) noexcept { _log.open(fname); }
     bool in_range(const Paras& p) const noexcept;
     std::vector<double> get_gradient(const Paras& p) const noexcept;
     std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
@@ -65,8 +66,9 @@ public:
     MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept;
     MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept;
     size_t counter() const noexcept { return _counter; } 
-    virtual ~MultiDimOptimizer() {
-        _log.close();
+    ~MultiDimOptimizer() {
+        if(_log.is_open())
+            _log.close();
     }
 };
 #define TYPICAL_DEF(ClassName)                                                                                  \
@@ -76,18 +78,20 @@ public:
     ~ClassName() {} 
 class GradientDescent : public MultiDimOptimizer
 {
+    void write_log(Paras& p, double fom, std::vector<double>& grad) noexcept;
 public:
     TYPICAL_DEF(GradientDescent);
 };
 class ConjugateGradient : public MultiDimOptimizer
 {
+    void write_log(Paras& p, double fom, std::vector<double>& grad, std::vector<double>& conj_grad) noexcept;
 public:
     TYPICAL_DEF(ConjugateGradient);
 };
 class Newton : public MultiDimOptimizer
 {
+    void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept;
     Eigen::MatrixXd hessian(const Paras& point) const noexcept;
-    void write_log(Paras& p) noexcept;
 public:
     TYPICAL_DEF(Newton);
 };

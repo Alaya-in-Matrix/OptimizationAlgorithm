@@ -20,7 +20,7 @@ int main()
     // cout << "result of fib: " << fbo.optimize().solution().front() << endl;
     // cout << "result of gso: " << gso.optimize().solution().front() << endl;
     // cout << "result of exo: " << exo.optimize().solution().front() << endl;
-    system("clear && rm -rf log");
+    system("clear && rm -rf *.log");
 
     vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
     compare(rosenbrock, rg_rosenbrock, "Rosenbrock");

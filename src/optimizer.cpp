@@ -166,17 +166,11 @@ MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcep
       _epsilon(epsilon),
       _counter(0),
       _max_iter(1000), 
-      _log("log", ios_base::app), 
       _func_name("")
 {
     if (_epsilon <= 0)
     {
         cerr << "epsilon <= 0" << endl;
-        exit(EXIT_FAILURE);
-    }
-    if (!_log.is_open())
-    {
-        cerr << "log is not open" << endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -185,17 +179,11 @@ MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon
       _epsilon(epsilon),
       _counter(0),
       _max_iter(1000), 
-      _log("log", ios_base::app), 
       _func_name("")
 {
     if (_epsilon <= 0)
     {
         std::cerr << "epsilon <= 0" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    if (!_log.is_open())
-    {
-        std::cerr << "log is not open" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -274,47 +262,83 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
                 Solution y = _func(point + step[0] * direction);
                 return _func(point + step[0] * direction);
                 },
-                {{0, max_step}}, gs_iter);
+                {{-1*max_step, max_step}}, gs_iter);
         return gso.optimize();
+    }
+}
+void GradientDescent::write_log(Paras& point, double fom, Paras& grad) noexcept
+{
+    const size_t dim = _ranges.size();
+    if(_log.is_open())
+    {
+        _log << "point: "     << Map<MatrixXd>(&point[0], 1, dim)     << endl;
+        _log << "fom:   "     << fom                                  << endl;
+        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)      << endl;
+        _log << "grad_norm: " << vec_norm(grad)                       << endl << endl;
     }
 }
 Solution GradientDescent::optimize() noexcept
 {
     clear_counter();
+    set_log("GradientDescent." + _func_name + ".log");
+    _log << _func_name << endl;
 
-    Paras point = _init;
     const double zero_grad = 1e-2;
+    Paras point = _init;
     vector<double> grad    = get_gradient(point);
     double grad_norm       = vec_norm(grad);
     while (grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
     {
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad);
+#endif
         const vector<double> direction = -1 * grad;
-
         point        = line_search(point, direction).solution();
         grad         = get_gradient(point);
         grad_norm    = vec_norm(grad);
         ++_counter;
     }
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad);
+#endif
     if(! in_range(point))
-        cerr << "out of range" << endl;
+        _log << "out of range" << endl;
     if(_counter >= _max_iter)
-        cerr << "max iter reached" << endl;
+        _log << "max iter reached" << endl;
     return _func(point);
+}
+void ConjugateGradient::write_log(Paras& point, double fom, std::vector<double>& grad,
+                                  std::vector<double>& conj_grad) noexcept
+{
+    const size_t dim = _ranges.size();
+    if(_log.is_open())
+    {
+        _log << "point: "     << Map<MatrixXd>(&point[0], 1, dim)     << endl;
+        _log << "fom:   "     << fom                                  << endl;
+        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)      << endl;
+        _log << "conj_grad: " << Map<MatrixXd>(&conj_grad[0], 1, dim) << endl;
+        _log << "grad_norm: " << vec_norm(grad)                       << endl << endl;
+    }
 }
 Solution ConjugateGradient::optimize() noexcept
 {
     clear_counter();
+    set_log("ConjugateGradient." + _func_name + ".log");
+    _log << _func_name << endl;
 
     const size_t dim         = _ranges.size();
     const double zero_grad   = 1e-2;
     Paras point              = _init;
     vector<double> grad      = get_gradient(point);
-    double grad_norm         = vec_norm(grad);
+    vector<double> conj_grad = grad;
+    double         grad_norm = vec_norm(grad);
     while(grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
     {
-        vector<double> conj_grad = grad;
         for(size_t i = 0; i < dim; ++i)
         {
+#ifdef WRITE_LOG
+            write_log(point, _func(point).fom(), grad, conj_grad);
+#endif
             const vector<double> direction = -1 * conj_grad;
             const Solution sol             = line_search(point, direction);
             const Paras new_point          = sol.solution();
@@ -329,15 +353,32 @@ Solution ConjugateGradient::optimize() noexcept
             if(! (grad_norm > zero_grad && in_range(point))) break;
         }
     }
+#ifdef WRITE_LOG
+            write_log(point, _func(point).fom(), grad, conj_grad);
+#endif
     if(! in_range(point))
-        cerr << "out of range" << endl;
+        _log << "out of range" << endl;
     if(_counter >= _max_iter)
-        cerr << "max iter reached" << endl;
+        _log << "max iter reached" << endl;
     return _func(point);
+}
+
+void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept
+{
+    const size_t dim = point.size();
+    if(_log.is_open())
+    {
+        _log << "point:     " << Map<MatrixXd>(&point[0], 1, dim) << endl;
+        _log << "fom:       " << fom                              << endl;
+        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
+        _log << "grad_norm: " << vec_norm(grad)                   << endl;
+        _log << "hessian: "   << endl << hess << endl << endl;
+    }
 }
 Solution Newton::optimize() noexcept
 {
     clear_counter();
+    set_log("Newton." + _func_name + ".log");
 
     _log << "func: " << _func_name << endl;
     const size_t dim       = _ranges.size();
@@ -349,7 +390,9 @@ Solution Newton::optimize() noexcept
 
     while(grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
     {
-        write_log(point);
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad, hess);
+#endif
         VectorXd neg_g(dim);
         for(size_t i = 0; i < dim; ++i)
             neg_g(i) = -1 * grad[i];
@@ -367,12 +410,13 @@ Solution Newton::optimize() noexcept
 
         ++_counter;
     }
-    write_log(point);
-    _log << "=========================================" << endl;
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad, hess);
+#endif
     if(! in_range(point))
-        cerr << "out of range" << endl;
+        _log << "out of range" << endl;
     if(_counter >= _max_iter)
-        cerr << "max iter reached" << endl;
+        _log << "max iter reached" << endl;
     return _func(point);
 }
 MatrixXd Newton::hessian(const Paras& p) const noexcept
@@ -396,17 +440,4 @@ MatrixXd Newton::hessian(const Paras& p) const noexcept
         }
     }
     return h;
-}
-void Newton::write_log(Paras& point) noexcept
-{
-    const size_t dim = _ranges.size();
-    assert(point.size() == dim);
-    
-    auto grad = get_gradient(point);
-    auto hess = hessian(point);
-    _log << "point: "   << Map<MatrixXd>(&point[0], 1, dim) << endl;
-    _log << "fom: "     << _func(point).fom()               << endl;
-    _log << "grad:  "   << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
-    _log << "hessian: " << endl << hess << endl;
-    _log << endl;
 }
