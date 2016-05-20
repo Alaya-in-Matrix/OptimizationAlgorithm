@@ -56,7 +56,6 @@ protected:
     std::ofstream _log;
     size_t        _counter; // counter of line search
 
-    bool in_range(const Paras& p) const noexcept;
     virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
     virtual std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
     virtual Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;

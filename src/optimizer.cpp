@@ -187,21 +187,6 @@ vector<double> GradientMethod::get_gradient(ObjFunc f, const Paras& p) const noe
     }
     return grad;
 }
-bool GradientMethod::in_range(const Paras& p) const noexcept
-{
-    assert(p.size() == _ranges.size());
-    for (size_t i = 0; i < p.size(); ++i)
-    {
-        const double lb = _ranges[i].first;
-        const double ub = _ranges[i].second;
-        assert(lb <= ub);
-
-        const double x = p[i];
-        if(x - lb < _epsilon || ub - x < _epsilon)
-            return false;
-    }
-    return true;
-}
 Solution GradientMethod::line_search(const Paras& point, const vector<double>& direction) const noexcept
 {
     double max_step  = 2;
@@ -267,7 +252,7 @@ Solution GradientDescent::optimize() noexcept
     vector<double> grad      = get_gradient(point);
     double         grad_norm = vec_norm(grad);
     Solution       best_sol  = _func(point);
-    while (grad_norm > _zero_grad && in_range(point) && _counter < _max_iter)
+    while (grad_norm > _zero_grad && _counter < _max_iter)
     {
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad);
@@ -286,8 +271,6 @@ Solution GradientDescent::optimize() noexcept
         write_log(point, _func(point).fom(), grad);
 #endif
     Paras best_point = best_sol.solution();
-    if(! in_range(best_point))
-        _log << "out of range" << endl;
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
     return best_sol;
@@ -316,7 +299,7 @@ Solution ConjugateGradient::optimize() noexcept
     vector<double> conj_grad = grad;
     double         grad_norm = vec_norm(grad);
     Solution       best_sol  = _func(point);
-    while(grad_norm > _zero_grad && in_range(point) && _counter < _max_iter)
+    while(grad_norm > _zero_grad && _counter < _max_iter)
     {
         for(size_t i = 0; i < dim; ++i)
         {
@@ -337,15 +320,13 @@ Solution ConjugateGradient::optimize() noexcept
             if(sol < best_sol)
                 best_sol = sol;
 
-            if(! (grad_norm > _zero_grad && in_range(point))) break;
+            if(! (grad_norm > _zero_grad)) break;
         }
     }
 #ifdef WRITE_LOG
             write_log(point, _func(point).fom(), grad, conj_grad);
 #endif
     Paras best_point = best_sol.solution();
-    if(! in_range(best_point))
-        _log << "out of range" << endl;
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
     return best_sol;
@@ -374,7 +355,7 @@ Solution Newton::optimize() noexcept
     MatrixXd hess          = hessian(point);
     double grad_norm       = vec_norm(grad);
     Solution best_sol      = _func(point);
-    while(grad_norm > _zero_grad && in_range(point) && _counter < _max_iter)
+    while(grad_norm > _zero_grad && _counter < _max_iter)
     {
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, hess);
@@ -405,8 +386,6 @@ Solution Newton::optimize() noexcept
 #endif
 
     Paras best_point = best_sol.solution();
-    if(! in_range(best_point))
-        _log << "out of range" << endl;
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
     return best_sol;
