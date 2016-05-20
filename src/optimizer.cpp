@@ -318,17 +318,17 @@ void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eige
     const size_t dim = point.size();
     if(_log.is_open())
     {
-        _log << "point:     " << Map<MatrixXd>(&point[0], 1, dim) << endl;
-        _log << "fom:       " << fom                              << endl;
-        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
-        _log << "grad_norm: " << vec_norm(grad)                   << endl;
-        _log << "hessian: "   << endl   << hess                   << endl;
-
         VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
         VectorXd delta   = hess.colPivHouseholderQr().solve(-1 * gradvec);
         double f1        = gradvec.transpose() * delta;
         double f2        = 0.5 * delta.transpose() * hess * delta;
-        _log << "g'*dx + 0.5*dx'*H*dx: " << (f1 + f2) << endl << endl;
+        _log << "point:     " << Map<MatrixXd>(&point[0], 1, dim) << endl;
+        _log << "fom:       " << fom                              << endl;
+        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
+        _log << "grad_norm: " << vec_norm(grad)                   << endl;
+        _log << "hessian:   " << endl   << hess                   << endl;
+        _log << "direction: " << delta.transpose()                << endl;
+        _log << "judge:     " << (f1 + f2) << endl << endl;
     }
 }
 Solution Newton::optimize() noexcept
