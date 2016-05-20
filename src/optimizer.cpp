@@ -341,7 +341,13 @@ void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eige
         _log << "fom:       " << fom                              << endl;
         _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
         _log << "grad_norm: " << vec_norm(grad)                   << endl;
-        _log << "hessian: "   << endl << hess << endl << endl;
+        _log << "hessian: "   << endl   << hess                   << endl;
+
+        VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
+        VectorXd delta   = hess.colPivHouseholderQr().solve(-1 * gradvec);
+        double f1        = gradvec.transpose() * delta;
+        double f2        = 0.5 * delta.transpose() * hess * delta;
+        _log << "g'*dx + 0.5*dx'*H*dx: " << (f1 + f2) << endl << endl;
     }
 }
 Solution Newton::optimize() noexcept
@@ -357,18 +363,23 @@ Solution Newton::optimize() noexcept
     Solution best_sol      = _func(point);
     while(grad_norm > _zero_grad && _counter < _max_iter)
     {
-#ifdef WRITE_LOG
-        write_log(point, _func(point).fom(), grad, hess);
-#endif
         VectorXd neg_g(dim);
         for(size_t i = 0; i < dim; ++i)
             neg_g(i) = -1 * grad[i];
 
         VectorXd delta = hess.colPivHouseholderQr().solve(neg_g);
-
+        
+        // double expect_improvement = 0.5 * (delta.transpose() * hess * delta) - neg_g.transpose() * delta;
+        double f1  = neg_g.transpose() * delta;
+        double f2  = 0.5 * delta.transpose() * hess * delta;
+        double dir = f2 - f1 < 0 ? 1 : -1;
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad, hess);
+#endif
         vector<double> direction(dim, 0);
         for(size_t i = 0; i < dim; ++i)
-            direction[i] = delta(i);
+            direction[i] = dir * delta(i);
+
 
         point     = line_search(point, direction).solution();
         grad      = get_gradient(point);
