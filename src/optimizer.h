@@ -1,9 +1,16 @@
 #pragma once
+#include "def.h"
 #include "obj.h"
+#include "Eigen/Dense"
+#include "linear_algebra.h"
 #include <utility>
 #include <iostream>
 #include <fstream>
-#include "Eigen/Dense"
+#include <random>
+#include <iomanip>
+#include <cstdio>
+#include <cassert>
+#include <cmath>
 class Optimizer
 {
 protected:

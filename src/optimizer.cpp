@@ -1,11 +1,4 @@
-#include "def.h"
 #include "optimizer.h"
-#include "linear_algebra.h"
-#include <random>
-#include <iostream>
-#include <cstdio>
-#include <cassert>
-#include <cmath>
 using namespace std;
 using namespace Eigen;
 mt19937_64 engine(RAND_SEED);
@@ -167,7 +160,9 @@ GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsilon, doub
       _algo_name(aname), 
       _log(fname + "." + aname + ".log"), 
       _counter(0)
-{}
+{
+    _log << setprecision(9);
+}
 vector<double> GradientMethod::get_gradient(const Paras& p) const noexcept
 {
     assert(_ranges.size() == p.size());
@@ -189,31 +184,17 @@ vector<double> GradientMethod::get_gradient(ObjFunc f, const Paras& p) const noe
 }
 Solution GradientMethod::line_search(const Paras& point, const vector<double>& direction) const noexcept
 {
-    double max_step  = 2;
+    double max_step  = 1;
     const double dim = _ranges.size();
     assert(point.size() == dim && direction.size() == dim);
 
-    for(size_t i = 0; i < dim; ++i)
-    {
-        const double lb = _ranges[i].first;
-        const double ub = _ranges[i].second;
-        const double g  = direction[i];
-        const double x  = point[i];
-        double step_ub;
-        if(fabs(g) < _epsilon)
-            step_ub = numeric_limits<double>::infinity();
-        else 
-            step_ub = g > 0 ? (ub - x) / g : (lb - x) / g;
-
-        if(max_step > step_ub)
-            max_step = step_ub;
-    }
     size_t gs_iter;
     double rate = _epsilon / (max_step * vec_norm(direction));
     if(rate > 0.618)
-        gs_iter = 2;
+        gs_iter = 32;
     else
         gs_iter = 1 + log10(rate) / log10(0.618);
+    if(gs_iter < 32) gs_iter = 32;
 
     if(max_step <= 0)
     {

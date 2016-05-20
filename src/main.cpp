@@ -8,7 +8,8 @@
 #include <cassert>
 #include <string>
 using namespace std;
-mt19937_64 main_engine(RAND_SEED);
+size_t rseed = RAND_SEED;
+mt19937_64 main_engine(rseed);
 Paras rand_vec(const vector<pair<double, double>>& rg) noexcept;
 void compare(ObjFunc f, const vector<pair<double, double>>& range, string) noexcept;
 int main()
@@ -21,6 +22,7 @@ int main()
     // cout << "result of gso: " << gso.optimize().solution().front() << endl;
     // cout << "result of exo: " << exo.optimize().solution().front() << endl;
     system("clear && rm -rf *.log");
+    cout << "seed: " << rseed << endl;
 
     vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
     compare(rosenbrock, rg_rosenbrock, "Rosenbrock");
@@ -58,7 +60,7 @@ template<class Algorithm>
 void run_algo(ObjFunc f, const vector<pair<double, double>>& range, const Paras init, string algo_name, string fname) noexcept
 {
     const double grad_epsilon = 1e-5;
-    const double zero_grad    = 5e-2;
+    const double zero_grad    = 1e-2;
     const size_t max_iter     = 1000;
     Algorithm algo(f, range, init, grad_epsilon, zero_grad, max_iter, fname, algo_name);
     Solution sol = algo.optimize();
