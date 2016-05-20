@@ -58,13 +58,12 @@ template<class Algorithm>
 void run_algo(ObjFunc f, const vector<pair<double, double>>& range, const Paras init, string algo_name, string fname) noexcept
 {
     const double grad_epsilon = 1e-5;
-    Algorithm algo(f, range, init, grad_epsilon);
-    algo.set_func_name(fname);
+    const double zero_grad    = 5e-2;
+    const size_t max_iter     = 1000;
+    Algorithm algo(f, range, init, grad_epsilon, zero_grad, max_iter, fname, algo_name);
     Solution sol = algo.optimize();
     
     printf("fom of %s: %g, iter: %zu\n", algo_name.c_str(), sol.fom(), algo.counter());
-    if(! sol.err_msg().empty())
-        cout << sol.err_msg() << endl;
 }
 void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {

@@ -14,40 +14,35 @@ Paras Optimizer::random_init() const noexcept
 {
     Paras init(_ranges.size(), 0);
     for (size_t i = 0; i < _ranges.size(); ++i)
-    {
         init[i] = uniform_real_distribution<double>(_ranges[i].first, _ranges[i].second)(engine);
-    }
     return init;
 }
 Solution FibOptimizer::optimize() noexcept
 {
     // 1-D function
     // function shoulde be convex function
-    if (_ranges.size() != 1)
+    if (_ranges.size() != 1) 
     {
-        return Solution({}, "FibOptimizer requires 1D function, while the actual dim is " +
-                                to_string(_ranges.size()));
+        cerr << "FibOptimizer requires 1D function" << endl;
+        exit(EXIT_FAILURE);
     }
     double a1 = _ranges.front().first;
     double a2 = _ranges.front().second;
-    if (a1 > a2)
+    if (a1 > a2) 
     {
-        return Solution({}, "Range is [" + to_string(a1) + ", " + to_string(a2) + "]");
+        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
+        exit(EXIT_FAILURE);
     }
 
     vector<double> fib_list{1, 1};
     if (_iter > 2)
-    {
-        fib_list.reserve(_iter);
         for (size_t i = 2; i < _iter; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
-    }
 
     double y1 = _func({a1}).fom();
     double y2 = _func({a2}).fom();
     for (size_t i = _iter - 1; i > 0; --i)
     {
         const double rate = fib_list[i - 1] / fib_list[i];
-
 
         if (y1 < y2)
         {
@@ -68,14 +63,15 @@ Solution GoldenSelection::optimize() noexcept
     // function shoulde be convex function
     if (_ranges.size() != 1)
     {
-        return Solution({}, "GoldenSelection requires 1D function, while the actual dim is " +
-                                to_string(_ranges.size()));
+        cerr << "GoldenSelection requires 1D function" << endl;
+        exit(EXIT_FAILURE);
     }
     double a1 = _ranges.front().first;
     double a2 = _ranges.front().second;
     if (a1 > a2)
     {
-        return Solution({}, "Range is [" + to_string(a1) + ", " + to_string(a2) + "]");
+        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
+        exit(EXIT_FAILURE);
     }
 
     const double rate = (sqrt(5) - 1) / 2;
@@ -103,14 +99,15 @@ Solution Extrapolation::optimize() noexcept
     // function shoulde be convex function
     if (_ranges.size() != 1)
     {
-        return Solution({}, "Extrapolation requires 1D function, while the actual dim is " +
-                                to_string(_ranges.size()));
+        cerr << "Extrapolation requires 1D function" << endl;
+        exit(EXIT_FAILURE);
     }
     double a1 = _ranges.front().first;
     double a2 = _ranges.front().second;
     if (a1 > a2)
     {
-        return Solution({}, "Range is [" + to_string(a1) + ", " + to_string(a2) + "]");
+        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
+        exit(EXIT_FAILURE);
     }
     double step = 0.01 * (a2 - a1);
     double x1 = _init[0];
@@ -161,38 +158,22 @@ Solution Extrapolation::optimize() noexcept
     GoldenSelection gso(_func, {{xa, xc}});
     return gso.optimize();
 }
-MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept
-    : Optimizer(f, r),
-      _epsilon(epsilon),
-      _counter(0),
-      _max_iter(1000), 
-      _func_name("")
-{
-    if (_epsilon <= 0)
-    {
-        cerr << "epsilon <= 0" << endl;
-        exit(EXIT_FAILURE);
-    }
-}
-MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept
+GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsilon, double zgrad, size_t max_iter, string fname, string aname) noexcept
     : Optimizer(f, r, i),
       _epsilon(epsilon),
-      _counter(0),
-      _max_iter(1000), 
-      _func_name("")
-{
-    if (_epsilon <= 0)
-    {
-        std::cerr << "epsilon <= 0" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-}
-vector<double> MultiDimOptimizer::get_gradient(const Paras& p) const noexcept
+      _zero_grad(zgrad), 
+      _max_iter(max_iter), 
+      _func_name(fname), 
+      _algo_name(aname), 
+      _log(fname + "." + aname + ".log"), 
+      _counter(0)
+{}
+vector<double> GradientMethod::get_gradient(const Paras& p) const noexcept
 {
     assert(_ranges.size() == p.size());
     return get_gradient(_func, p);
 }
-vector<double> MultiDimOptimizer::get_gradient(ObjFunc f, const Paras& p) const noexcept
+vector<double> GradientMethod::get_gradient(ObjFunc f, const Paras& p) const noexcept
 {
     const size_t dim = p.size();
     assert(_epsilon > 0);
@@ -206,7 +187,7 @@ vector<double> MultiDimOptimizer::get_gradient(ObjFunc f, const Paras& p) const 
     }
     return grad;
 }
-bool MultiDimOptimizer::in_range(const Paras& p) const noexcept
+bool GradientMethod::in_range(const Paras& p) const noexcept
 {
     assert(p.size() == _ranges.size());
     for (size_t i = 0; i < p.size(); ++i)
@@ -221,7 +202,7 @@ bool MultiDimOptimizer::in_range(const Paras& p) const noexcept
     }
     return true;
 }
-Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>& direction) const noexcept
+Solution GradientMethod::line_search(const Paras& point, const vector<double>& direction) const noexcept
 {
     double max_step  = 2;
     const double dim = _ranges.size();
@@ -262,7 +243,7 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const vector<double>
                 Solution y = _func(point + step[0] * direction);
                 return _func(point + step[0] * direction);
                 },
-                {{-1*max_step, max_step}}, gs_iter);
+                {{0, max_step}}, gs_iter);
         return gso.optimize();
     }
 }
@@ -280,15 +261,13 @@ void GradientDescent::write_log(Paras& point, double fom, Paras& grad) noexcept
 Solution GradientDescent::optimize() noexcept
 {
     clear_counter();
-    set_log("GradientDescent." + _func_name + ".log");
     _log << _func_name << endl;
 
-    const double   zero_grad = 1e-2;
     Paras          point     = _init;
     vector<double> grad      = get_gradient(point);
     double         grad_norm = vec_norm(grad);
     Solution       best_sol  = _func(point);
-    while (grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
+    while (grad_norm > _zero_grad && in_range(point) && _counter < _max_iter)
     {
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad);
@@ -329,17 +308,15 @@ void ConjugateGradient::write_log(Paras& point, double fom, std::vector<double>&
 Solution ConjugateGradient::optimize() noexcept
 {
     clear_counter();
-    set_log("ConjugateGradient." + _func_name + ".log");
     _log << _func_name << endl;
 
     const size_t dim         = _ranges.size();
-    const double zero_grad   = 1e-2;
     Paras point              = _init;
     vector<double> grad      = get_gradient(point);
     vector<double> conj_grad = grad;
     double         grad_norm = vec_norm(grad);
     Solution       best_sol  = _func(point);
-    while(grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
+    while(grad_norm > _zero_grad && in_range(point) && _counter < _max_iter)
     {
         for(size_t i = 0; i < dim; ++i)
         {
@@ -360,7 +337,7 @@ Solution ConjugateGradient::optimize() noexcept
             if(sol < best_sol)
                 best_sol = sol;
 
-            if(! (grad_norm > zero_grad && in_range(point))) break;
+            if(! (grad_norm > _zero_grad && in_range(point))) break;
         }
     }
 #ifdef WRITE_LOG
@@ -389,17 +366,15 @@ void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eige
 Solution Newton::optimize() noexcept
 {
     clear_counter();
-    set_log("Newton." + _func_name + ".log");
 
     _log << "func: " << _func_name << endl;
     const size_t dim       = _ranges.size();
-    const double zero_grad = 1e-2;
     Paras point            = _init;
     vector<double> grad    = get_gradient(point);
     MatrixXd hess          = hessian(point);
     double grad_norm       = vec_norm(grad);
     Solution best_sol      = _func(point);
-    while(grad_norm > zero_grad && in_range(point) && _counter < _max_iter)
+    while(grad_norm > _zero_grad && in_range(point) && _counter < _max_iter)
     {
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, hess);

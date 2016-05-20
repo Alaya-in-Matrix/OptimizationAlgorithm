@@ -40,55 +40,55 @@ public:
 class Extrapolation : public Optimizer
 {
 public:
-    Extrapolation(ObjFunc f, Range r) noexcept : Optimizer(f, r) {}
+    Extrapolation(ObjFunc f, Range r, Paras i) noexcept : Optimizer(f, r, i) {}
     Solution optimize() noexcept;
     ~Extrapolation() {}
 };
 
-class MultiDimOptimizer : public Optimizer
+class GradientMethod : public Optimizer
 {
 protected:
-    const double  _epsilon; // use _epsilon to calc gradient
-    size_t        _counter; // counter of line search
-    size_t        _max_iter;
-    std::string   _func_name;
+    const double        _epsilon; // use _epsilon to calc gradient
+    const double        _zero_grad; // threshold to judge whether gradient is zero
+    const size_t        _max_iter;
+    const std::string   _func_name;
+    const std::string   _algo_name;
     std::ofstream _log;
+    size_t        _counter; // counter of line search
 
-    void set_log(std::string fname) noexcept { _log.open(fname); }
     bool in_range(const Paras& p) const noexcept;
-    std::vector<double> get_gradient(const Paras& p) const noexcept;
-    std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
-    Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;
+    virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
+    virtual std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
+    virtual Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;
 
 public:
     void clear_counter() noexcept { _counter = 0; }
-    void set_func_name(std::string n) noexcept { _func_name = n; }
-    MultiDimOptimizer(ObjFunc f, Range r, double epsilon) noexcept;
-    MultiDimOptimizer(ObjFunc f, Range r, Paras i, double epsilon) noexcept;
+    GradientMethod(ObjFunc f, Range r, Paras i, double epsilon, double zgrad, size_t max_iter,
+                      std::string fname, std::string aname) noexcept;
     size_t counter() const noexcept { return _counter; } 
-    ~MultiDimOptimizer() {
-        if(_log.is_open())
-            _log.close();
-    }
+    ~GradientMethod() { if(_log.is_open()) _log.close(); } 
 };
-#define TYPICAL_DEF(ClassName)                                                                                  \
-    ClassName(ObjFunc f, Range r, double epsilon) noexcept : MultiDimOptimizer(f, r, epsilon) {}                \
-    ClassName(ObjFunc f, Range r, Paras i, double epsilon) noexcept : MultiDimOptimizer(f, r, i, epsilon) {}    \
-    Solution optimize() noexcept;                                                                               \
-    ~ClassName() {} 
-class GradientDescent : public MultiDimOptimizer
+
+#define TYPICAL_DEF(ClassName)                                                            \
+    ClassName(ObjFunc f, Range r, Paras i, double epsilon, double zgrad, size_t max_iter, \
+              std::string fname, std::string aname)                                       \
+        : GradientMethod(f, r, i, epsilon, zgrad, max_iter, fname, aname)                 \
+    {}                                                                                    \
+    Solution optimize() noexcept;                                                         \
+    ~ClassName() {}
+class GradientDescent : public GradientMethod
 {
     void write_log(Paras& p, double fom, std::vector<double>& grad) noexcept;
 public:
     TYPICAL_DEF(GradientDescent);
 };
-class ConjugateGradient : public MultiDimOptimizer
+class ConjugateGradient : public GradientMethod
 {
     void write_log(Paras& p, double fom, std::vector<double>& grad, std::vector<double>& conj_grad) noexcept;
 public:
     TYPICAL_DEF(ConjugateGradient);
 };
-class Newton : public MultiDimOptimizer
+class Newton : public GradientMethod
 {
     void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept;
     Eigen::MatrixXd hessian(const Paras& point) const noexcept;

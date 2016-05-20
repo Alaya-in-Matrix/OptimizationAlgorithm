@@ -5,14 +5,12 @@ using namespace std;
 Solution::Solution(const vector<double>& s, const vector<double>& cv, double fom) noexcept
     : _solution(s),
       _violation(cv),
-      _fom(fom),
-      _err_str("")
+      _fom(fom)
 {}
 Solution::Solution(const vector<double>& s) noexcept
     : _solution(s),
       _violation({numeric_limits<double>::infinity()}),
-      _fom(numeric_limits<double>::infinity()),
-      _err_str("")
+      _fom(numeric_limits<double>::infinity())
 {}
 double Solution::fom() const noexcept { return _fom; }
 double Solution::sum_violation() const noexcept
@@ -26,12 +24,3 @@ double Solution::sum_violation() const noexcept
 }
 const Paras& Solution::solution() const noexcept { return _solution; }
 const vector<double>& Solution::violations() const noexcept { return _violation; }
-Solution::Solution(const Paras& s, string msg) noexcept
-    : _solution(s),
-      _violation({numeric_limits<double>::infinity()}),
-      _fom(numeric_limits<double>::infinity()),
-      _err_str(msg)
-{}
-bool Solution::has_error() const noexcept { return _err_str.empty(); }
-string Solution::err_msg() const noexcept { return _err_str; }
-
