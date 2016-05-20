@@ -24,5 +24,6 @@ public:
     Solution& operator=(const Solution&) =default;
     bool has_error() const noexcept;
     std::string err_msg() const noexcept;
+    bool operator<(const Solution& s) const noexcept { return _fom < s.fom(); }
 };
 typedef std::function<Solution(const std::vector<double>&)> ObjFunc;
