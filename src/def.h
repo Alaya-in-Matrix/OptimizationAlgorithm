@@ -6,7 +6,8 @@
 
 #ifndef RAND_SEED
 #ifdef DEBUG_OPTIMIZER
-#define RAND_SEED 55
+// the value of this macro is irrevalent
+#define RAND_SEED 2967214354
 #else
 #define RAND_SEED std::random_device{}()
 #endif

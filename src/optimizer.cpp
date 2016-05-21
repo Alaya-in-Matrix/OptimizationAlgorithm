@@ -151,15 +151,17 @@ Solution Extrapolation::optimize() noexcept
     GoldenSelection gso(_func, {{xa, xc}});
     return gso.optimize();
 }
-GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsilon, double zgrad, size_t max_iter, string fname, string aname) noexcept
-    : Optimizer(f, r, i),
-      _epsilon(epsilon),
-      _zero_grad(zgrad), 
-      _max_iter(max_iter), 
-      _func_name(fname), 
-      _algo_name(aname), 
-      _log(fname + "." + aname + ".log"), 
-      _counter(0)
+GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsi, double zgrad,
+                               double min_walk, size_t max_iter, string fname,
+                               string aname) noexcept : Optimizer(f, r, i),
+                                                        _epsilon(epsi),
+                                                        _zero_grad(zgrad),
+                                                        _min_walk(min_walk),
+                                                        _max_iter(max_iter),
+                                                        _func_name(fname),
+                                                        _algo_name(aname),
+                                                        _log(fname + "." + aname + ".log"),
+                                                        _counter(0)
 {
     _log << setprecision(9);
 }
@@ -232,22 +234,25 @@ Solution GradientDescent::optimize() noexcept
     Paras          point     = _init;
     vector<double> grad      = get_gradient(point);
     double         grad_norm = vec_norm(grad);
-    while (grad_norm > _zero_grad && _counter < _max_iter)
+    double         len_walk  = numeric_limits<double>::infinity();
+    while (grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad);
 #endif
-        const vector<double> direction = -1 * grad;
-        // point        = line_search(point, direction).solution();
-        Solution new_sol = line_search(point, direction);
-        point            = new_sol.solution();
-        grad             = get_gradient(point);
-        grad_norm        = vec_norm(grad);
+        const auto     direction = -1 * grad;
+        const Solution new_sol   = line_search(point, direction);
+
+        len_walk                 = vec_norm_inf(new_sol.solution() - point);
+        point                    = new_sol.solution();
+        grad                     = get_gradient(point);
+        grad_norm                = vec_norm(grad);
         ++_counter;
     }
-#ifdef WRITE_LOG
-        write_log(point, _func(point).fom(), grad);
-#endif
+    _log << "=======================================" << endl;
+    write_log(point, _func(point).fom(), grad);
+    _log << "len_walk: " << len_walk << endl;
+    _log << "iter:     " << _counter << endl;
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
     return _func(point);
@@ -270,35 +275,36 @@ Solution ConjugateGradient::optimize() noexcept
     clear_counter();
     _log << _func_name << endl;
 
-    const size_t dim         = _ranges.size();
-    Paras point              = _init;
+    const size_t   dim       = _ranges.size();
+    Paras          point     = _init;
     vector<double> grad      = get_gradient(point);
     vector<double> conj_grad = grad;
     double         grad_norm = vec_norm(grad);
-    while(grad_norm > _zero_grad && _counter < _max_iter)
+    double         len_walk  = numeric_limits<double>::infinity();
+    while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
+        conj_grad = grad;
         for(size_t i = 0; i < dim; ++i)
         {
 #ifdef WRITE_LOG
             write_log(point, _func(point).fom(), grad, conj_grad);
 #endif
-            const vector<double> direction = -1 * conj_grad;
-            const Solution sol             = line_search(point, direction);
+            const Solution sol             = line_search(point, -1 * conj_grad);
             const Paras new_point          = sol.solution();
-            const vector<double> new_grad  = get_gradient(new_point);
-
+            const vector<double> new_grad  = get_gradient(sol.solution());
+            len_walk  = vec_norm_inf(new_point - point);
+            point     = new_point;
             conj_grad = new_grad + pow(vec_norm(new_grad) / vec_norm(grad), 2) * conj_grad;
             grad      = new_grad;
-            point     = new_point;
             grad_norm = vec_norm(grad);
             ++_counter;
-
             if(! (grad_norm > _zero_grad)) break;
         }
     }
-#ifdef WRITE_LOG
-            write_log(point, _func(point).fom(), grad, conj_grad);
-#endif
+    _log << "=======================================" << endl;
+    write_log(point, _func(point).fom(), grad, conj_grad);
+    _log << "len_walk: " << len_walk << endl;
+    _log << "iter:     " << _counter << endl;
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
     return _func(point);
@@ -326,34 +332,38 @@ Solution Newton::optimize() noexcept
 {
     clear_counter();
     _log << "func: " << _func_name << endl;
-    const size_t dim       = _ranges.size();
-    Paras point            = _init;
-    vector<double> grad    = get_gradient(point);
-    MatrixXd hess          = hessian(point);
-    double grad_norm       = vec_norm(grad);
-    while(grad_norm > _zero_grad && _counter < _max_iter)
+    const size_t   dim       = _ranges.size();
+    Paras          point     = _init;
+    vector<double> grad      = get_gradient(point);
+    MatrixXd       hess      = hessian(point);
+    double         grad_norm = vec_norm(grad);
+    double         len_walk  = numeric_limits<double>::infinity();
+    while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
         VectorXd gvec  = Map<VectorXd>(&grad[0], dim, 1);
         VectorXd delta = -1 * hess.colPivHouseholderQr().solve(gvec);
-        double f1  = gvec.transpose() * delta;
-        double f2  = 0.5 * delta.transpose() * hess * delta;
-        double dir = (f1 + f2) < 0 ? 1 : -1;
+        double judge = static_cast<double>(gvec.transpose() * delta) +
+                       static_cast<double>(0.5 * delta.transpose() * hess * delta);
+        double dir     = judge < 0 ? 1 : -1;
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, hess);
 #endif
         vector<double> direction(dim, 0);
         for(size_t i = 0; i < dim; ++i)
             direction[i] = dir * delta(i);
-        point     = line_search(point, direction).solution();
+        Solution sol = line_search(point, direction);
+        len_walk  = vec_norm_inf(sol.solution() - point);
+        point     = sol.solution();
         grad      = get_gradient(point);
         hess      = hessian(point);
         grad_norm = vec_norm(grad);
 
         ++_counter;
     }
-#ifdef WRITE_LOG
-        write_log(point, _func(point).fom(), grad, hess);
-#endif
+    _log << "=======================================" << endl;
+    write_log(point, _func(point).fom(), grad, hess);
+    _log << "len_walk: " << len_walk << endl;
+    _log << "iter:     " << _counter << endl;
 
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
