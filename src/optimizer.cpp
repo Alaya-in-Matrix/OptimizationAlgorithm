@@ -184,6 +184,28 @@ vector<double> GradientMethod::get_gradient(ObjFunc f, const Paras& p) const noe
     }
     return grad;
 }
+MatrixXd GradientMethod::hessian(const Paras& p) const noexcept
+{
+    const size_t dim = _ranges.size();
+    assert(p.size() == dim);
+    MatrixXd h(dim, dim);
+    
+    for(size_t i = 0; i < dim; ++i)
+    {
+        ObjFunc partial_grad = [&](const Paras& p)->Solution{
+            Paras pp = p;
+            pp[i] += _epsilon;
+            double grad = (_func(pp).fom() - _func(p).fom()) / _epsilon;
+            return Solution(p, {0}, grad);
+        };
+        vector<double> sec_grad = get_gradient(partial_grad, p);
+        for(size_t j = 0; j < dim; ++j)
+        {
+            h(i, j) = sec_grad[j];
+        }
+    }
+    return h;
+}
 Solution GradientMethod::line_search(const Paras& point, const vector<double>& direction) const noexcept
 {
     double max_step  = 1;
@@ -289,9 +311,9 @@ Solution ConjugateGradient::optimize() noexcept
 #ifdef WRITE_LOG
             write_log(point, _func(point).fom(), grad, conj_grad);
 #endif
-            const Solution sol             = line_search(point, -1 * conj_grad);
-            const Paras new_point          = sol.solution();
-            const vector<double> new_grad  = get_gradient(sol.solution());
+            const Solution sol      = line_search(point, -1 * conj_grad);
+            const Paras new_point   = sol.solution();
+            const vector<double> new_grad = get_gradient(sol.solution());
             len_walk  = vec_norm_inf(new_point - point);
             point     = new_point;
             conj_grad = new_grad + pow(vec_norm(new_grad) / vec_norm(grad), 2) * conj_grad;
@@ -364,30 +386,8 @@ Solution Newton::optimize() noexcept
     write_log(point, _func(point).fom(), grad, hess);
     _log << "len_walk: " << len_walk << endl;
     _log << "iter:     " << _counter << endl;
-
+    
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
     return _func(point);
-}
-MatrixXd Newton::hessian(const Paras& p) const noexcept
-{
-    const size_t dim = _ranges.size();
-    assert(p.size() == dim);
-    MatrixXd h(dim, dim);
-    
-    for(size_t i = 0; i < dim; ++i)
-    {
-        ObjFunc partial_grad = [&](const Paras& p)->Solution{
-            Paras pp = p;
-            pp[i] += _epsilon;
-            double grad = (_func(pp).fom() - _func(p).fom()) / _epsilon;
-            return Solution(p, {0}, grad);
-        };
-        vector<double> sec_grad = get_gradient(partial_grad, p);
-        for(size_t j = 0; j < dim; ++j)
-        {
-            h(i, j) = sec_grad[j];
-        }
-    }
-    return h;
 }

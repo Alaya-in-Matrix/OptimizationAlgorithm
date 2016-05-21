@@ -66,6 +66,7 @@ protected:
 
     virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
     virtual std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
+    virtual Eigen::MatrixXd hessian(const Paras& point) const noexcept;
     virtual Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;
 
 public:
@@ -99,7 +100,6 @@ public:
 class Newton : public GradientMethod
 {
     void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept;
-    Eigen::MatrixXd hessian(const Paras& point) const noexcept;
 public:
     TYPICAL_DEF(Newton);
 };
