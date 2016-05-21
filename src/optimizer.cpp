@@ -232,7 +232,6 @@ Solution GradientDescent::optimize() noexcept
     Paras          point     = _init;
     vector<double> grad      = get_gradient(point);
     double         grad_norm = vec_norm(grad);
-    Solution       best_sol  = _func(point);
     while (grad_norm > _zero_grad && _counter < _max_iter)
     {
 #ifdef WRITE_LOG
@@ -244,17 +243,14 @@ Solution GradientDescent::optimize() noexcept
         point            = new_sol.solution();
         grad             = get_gradient(point);
         grad_norm        = vec_norm(grad);
-        if(new_sol < best_sol)
-            best_sol = new_sol;
         ++_counter;
     }
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad);
 #endif
-    Paras best_point = best_sol.solution();
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
-    return best_sol;
+    return _func(point);
 }
 void ConjugateGradient::write_log(Paras& point, double fom, std::vector<double>& grad,
                                   std::vector<double>& conj_grad) noexcept
@@ -279,7 +275,6 @@ Solution ConjugateGradient::optimize() noexcept
     vector<double> grad      = get_gradient(point);
     vector<double> conj_grad = grad;
     double         grad_norm = vec_norm(grad);
-    Solution       best_sol  = _func(point);
     while(grad_norm > _zero_grad && _counter < _max_iter)
     {
         for(size_t i = 0; i < dim; ++i)
@@ -298,19 +293,15 @@ Solution ConjugateGradient::optimize() noexcept
             grad_norm = vec_norm(grad);
             ++_counter;
 
-            if(sol < best_sol)
-                best_sol = sol;
-
             if(! (grad_norm > _zero_grad)) break;
         }
     }
 #ifdef WRITE_LOG
             write_log(point, _func(point).fom(), grad, conj_grad);
 #endif
-    Paras best_point = best_sol.solution();
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
-    return best_sol;
+    return _func(point);
 }
 
 void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept
@@ -334,42 +325,29 @@ void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eige
 Solution Newton::optimize() noexcept
 {
     clear_counter();
-
     _log << "func: " << _func_name << endl;
     const size_t dim       = _ranges.size();
     Paras point            = _init;
     vector<double> grad    = get_gradient(point);
     MatrixXd hess          = hessian(point);
     double grad_norm       = vec_norm(grad);
-    Solution best_sol      = _func(point);
     while(grad_norm > _zero_grad && _counter < _max_iter)
     {
-        VectorXd neg_g(dim);
-        for(size_t i = 0; i < dim; ++i)
-            neg_g(i) = -1 * grad[i];
-
-        VectorXd delta = hess.colPivHouseholderQr().solve(neg_g);
-        
-        // double expect_improvement = 0.5 * (delta.transpose() * hess * delta) - neg_g.transpose() * delta;
-        double f1  = neg_g.transpose() * delta;
+        VectorXd gvec  = Map<VectorXd>(&grad[0], dim, 1);
+        VectorXd delta = -1 * hess.colPivHouseholderQr().solve(gvec);
+        double f1  = gvec.transpose() * delta;
         double f2  = 0.5 * delta.transpose() * hess * delta;
-        double dir = f2 - f1 < 0 ? 1 : -1;
+        double dir = (f1 + f2) < 0 ? 1 : -1;
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, hess);
 #endif
         vector<double> direction(dim, 0);
         for(size_t i = 0; i < dim; ++i)
             direction[i] = dir * delta(i);
-
-
         point     = line_search(point, direction).solution();
         grad      = get_gradient(point);
         hess      = hessian(point);
         grad_norm = vec_norm(grad);
-
-        Solution tmp_sol = _func(point);
-        if(tmp_sol < best_sol)
-            best_sol = tmp_sol;
 
         ++_counter;
     }
@@ -377,10 +355,9 @@ Solution Newton::optimize() noexcept
         write_log(point, _func(point).fom(), grad, hess);
 #endif
 
-    Paras best_point = best_sol.solution();
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
-    return best_sol;
+    return _func(point);
 }
 MatrixXd Newton::hessian(const Paras& p) const noexcept
 {
