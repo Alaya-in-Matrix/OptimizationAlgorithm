@@ -36,11 +36,11 @@ int main()
     vector<pair<double, double>> rg_booth(2, {-10, 10});
     compare(booth, rg_beale, "Booth");
 
-    vector<pair<double, double>> rg_McCormick{{-1.5, 4}, {-3, 4}};
-    compare(McCormick, rg_McCormick, "McCormick");
-
     vector<pair<double, double>> rg_GoldsteinPrice{{-2, 2}, {-2, 2}};
     compare(GoldsteinPrice, rg_GoldsteinPrice, "GoldsteinPrice");
+
+    vector<pair<double, double>> rg_ellip(2, {-20, 20});
+    compare(ellip, rg_ellip, "Ellip");
 
 
     return EXIT_SUCCESS;

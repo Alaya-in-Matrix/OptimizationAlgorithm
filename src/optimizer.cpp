@@ -208,7 +208,7 @@ MatrixXd GradientMethod::hessian(const Paras& p) const noexcept
 }
 Solution GradientMethod::line_search(const Paras& point, const vector<double>& direction) const noexcept
 {
-    double max_step  = 1;
+    double max_step  = 400;
     const double dim = _ranges.size();
     assert(point.size() == dim && direction.size() == dim);
 
