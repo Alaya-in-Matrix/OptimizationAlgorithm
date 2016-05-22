@@ -386,6 +386,7 @@ Solution Newton::optimize() noexcept
     write_log(point, _func(point).fom(), grad, hess);
     _log << "len_walk: " << len_walk << endl;
     _log << "iter:     " << _counter << endl;
+    _log << "eigenvalues of hess: " << endl << hess.eigenvalues() << endl;
     
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;

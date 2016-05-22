@@ -39,7 +39,7 @@ int main()
     vector<pair<double, double>> rg_GoldsteinPrice{{-2, 2}, {-2, 2}};
     compare(GoldsteinPrice, rg_GoldsteinPrice, "GoldsteinPrice");
 
-    vector<pair<double, double>> rg_ellip(2, {-20, 20});
+    vector<pair<double, double>> rg_ellip(12, {-10, 10});
     compare(ellip, rg_ellip, "Ellip");
 
     vector<pair<double, double>> rg_matyas(2, {-10, 10});
@@ -69,7 +69,7 @@ void run_algo(ObjFunc f, const vector<pair<double, double>>& range, const Paras 
 {
     const double grad_epsilon = 1e-5;
     const double zero_grad    = 1e-2;
-    const double min_walk     = 1e-5;
+    const double min_walk     = 5e-6;
     const size_t max_iter     = 1000;
     Algorithm algo(f, range, init, grad_epsilon, zero_grad, min_walk, max_iter, fname, algo_name);
     Solution sol = algo.optimize();

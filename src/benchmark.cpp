@@ -95,24 +95,12 @@ Solution GoldsteinPrice(const Paras& inp) noexcept
 
 Solution ellip(const Paras& inp) noexcept
 {
-    if(inp.size() != 2)
+    double fom = 0;
+    for(size_t i = 0; i < inp.size(); ++i)
     {
-        cerr << "Ellip function is 2-D function" << endl;
-        exit(EXIT_FAILURE);
+        double x = inp[i];
+        fom += x * x / pow(i+1, 2);
     }
-    Paras p = inp;
-    VectorXd vec = Map<VectorXd>(&p[0], 2, 1);
-    MatrixXd mat(2, 2);
-    mat(0,0) = sqrt(2);
-    mat(0,1) = -1*sqrt(2);
-    mat(1,0) = sqrt(2);
-    mat(1,1) = sqrt(2);
-
-    VectorXd nvec = mat * vec;
-
-    double x = nvec(0);
-    double y = nvec(1);
-    const double fom = pow(x, 2) + pow(y, 2) / 400;
     return Solution(inp, {0}, fom);
 }
 
