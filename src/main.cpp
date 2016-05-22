@@ -42,6 +42,14 @@ int main()
     vector<pair<double, double>> rg_ellip(2, {-20, 20});
     compare(ellip, rg_ellip, "Ellip");
 
+    vector<pair<double, double>> rg_matyas(2, {-10, 10});
+    compare(matyas, rg_matyas, "Matyas");
+
+    vector<pair<double, double>> rg_camel(2, {-5, 5});
+    compare(threeHumpCamel, rg_camel, "ThreeHumpCamel");
+
+    vector<pair<double, double>> rg_himmel(2, {-5, 5});
+    compare(Himmelblau, rg_himmel, "Himmelblau");
 
     return EXIT_SUCCESS;
 }

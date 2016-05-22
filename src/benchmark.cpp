@@ -7,6 +7,7 @@
 #include <cassert>
 #include <string>
 using namespace std;
+using namespace Eigen;
 
 Solution linear(const vector<double>& inp) noexcept
 {
@@ -92,7 +93,6 @@ Solution GoldsteinPrice(const Paras& inp) noexcept
     return Solution(inp, {0}, fom);
 }
 
-using namespace Eigen;
 Solution ellip(const Paras& inp) noexcept
 {
     if(inp.size() != 2)
@@ -113,5 +113,42 @@ Solution ellip(const Paras& inp) noexcept
     double x = nvec(0);
     double y = nvec(1);
     const double fom = pow(x, 2) + pow(y, 2) / 400;
+    return Solution(inp, {0}, fom);
+}
+
+Solution matyas(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        cerr << "Matyas function is 2-D function" << endl;
+        exit(EXIT_FAILURE);
+    }
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = 0.26 * (pow(x, 2) + pow(y, 2)) - 0.48 * x * y;
+    return Solution(inp, {0}, fom);
+}
+Solution threeHumpCamel(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        cerr << "ThreeHumpCamel function is 2-D function" << endl;
+        exit(EXIT_FAILURE);
+    }
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = 2*pow(x, 2) - 1.05*pow(x, 4) + pow(x, 6)/4 + x*y + pow(y, 2);
+    return Solution(inp, {0}, fom);
+}
+Solution Himmelblau(const Paras& inp) noexcept
+{
+    if(inp.size() != 2)
+    {
+        cerr << "Himmelblau function is 2-D function" << endl;
+        exit(EXIT_FAILURE);
+    }
+    const double x   = inp[0];
+    const double y   = inp[1];
+    const double fom = pow(pow(x, 2) + y - 11, 2) + pow(x + pow(y, 2) - 7, 2);
     return Solution(inp, {0}, fom);
 }
