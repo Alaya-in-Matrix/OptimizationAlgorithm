@@ -30,7 +30,7 @@ int main()
     vector<pair<double, double>> rg_sphere(3, {-10, 10});
     compare(sphere, rg_sphere, "Sphere");
 
-    vector<pair<double, double>> rg_beale(2, {-4.5, 4.5});
+    vector<pair<double, double>> rg_beale(2, {0, 4.5});
     compare(beale, rg_beale, "Beale");
 
     vector<pair<double, double>> rg_booth(2, {-10, 10});
@@ -86,6 +86,7 @@ void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname)
     run_algo<GradientDescent>(f, range, init, "GradientDescent", fname);
     run_algo<ConjugateGradient>(f, range, init, "ConjugateGradient", fname);
     run_algo<Newton>(f, range, init, "Newton", fname);
+    run_algo<DFP>(f, range, init, "DFP", fname);
 
     printf("===============================================\n");
 }

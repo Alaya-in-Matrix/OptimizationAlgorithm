@@ -59,6 +59,7 @@ protected:
     const double        _zero_grad; // threshold to judge whether gradient is zero
     const double        _min_walk; // minimum walk len during iteration
     const size_t        _max_iter;
+    const size_t        _dim;
     const std::string   _func_name;
     const std::string   _algo_name;
     std::ofstream _log;
@@ -102,4 +103,10 @@ class Newton : public GradientMethod
     void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept;
 public:
     TYPICAL_DEF(Newton);
+};
+class DFP : public GradientMethod
+{
+    void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& quasi_hess) noexcept;
+public:
+    TYPICAL_DEF(DFP);
 };

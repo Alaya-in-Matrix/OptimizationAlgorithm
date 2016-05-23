@@ -158,6 +158,7 @@ GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsi, double 
                                                         _zero_grad(zgrad),
                                                         _min_walk(min_walk),
                                                         _max_iter(max_iter),
+                                                        _dim(_ranges.size()),
                                                         _func_name(fname),
                                                         _algo_name(aname),
                                                         _log(fname + "." + aname + ".log"),
@@ -390,5 +391,60 @@ Solution Newton::optimize() noexcept
     
     if(_counter >= _max_iter)
         _log << "max iter reached" << endl;
+    return _func(point);
+}
+void DFP::write_log(Paras& p, double fom, std::vector<double>& grad,
+                    Eigen::MatrixXd& quasi_hess) noexcept
+{
+    const size_t dim = p.size();
+    if(_log.is_open())
+    {
+        VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
+        _log << "point:     " << Map<MatrixXd>(&p[0], 1, dim) << endl;
+        _log << "fom:       " << fom << endl;
+        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim) << endl;
+        _log << "grad_norm: " << vec_norm(grad) << endl;
+        _log << "inverse of quasi_hess:   " << endl << quasi_hess << endl << endl;
+    }
+}
+Solution DFP::optimize() noexcept
+{
+    clear_counter();
+    _log << "func: " << _func_name << endl;
+
+    Paras    point              = _init;
+    vector<double> grad         = get_gradient(point);
+    MatrixXd quasi_hess_inverse = MatrixXd::Identity(_dim, _dim);
+    double   grad_norm          = vec_norm(grad);
+    double   len_walk           = numeric_limits<double>::infinity();
+
+    while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
+    {
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad, quasi_hess_inverse);
+#endif
+        VectorXd gvec = Map<VectorXd>(&grad[0], _dim, 1);
+        VectorXd dvec = -1 * (quasi_hess_inverse * gvec);
+        vector<double> direction(dvec.data(), dvec.data() + _dim);
+
+        Solution sol                  = line_search(point, direction);
+        const vector<double> new_grad = get_gradient(sol.solution());
+        const vector<double> delta_g  = new_grad - grad;
+        const vector<double> delta_x  = sol.solution() - point;
+        const Map<const VectorXd> ev_dg(&delta_g[0], _dim, 1);
+        const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
+        quasi_hess_inverse +=
+            (ev_dx * ev_dx.transpose()) / (ev_dx.transpose() * ev_dg) -
+            (quasi_hess_inverse * ev_dg * ev_dg.transpose() * quasi_hess_inverse) /
+                (ev_dg.transpose() * quasi_hess_inverse * ev_dg);
+
+        len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
+        point     = sol.solution();
+        grad      = new_grad;
+        grad_norm = vec_norm(grad);
+
+        ++_counter;
+    }
+
     return _func(point);
 }

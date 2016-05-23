@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 using namespace std;
+using namespace Eigen;
 vector<double> operator-(const vector<double>& v1, const vector<double>& v2) noexcept
 {
     if (v1.size() != v2.size())
