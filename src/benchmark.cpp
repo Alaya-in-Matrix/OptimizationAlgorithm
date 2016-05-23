@@ -99,7 +99,7 @@ Solution ellip(const Paras& inp) noexcept
     for(size_t i = 0; i < inp.size(); ++i)
     {
         double x = inp[i];
-        fom += x * x / pow(i+1, 2);
+        fom += x * x / pow(2, i);
     }
     return Solution(inp, {0}, fom);
 }

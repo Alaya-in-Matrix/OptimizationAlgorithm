@@ -39,7 +39,7 @@ int main()
     vector<pair<double, double>> rg_GoldsteinPrice{{-2, 2}, {-2, 2}};
     compare(GoldsteinPrice, rg_GoldsteinPrice, "GoldsteinPrice");
 
-    vector<pair<double, double>> rg_ellip(12, {-10, 10});
+    vector<pair<double, double>> rg_ellip(10, {-2, 2});
     compare(ellip, rg_ellip, "Ellip");
 
     vector<pair<double, double>> rg_matyas(2, {-10, 10});
