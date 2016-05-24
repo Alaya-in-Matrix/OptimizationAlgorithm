@@ -110,3 +110,9 @@ class DFP : public GradientMethod
 public:
     TYPICAL_DEF(DFP);
 };
+class BFGS : public GradientMethod
+{
+    void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& quasi_hess) noexcept;
+public:
+    TYPICAL_DEF(BFGS);
+};

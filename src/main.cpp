@@ -27,26 +27,26 @@ int main()
     vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
     compare(rosenbrock, rg_rosenbrock, "Rosenbrock");
 
-    vector<pair<double, double>> rg_sphere(3, {-10, 10});
-    compare(sphere, rg_sphere, "Sphere");
+    // vector<pair<double, double>> rg_sphere(3, {-10, 10});
+    // compare(sphere, rg_sphere, "Sphere");
 
     vector<pair<double, double>> rg_beale(2, {0, 4.5});
     compare(beale, rg_beale, "Beale");
 
-    vector<pair<double, double>> rg_booth(2, {-10, 10});
-    compare(booth, rg_beale, "Booth");
+    // vector<pair<double, double>> rg_booth(2, {-10, 10});
+    // compare(booth, rg_beale, "Booth");
 
     vector<pair<double, double>> rg_GoldsteinPrice{{-2, 2}, {-2, 2}};
     compare(GoldsteinPrice, rg_GoldsteinPrice, "GoldsteinPrice");
 
-    vector<pair<double, double>> rg_ellip(10, {-2, 2});
+    vector<pair<double, double>> rg_ellip(10, {-10, 10});
     compare(ellip, rg_ellip, "Ellip");
 
-    vector<pair<double, double>> rg_matyas(2, {-10, 10});
-    compare(matyas, rg_matyas, "Matyas");
+    // vector<pair<double, double>> rg_matyas(2, {-10, 10});
+    // compare(matyas, rg_matyas, "Matyas");
 
-    vector<pair<double, double>> rg_camel(2, {-5, 5});
-    compare(threeHumpCamel, rg_camel, "ThreeHumpCamel");
+    // vector<pair<double, double>> rg_camel(2, {-5, 5});
+    // compare(threeHumpCamel, rg_camel, "ThreeHumpCamel");
 
     vector<pair<double, double>> rg_himmel(2, {-5, 5});
     compare(Himmelblau, rg_himmel, "Himmelblau");
@@ -87,6 +87,7 @@ void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname)
     run_algo<ConjugateGradient>(f, range, init, "ConjugateGradient", fname);
     run_algo<Newton>(f, range, init, "Newton", fname);
     run_algo<DFP>(f, range, init, "DFP", fname);
+    run_algo<BFGS>(f, range, init, "BFGS", fname);
 
     printf("===============================================\n");
 }

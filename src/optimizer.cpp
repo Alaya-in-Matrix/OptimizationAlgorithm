@@ -445,6 +445,74 @@ Solution DFP::optimize() noexcept
 
         ++_counter;
     }
+    _log << "=======================================" << endl;
+    write_log(point, _func(point).fom(), grad, quasi_hess_inverse);
+    _log << "len_walk: " << len_walk << endl;
+    _log << "iter:     " << _counter << endl;
+    
+    if(_counter >= _max_iter)
+        _log << "max iter reached" << endl;
 
     return _func(point);
+}
+Solution BFGS::optimize() noexcept
+{
+    clear_counter();
+    _log << "func: " << _func_name << endl;
+
+    Paras    point              = _init;
+    vector<double> grad         = get_gradient(point);
+    MatrixXd quasi_hess = MatrixXd::Identity(_dim, _dim);
+    double   grad_norm          = vec_norm(grad);
+    double   len_walk           = numeric_limits<double>::infinity();
+
+    while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
+    {
+#ifdef WRITE_LOG
+        write_log(point, _func(point).fom(), grad, quasi_hess);
+#endif
+        VectorXd gvec = Map<VectorXd>(&grad[0], _dim, 1);
+        VectorXd dvec = -1 * (quasi_hess.colPivHouseholderQr().solve(gvec));
+        vector<double> direction(dvec.data(), dvec.data() + _dim);
+
+        Solution sol                  = line_search(point, direction);
+        const vector<double> new_grad = get_gradient(sol.solution());
+        const vector<double> delta_g  = new_grad - grad;
+        const vector<double> delta_x  = sol.solution() - point;
+        const Map<const VectorXd> ev_dg(&delta_g[0], _dim, 1);
+        const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
+        quasi_hess += (ev_dg * ev_dg.transpose()) / (ev_dg.transpose() * ev_dx) -
+                      (quasi_hess * ev_dx * ev_dx.transpose() * quasi_hess) /
+                          (ev_dx.transpose() * quasi_hess * ev_dx);
+
+        len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
+        point     = sol.solution();
+        grad      = new_grad;
+        grad_norm = vec_norm(grad);
+
+        ++_counter;
+    }
+    _log << "=======================================" << endl;
+    write_log(point, _func(point).fom(), grad, quasi_hess);
+    _log << "len_walk: " << len_walk << endl;
+    _log << "iter:     " << _counter << endl;
+    
+    if(_counter >= _max_iter)
+        _log << "max iter reached" << endl;
+
+    return _func(point);
+}
+void BFGS::write_log(Paras& p, double fom, std::vector<double>& grad,
+                    Eigen::MatrixXd& quasi_hess) noexcept
+{
+    const size_t dim = p.size();
+    if(_log.is_open())
+    {
+        VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
+        _log << "point:     " << Map<MatrixXd>(&p[0], 1, dim) << endl;
+        _log << "fom:       " << fom << endl;
+        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim) << endl;
+        _log << "grad_norm: " << vec_norm(grad) << endl;
+        _log << "quasi_hess:   " << endl << quasi_hess << endl << endl;
+    }
 }
