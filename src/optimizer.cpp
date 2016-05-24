@@ -420,6 +420,7 @@ Solution DFP::optimize() noexcept
 
     while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
+        ++_counter;
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, quasi_hess_inverse);
 #endif
@@ -433,17 +434,19 @@ Solution DFP::optimize() noexcept
         const vector<double> delta_x  = sol.solution() - point;
         const Map<const VectorXd> ev_dg(&delta_g[0], _dim, 1);
         const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
-        quasi_hess_inverse +=
-            (ev_dx * ev_dx.transpose()) / (ev_dx.transpose() * ev_dg) -
-            (quasi_hess_inverse * ev_dg * ev_dg.transpose() * quasi_hess_inverse) /
+        len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
+        if(len_walk > 0)
+        {
+            quasi_hess_inverse +=
+                (ev_dx * ev_dx.transpose()) / (ev_dx.transpose() * ev_dg) -
+                (quasi_hess_inverse * ev_dg * ev_dg.transpose() * quasi_hess_inverse) /
                 (ev_dg.transpose() * quasi_hess_inverse * ev_dg);
 
-        len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
-        point     = sol.solution();
-        grad      = new_grad;
-        grad_norm = vec_norm(grad);
+            point     = sol.solution();
+            grad      = new_grad;
+            grad_norm = vec_norm(grad);
+        }
 
-        ++_counter;
     }
     _log << "=======================================" << endl;
     write_log(point, _func(point).fom(), grad, quasi_hess_inverse);
@@ -468,6 +471,7 @@ Solution BFGS::optimize() noexcept
 
     while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
+        ++_counter;
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, quasi_hess);
 #endif
@@ -481,16 +485,17 @@ Solution BFGS::optimize() noexcept
         const vector<double> delta_x  = sol.solution() - point;
         const Map<const VectorXd> ev_dg(&delta_g[0], _dim, 1);
         const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
-        quasi_hess += (ev_dg * ev_dg.transpose()) / (ev_dg.transpose() * ev_dx) -
-                      (quasi_hess * ev_dx * ev_dx.transpose() * quasi_hess) /
-                          (ev_dx.transpose() * quasi_hess * ev_dx);
-
         len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
-        point     = sol.solution();
-        grad      = new_grad;
-        grad_norm = vec_norm(grad);
+        if(len_walk > 0)
+        {
+            quasi_hess += (ev_dg * ev_dg.transpose()) / (ev_dg.transpose() * ev_dx) -
+                (quasi_hess * ev_dx * ev_dx.transpose() * quasi_hess) /
+                (ev_dx.transpose() * quasi_hess * ev_dx);
 
-        ++_counter;
+            point     = sol.solution();
+            grad      = new_grad;
+            grad_norm = vec_norm(grad);
+        }
     }
     _log << "=======================================" << endl;
     write_log(point, _func(point).fom(), grad, quasi_hess);
