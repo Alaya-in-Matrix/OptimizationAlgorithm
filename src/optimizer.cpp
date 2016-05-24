@@ -144,9 +144,10 @@ Solution Extrapolation::optimize() noexcept
         std::swap(ya, yc);
     }
     const double interv_len = xc - xa;
-    const size_t gso_iter   = 1 + static_cast<size_t>(log10(_min_len / interv_len) / log10(0.618));
-    GoldenSelection gso(_func, xa, xc, gso_iter);
-    return gso.optimize();
+    const size_t gso_iter   = 2 + static_cast<size_t>(log10(_min_len / interv_len) / log10(0.618));
+    return GoldenSelection(_func, xa, xc, gso_iter).optimize();
+    // GoldenSelection gso(_func, xa, xc, gso_iter);
+    // return gso.optimize();
 }
 GradientMethod::GradientMethod(ObjFunc f, size_t d, Paras i, double epsi, double zgrad,
                                double min_walk, double _max_walk, size_t max_iter, string fname,
@@ -363,6 +364,9 @@ Solution Newton::optimize() noexcept
         direction *= dir;
         Solution sol = line_search(point, direction);
         len_walk     = vec_norm(sol.solution() - point);
+#ifdef WRITE_LOG
+        _log << "len walk: " << len_walk << endl;
+#endif
         point        = sol.solution();
         grad         = get_gradient(point);
         hess         = hessian(point);

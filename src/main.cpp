@@ -30,7 +30,7 @@ int main()
     // vector<pair<double, double>> rg_sphere(3, {-10, 10});
     // compare(sphere, rg_sphere, "Sphere");
 
-    vector<pair<double, double>> rg_beale(2, {0, 4.5});
+    vector<pair<double, double>> rg_beale{{0, 4.5}, {-4.5, 4.5}};
     compare(beale, rg_beale, "Beale");
 
     // vector<pair<double, double>> rg_booth(2, {-10, 10});
@@ -70,7 +70,7 @@ void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const P
     const double grad_epsilon = 1e-5;
     const double zero_grad    = 1e-2;
     const double min_walk     = 5e-6;
-    const double max_walk     = 10;
+    const double max_walk     = 50;
     const size_t max_iter     = 1000;
     const size_t dim          = range.size();
     Algorithm algo(f, dim, init, grad_epsilon, zero_grad, min_walk, max_walk, max_iter, fname, algo_name);
