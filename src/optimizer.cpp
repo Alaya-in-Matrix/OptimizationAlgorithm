@@ -187,18 +187,26 @@ MatrixXd GradientMethod::hessian(const Paras& p) const noexcept
     assert(p.size() == _dim);
     MatrixXd h(_dim, _dim);
     
+    double fom0 = _func(p).fom();
+    vector<double> fom1d(_dim, 0);
     for(size_t i = 0; i < _dim; ++i)
     {
-        ObjFunc partial_grad = [&](const Paras& p)->Solution{
-            Paras pp = p;
-            pp[i] += _epsilon;
-            double grad = (_func(pp).fom() - _func(p).fom()) / _epsilon;
-            return Solution(p, {0}, grad);
-        };
-        VectorXd sec_grad = get_gradient(partial_grad, p);
-        for(size_t j = 0; j < _dim; ++j)
+        Paras pp = p;
+        pp[i] += _epsilon;
+        fom1d[i] = _func(pp).fom();
+    }
+    for(size_t i = 0; i < _dim; ++i)
+    {
+        for(size_t j = i; j < _dim; ++j)
         {
-            h(i, j) = sec_grad(j);
+            Paras p1 = p;
+            p1[i] += _epsilon;
+            p1[j] += _epsilon;
+
+            double fom1 = _func(p1).fom();
+            double grad = (fom1 - fom1d[i] - fom1d[j] + fom0) / (_epsilon * _epsilon);
+            h(i, j) = grad;
+            h(j, i) = grad;
         }
     }
     return h;
