@@ -3,25 +3,13 @@ using namespace std;
 using namespace Eigen;
 mt19937_64 engine(RAND_SEED);
 
-Paras Optimizer::random_init() const noexcept
-{
-    Paras init(_ranges.size(), 0);
-    for (size_t i = 0; i < _ranges.size(); ++i)
-        init[i] = uniform_real_distribution<double>(_ranges[i].first, _ranges[i].second)(engine);
-    return init;
-}
 Solution FibOptimizer::optimize() noexcept
 {
     // 1-D function
     // function shoulde be convex function
-    if (_ranges.size() != 1) 
-    {
-        cerr << "FibOptimizer requires 1D function" << endl;
-        exit(EXIT_FAILURE);
-    }
-    double a1 = _ranges.front().first;
-    double a2 = _ranges.front().second;
-    if (a1 > a2) 
+    double a1 = _lb;
+    double a2 = _ub;
+    if (a1 > a2)
     {
         cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
         exit(EXIT_FAILURE);
@@ -31,21 +19,26 @@ Solution FibOptimizer::optimize() noexcept
     if (_iter > 2)
         for (size_t i = 2; i < _iter; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
 
-    double y1 = _func({a1}).fom();
-    double y2 = _func({a2}).fom();
+    double y1, y2;
     for (size_t i = _iter - 1; i > 0; --i)
     {
         const double rate = fib_list[i - 1] / fib_list[i];
+        const double interv_len = a2 - a1;
+        const double a3 = a2 - rate * interv_len;
+        const double a4 = a1 + rate * interv_len;
+        assert(a3 <= a4);
+        const double y3 = _func({a3}).fom();
+        const double y4 = _func({a4}).fom();
 
-        if (y1 < y2)
+        if(y3 < y4)
         {
-            a2 = a1 + rate * (a2 - a1);
-            y2 = _func({a2}).fom();
+            a2 = a4;
+            y2 = y4;
         }
         else
         {
-            a1 = a2 + rate * (a1 - a2);
-            y1 = _func({a1}).fom();
+            a1 = a3;
+            y1 = y3;
         }
     }
     return _func({a1});
@@ -54,13 +47,8 @@ Solution GoldenSelection::optimize() noexcept
 {
     // 1-D function
     // function shoulde be convex function
-    if (_ranges.size() != 1)
-    {
-        cerr << "GoldenSelection requires 1D function" << endl;
-        exit(EXIT_FAILURE);
-    }
-    double a1 = _ranges.front().first;
-    double a2 = _ranges.front().second;
+    double a1 = _lb;
+    double a2 = _ub;
     if (a1 > a2)
     {
         cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
@@ -68,20 +56,29 @@ Solution GoldenSelection::optimize() noexcept
     }
 
     const double rate = (sqrt(5) - 1) / 2;
-
-    double y1 = _func({a1}).fom();
-    double y2 = _func({a2}).fom();
+    double y1, y2;
     for (size_t i = _iter - 1; i > 0; --i)
     {
-        if (y1 < y2)
-        {
-            a2 = a1 + rate * (a2 - a1);
-            y2 = _func({a2}).fom();
-        }
+        const double interv_len = a2 - a1;
+        const double a3 = a2 - rate * interv_len;
+        const double a4 = a1 + rate * interv_len;
+        if(a3 == a4)
+            break;
         else
         {
-            a1 = a2 + rate * (a1 - a2);
-            y1 = _func({a1}).fom();
+            assert(a3 < a4);
+            const double y3 = _func({a3}).fom();
+            const double y4 = _func({a4}).fom();
+            if (y3 < y4)
+            {
+                a2 = a4;
+                y2 = y4;
+            }
+            else
+            {
+                a1 = a3;
+                y1 = y3;
+            }
         }
     }
     return y1 < y2 ? _func({a1}) : _func({a2});
@@ -89,58 +86,56 @@ Solution GoldenSelection::optimize() noexcept
 Solution Extrapolation::optimize() noexcept
 {
     // 1-D function
-    // function shoulde be convex function
-    if (_ranges.size() != 1)
-    {
-        cerr << "Extrapolation requires 1D function" << endl;
-        exit(EXIT_FAILURE);
-    }
-    double a1 = _ranges.front().first;
-    double a2 = _ranges.front().second;
-    if (a1 > a2)
-    {
-        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
-        exit(EXIT_FAILURE);
-    }
-    double step = 0.01 * (a2 - a1);
-    double x1 = _init[0];
-    double x2 = x1 + step;
-    double y1 = _func({x1}).fom();
-    double y2 = _func({x2}).fom();
+    double step = _min_len;
+    double x1   = _init[0];
+    double x2   = x1 + step;
+    double y1   = _func({x1}).fom();
+    double y2   = _func({x2}).fom();
+
+    double lb = x1;
+    double ub = x1 + _max_len;
     if (y2 > y1)
     {
-        std::swap(x1, x2);
-        std::swap(y1, y2);
         step *= -1;
+        ub = x1 - _min_len;
+        lb = x1 - _max_len;
+        x2 = x1 + step;
+        y2 = _func({x2}).fom();
+        if( y2 > y1)
+            return _func({x1});
     }
     double factor = 2;
     double x3 = x2 + factor * step;
     double y3 = _func({x3}).fom();
-    while (y3 < y2 && (a1 <= x3 && x3 <= a2))
-    {
-        factor *= 2;
-        x3 += factor * step;
-        y3 = _func({x3}).fom();
-    }
-    double xtmp1 = x3 - factor * step;
-    double xtmp2 = x3 - (factor / 2) * step;
-    double ytmp1 = _func({xtmp1}).fom();
-    double ytmp2 = _func({xtmp2}).fom();
     double xa, xc;
     double ya, yc;
-    if (ytmp1 < ytmp2)
+    if(y3 > y2)
     {
-        xa = x2;
-        xc = xtmp2;
-        ya = y2;
-        yc = ytmp2;
+        xa = x1; xc = x3;
+        ya = y1; yc = y3;
     }
     else
     {
-        xa = xtmp1;
-        xc = x3;
-        ya = ytmp1;
-        yc = y3;
+        while (y3 < y2 && (lb <= x3 && x3 <= ub))
+        {
+            factor *= 2;
+            x3 += factor * step;
+            y3 = _func({x3}).fom();
+        }
+        double xtmp1 = x3 - factor * step;
+        double xtmp2 = x3 - (factor / 2) * step;
+        double ytmp1 = _func({xtmp1}).fom();
+        double ytmp2 = _func({xtmp2}).fom();
+        if (ytmp1 < ytmp2)
+        {
+            xa = x2; xc = xtmp2;
+            ya = y2; yc = ytmp2;
+        }
+        else
+        {
+            xa = xtmp1; xc = x3;
+            ya = ytmp1; yc = y3;
+        }
     }
 
     if (xa > xc)
@@ -148,17 +143,20 @@ Solution Extrapolation::optimize() noexcept
         std::swap(xa, xc);
         std::swap(ya, yc);
     }
-    GoldenSelection gso(_func, {{xa, xc}});
+    const double interv_len = xc - xa;
+    const size_t gso_iter   = 1 + static_cast<size_t>(log10(_min_len / interv_len) / log10(0.618));
+    GoldenSelection gso(_func, xa, xc, gso_iter);
     return gso.optimize();
 }
-GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsi, double zgrad,
-                               double min_walk, size_t max_iter, string fname,
-                               string aname) noexcept : Optimizer(f, r, i),
+GradientMethod::GradientMethod(ObjFunc f, size_t d, Paras i, double epsi, double zgrad,
+                               double min_walk, double _max_walk, size_t max_iter, string fname,
+                               string aname) noexcept : Optimizer(f, d),
+                                                        _init(i),
                                                         _epsilon(epsi),
                                                         _zero_grad(zgrad),
                                                         _min_walk(min_walk),
+                                                        _max_walk(_max_walk),
                                                         _max_iter(max_iter),
-                                                        _dim(_ranges.size()),
                                                         _func_name(fname),
                                                         _algo_name(aname),
                                                         _log(fname + "." + aname + ".log"),
@@ -166,32 +164,30 @@ GradientMethod::GradientMethod(ObjFunc f, Range r, Paras i, double epsi, double 
 {
     _log << setprecision(9);
 }
-vector<double> GradientMethod::get_gradient(const Paras& p) const noexcept
+VectorXd GradientMethod::get_gradient(const Paras& p) const noexcept
 {
-    assert(_ranges.size() == p.size());
+    assert(p.size() == _dim);
     return get_gradient(_func, p);
 }
-vector<double> GradientMethod::get_gradient(ObjFunc f, const Paras& p) const noexcept
+VectorXd GradientMethod::get_gradient(ObjFunc f, const Paras& p) const noexcept
 {
-    const size_t dim = p.size();
     assert(_epsilon > 0);
-    vector<double> grad(dim, 0);
+    VectorXd grad(_dim);
     const double y = f(p).fom();
-    for(size_t i = 0; i < dim; ++i)
+    for(size_t i = 0; i < _dim; ++i)
     {
         Paras pp = p;
         pp[i]    = pp[i] + _epsilon;
-        grad[i]  = (f(pp).fom() - y) / _epsilon;
+        grad(i)  = (f(pp).fom() - y) / _epsilon;
     }
     return grad;
 }
 MatrixXd GradientMethod::hessian(const Paras& p) const noexcept
 {
-    const size_t dim = _ranges.size();
-    assert(p.size() == dim);
-    MatrixXd h(dim, dim);
+    assert(p.size() == _dim);
+    MatrixXd h(_dim, _dim);
     
-    for(size_t i = 0; i < dim; ++i)
+    for(size_t i = 0; i < _dim; ++i)
     {
         ObjFunc partial_grad = [&](const Paras& p)->Solution{
             Paras pp = p;
@@ -199,54 +195,40 @@ MatrixXd GradientMethod::hessian(const Paras& p) const noexcept
             double grad = (_func(pp).fom() - _func(p).fom()) / _epsilon;
             return Solution(p, {0}, grad);
         };
-        vector<double> sec_grad = get_gradient(partial_grad, p);
-        for(size_t j = 0; j < dim; ++j)
+        VectorXd sec_grad = get_gradient(partial_grad, p);
+        for(size_t j = 0; j < _dim; ++j)
         {
-            h(i, j) = sec_grad[j];
+            h(i, j) = sec_grad(j);
         }
     }
     return h;
 }
-Solution GradientMethod::line_search(const Paras& point, const vector<double>& direction) const noexcept
+Solution GradientMethod::line_search(const Paras& point, const VectorXd& direction) noexcept
 {
-    double max_step  = 400;
-    const double dim = _ranges.size();
-    assert(point.size() == dim && direction.size() == dim);
+    double max_step = _max_walk / direction.lpNorm<2>();
+    double min_step = _min_walk / direction.lpNorm<2>();
+    _log << "line search range: (" << min_step << ',' << max_step << ')' << endl;
+    assert(point.size() == _dim && static_cast<size_t>(direction.size()) == _dim);
+    assert(max_step > min_step);
 
-    size_t gs_iter;
-    double rate = _epsilon / (max_step * vec_norm(direction));
-    if(rate > 0.618)
-        gs_iter = 32;
-    else
-        gs_iter = 1 + log10(rate) / log10(0.618);
-    if(gs_iter < 32) gs_iter = 32;
-
-    if(max_step <= 0)
-    {
-        return _func(point);
-    }
-    else
-    {
-        GoldenSelection gso(
-                [&](const vector<double> step) -> Solution
-                {
-                auto debug = point + step[0] * direction;
-                Solution y = _func(point + step[0] * direction);
-                return _func(point + step[0] * direction);
-                },
-                {{0, max_step}}, gs_iter);
-        return gso.optimize();
-    }
+    ObjFunc line_func = [&](const vector<double> step) -> Solution {
+        Paras p = point;
+        const double factor = step[0];
+        for(size_t i = 0; i < p.size(); ++i)
+            p[i] += factor * direction[i];
+        return _func(p);
+    };
+    return Extrapolation(line_func, {0}, min_step, max_step).optimize();
 }
-void GradientDescent::write_log(Paras& point, double fom, Paras& grad) noexcept
+void GradientDescent::write_log(Paras& point, double fom, VectorXd& grad) noexcept
 {
-    const size_t dim = _ranges.size();
     if(_log.is_open())
     {
-        _log << "point: "     << Map<MatrixXd>(&point[0], 1, dim)     << endl;
-        _log << "fom:   "     << fom                                  << endl;
-        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)      << endl;
-        _log << "grad_norm: " << vec_norm(grad)                       << endl << endl;
+        _log << endl;
+        _log << "point: "     << Map<MatrixXd>(&point[0], 1, _dim) << endl;
+        _log << "fom:   "     << fom << endl;
+        _log << "grad:      " << grad.transpose() << endl;
+        _log << "grad_norm: " << grad.lpNorm<2>() << endl;
     }
 }
 Solution GradientDescent::optimize() noexcept
@@ -254,22 +236,22 @@ Solution GradientDescent::optimize() noexcept
     clear_counter();
     _log << _func_name << endl;
 
-    Paras          point     = _init;
-    vector<double> grad      = get_gradient(point);
-    double         grad_norm = vec_norm(grad);
-    double         len_walk  = numeric_limits<double>::infinity();
+    Paras    point     = _init;
+    VectorXd grad      = get_gradient(point);
+    double   grad_norm = grad.lpNorm<2>();
+    double   len_walk  = numeric_limits<double>::infinity();
     while (grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad);
 #endif
-        const auto     direction = -1 * grad;
+        const VectorXd direction = -1 * grad;
         const Solution new_sol   = line_search(point, direction);
 
-        len_walk                 = vec_norm_inf(new_sol.solution() - point);
-        point                    = new_sol.solution();
-        grad                     = get_gradient(point);
-        grad_norm                = vec_norm(grad);
+        len_walk  = vec_norm(new_sol.solution() - point);
+        point     = new_sol.solution();
+        grad      = get_gradient(point);
+        grad_norm = grad.lpNorm<2>();
         ++_counter;
     }
     _log << "=======================================" << endl;
@@ -280,17 +262,17 @@ Solution GradientDescent::optimize() noexcept
         _log << "max iter reached" << endl;
     return _func(point);
 }
-void ConjugateGradient::write_log(Paras& point, double fom, std::vector<double>& grad,
-                                  std::vector<double>& conj_grad) noexcept
+void ConjugateGradient::write_log(Paras& point, double fom, VectorXd& grad,
+                                  VectorXd& conj_grad) noexcept
 {
-    const size_t dim = _ranges.size();
     if(_log.is_open())
     {
-        _log << "point: "     << Map<MatrixXd>(&point[0], 1, dim)     << endl;
-        _log << "fom:   "     << fom                                  << endl;
-        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)      << endl;
-        _log << "conj_grad: " << Map<MatrixXd>(&conj_grad[0], 1, dim) << endl;
-        _log << "grad_norm: " << vec_norm(grad)                       << endl << endl;
+        _log << endl;
+        _log << "point: "     << Map<MatrixXd>(&point[0], 1, _dim) << endl;
+        _log << "fom:   "     << fom << endl;
+        _log << "grad:  "     << grad.transpose() << endl;
+        _log << "conj_grad: " << conj_grad.transpose() << endl;
+        _log << "grad_norm: " << grad.lpNorm<2>() << endl;
     }
 }
 Solution ConjugateGradient::optimize() noexcept
@@ -298,29 +280,31 @@ Solution ConjugateGradient::optimize() noexcept
     clear_counter();
     _log << _func_name << endl;
 
-    const size_t   dim       = _ranges.size();
-    Paras          point     = _init;
-    vector<double> grad      = get_gradient(point);
-    vector<double> conj_grad = grad;
-    double         grad_norm = vec_norm(grad);
-    double         len_walk  = numeric_limits<double>::infinity();
+    Paras    point     = _init;
+    VectorXd grad      = get_gradient(point);
+    VectorXd conj_grad = grad;
+    double   grad_norm = grad.lpNorm<2>();
+    double   len_walk  = numeric_limits<double>::infinity();
+    assert(point.size() == _dim);
     while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
         conj_grad = grad;
-        for(size_t i = 0; i < dim; ++i)
+        for(size_t i = 0; i < _dim; ++i)
         {
+            ++_counter;
 #ifdef WRITE_LOG
             write_log(point, _func(point).fom(), grad, conj_grad);
 #endif
             const Solution sol      = line_search(point, -1 * conj_grad);
             const Paras new_point   = sol.solution();
-            const vector<double> new_grad = get_gradient(sol.solution());
-            len_walk  = vec_norm_inf(new_point - point);
+            VectorXd new_grad = get_gradient(sol.solution());
+            double beta = static_cast<double>(new_grad.transpose() * new_grad) /
+                          static_cast<double>(grad.transpose() * grad);
+            len_walk  = vec_norm(new_point - point);
             point     = new_point;
-            conj_grad = new_grad + pow(vec_norm(new_grad) / vec_norm(grad), 2) * conj_grad;
+            conj_grad = new_grad + beta * conj_grad;
             grad      = new_grad;
-            grad_norm = vec_norm(grad);
-            ++_counter;
+            grad_norm = grad.lpNorm<2>();
             if(! (grad_norm > _zero_grad)) break;
         }
     }
@@ -333,53 +317,48 @@ Solution ConjugateGradient::optimize() noexcept
     return _func(point);
 }
 
-void Newton::write_log(Paras& point, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept
+void Newton::write_log(Paras& point, double fom, VectorXd& grad, Eigen::MatrixXd& hess) noexcept
 {
-    const size_t dim = point.size();
+    // const size_t dim = point.size();
     if(_log.is_open())
     {
-        VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
-        VectorXd delta   = hess.colPivHouseholderQr().solve(-1 * gradvec);
-        double f1        = gradvec.transpose() * delta;
-        double f2        = 0.5 * delta.transpose() * hess * delta;
-        _log << "point:     " << Map<MatrixXd>(&point[0], 1, dim) << endl;
+        VectorXd delta = hess.colPivHouseholderQr().solve(-1 * grad);
+        double f1 = grad.transpose() * delta;
+        double f2 = 0.5 * delta.transpose() * hess * delta;
+        _log << endl;
+        _log << "point:     " << Map<MatrixXd>(&point[0], 1, _dim) << endl;
         _log << "fom:       " << fom                              << endl;
-        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim)  << endl;
-        _log << "grad_norm: " << vec_norm(grad)                   << endl;
-        _log << "hessian:   " << endl   << hess                   << endl;
-        _log << "direction: " << delta.transpose()                << endl;
-        _log << "judge:     " << (f1 + f2) << endl << endl;
+        _log << "grad:      " << grad.transpose() << endl;
+        _log << "grad_norm: " << grad.lpNorm<2>() << endl;
+        _log << "hessian:   " << endl   << hess << endl;
+        _log << "direction: " << delta.transpose() << endl;
+        _log << "judge:     " << (f1 + f2) << endl;
     }
 }
 Solution Newton::optimize() noexcept
 {
     clear_counter();
     _log << "func: " << _func_name << endl;
-    const size_t   dim       = _ranges.size();
-    Paras          point     = _init;
-    vector<double> grad      = get_gradient(point);
-    MatrixXd       hess      = hessian(point);
-    double         grad_norm = vec_norm(grad);
-    double         len_walk  = numeric_limits<double>::infinity();
+    Paras    point     = _init;
+    VectorXd grad      = get_gradient(point);
+    MatrixXd hess      = hessian(point);
+    double   grad_norm = grad.lpNorm<2>();
+    double   len_walk  = numeric_limits<double>::infinity();
     while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
-        VectorXd gvec  = Map<VectorXd>(&grad[0], dim, 1);
-        VectorXd delta = -1 * hess.colPivHouseholderQr().solve(gvec);
-        double judge = static_cast<double>(gvec.transpose() * delta) +
-                       static_cast<double>(0.5 * delta.transpose() * hess * delta);
+        VectorXd direction = -1 * hess.colPivHouseholderQr().solve(grad);
+        double judge   = grad.transpose() * direction;
         double dir     = judge < 0 ? 1 : -1;
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, hess);
 #endif
-        vector<double> direction(dim, 0);
-        for(size_t i = 0; i < dim; ++i)
-            direction[i] = dir * delta(i);
+        direction *= dir;
         Solution sol = line_search(point, direction);
-        len_walk  = vec_norm_inf(sol.solution() - point);
-        point     = sol.solution();
-        grad      = get_gradient(point);
-        hess      = hessian(point);
-        grad_norm = vec_norm(grad);
+        len_walk     = vec_norm(sol.solution() - point);
+        point        = sol.solution();
+        grad         = get_gradient(point);
+        hess         = hessian(point);
+        grad_norm    = grad.lpNorm<2>();
 
         ++_counter;
     }
@@ -393,18 +372,17 @@ Solution Newton::optimize() noexcept
         _log << "max iter reached" << endl;
     return _func(point);
 }
-void DFP::write_log(Paras& p, double fom, std::vector<double>& grad,
-                    Eigen::MatrixXd& quasi_hess) noexcept
+void DFP::write_log(Paras& p, double fom, VectorXd& grad, Eigen::MatrixXd& quasi_hess) noexcept
 {
     const size_t dim = p.size();
     if(_log.is_open())
     {
-        VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
+        _log << endl;
         _log << "point:     " << Map<MatrixXd>(&p[0], 1, dim) << endl;
         _log << "fom:       " << fom << endl;
-        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim) << endl;
-        _log << "grad_norm: " << vec_norm(grad) << endl;
-        _log << "inverse of quasi_hess:   " << endl << quasi_hess << endl << endl;
+        _log << "grad:      " << grad.transpose() << endl;
+        _log << "grad_norm: " << grad.lpNorm<2>() << endl;
+        _log << "inverse of quasi_hess:   " << endl << quasi_hess << endl;
     }
 }
 Solution DFP::optimize() noexcept
@@ -413,9 +391,9 @@ Solution DFP::optimize() noexcept
     _log << "func: " << _func_name << endl;
 
     Paras    point              = _init;
-    vector<double> grad         = get_gradient(point);
+    VectorXd grad               = get_gradient(point);
     MatrixXd quasi_hess_inverse = MatrixXd::Identity(_dim, _dim);
-    double   grad_norm          = vec_norm(grad);
+    double   grad_norm          = grad.lpNorm<2>();
     double   len_walk           = numeric_limits<double>::infinity();
 
     while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
@@ -424,17 +402,14 @@ Solution DFP::optimize() noexcept
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, quasi_hess_inverse);
 #endif
-        VectorXd gvec = Map<VectorXd>(&grad[0], _dim, 1);
-        VectorXd dvec = -1 * (quasi_hess_inverse * gvec);
-        vector<double> direction(dvec.data(), dvec.data() + _dim);
+        VectorXd dvec = -1 * (quasi_hess_inverse * grad);
 
-        Solution sol                  = line_search(point, direction);
-        const vector<double> new_grad = get_gradient(sol.solution());
-        const vector<double> delta_g  = new_grad - grad;
-        const vector<double> delta_x  = sol.solution() - point;
-        const Map<const VectorXd> ev_dg(&delta_g[0], _dim, 1);
+        Solution sol                 = line_search(point, dvec);
+        const VectorXd new_grad      = get_gradient(sol.solution());
+        const vector<double> delta_x = sol.solution() - point;
+        const VectorXd ev_dg         = new_grad - grad;
         const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
-        len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
+        len_walk  = vec_norm(delta_x);
         if(len_walk > 0)
         {
             quasi_hess_inverse +=
@@ -444,7 +419,7 @@ Solution DFP::optimize() noexcept
 
             point     = sol.solution();
             grad      = new_grad;
-            grad_norm = vec_norm(grad);
+            grad_norm = grad.lpNorm<2>();
         }
 
     }
@@ -463,11 +438,11 @@ Solution BFGS::optimize() noexcept
     clear_counter();
     _log << "func: " << _func_name << endl;
 
-    Paras    point              = _init;
-    vector<double> grad         = get_gradient(point);
+    Paras    point      = _init;
+    VectorXd grad       = get_gradient(point);
     MatrixXd quasi_hess = MatrixXd::Identity(_dim, _dim);
-    double   grad_norm          = vec_norm(grad);
-    double   len_walk           = numeric_limits<double>::infinity();
+    double   grad_norm  = grad.lpNorm<2>();
+    double   len_walk   = numeric_limits<double>::infinity();
 
     while(grad_norm > _zero_grad && _counter < _max_iter && len_walk > _min_walk)
     {
@@ -475,17 +450,14 @@ Solution BFGS::optimize() noexcept
 #ifdef WRITE_LOG
         write_log(point, _func(point).fom(), grad, quasi_hess);
 #endif
-        VectorXd gvec = Map<VectorXd>(&grad[0], _dim, 1);
-        VectorXd dvec = -1 * (quasi_hess.colPivHouseholderQr().solve(gvec));
-        vector<double> direction(dvec.data(), dvec.data() + _dim);
+        VectorXd direction = -1 * (quasi_hess.colPivHouseholderQr().solve(grad));
 
-        Solution sol                  = line_search(point, direction);
-        const vector<double> new_grad = get_gradient(sol.solution());
-        const vector<double> delta_g  = new_grad - grad;
-        const vector<double> delta_x  = sol.solution() - point;
-        const Map<const VectorXd> ev_dg(&delta_g[0], _dim, 1);
+        Solution sol                 = line_search(point, direction);
+        const VectorXd new_grad      = get_gradient(sol.solution());
+        VectorXd ev_dg               = new_grad - grad;
+        const vector<double> delta_x = sol.solution() - point;
         const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
-        len_walk  = ev_dx.lpNorm<Eigen::Infinity>();
+        len_walk  = vec_norm(delta_x);
         if(len_walk > 0)
         {
             quasi_hess += (ev_dg * ev_dg.transpose()) / (ev_dg.transpose() * ev_dx) -
@@ -494,7 +466,7 @@ Solution BFGS::optimize() noexcept
 
             point     = sol.solution();
             grad      = new_grad;
-            grad_norm = vec_norm(grad);
+            grad_norm = grad.lpNorm<2>();
         }
     }
     _log << "=======================================" << endl;
@@ -507,17 +479,18 @@ Solution BFGS::optimize() noexcept
 
     return _func(point);
 }
-void BFGS::write_log(Paras& p, double fom, std::vector<double>& grad,
+void BFGS::write_log(Paras& p, double fom, VectorXd& grad,
                     Eigen::MatrixXd& quasi_hess) noexcept
 {
     const size_t dim = p.size();
     if(_log.is_open())
     {
         VectorXd gradvec = Map<VectorXd>(&grad[0], dim, 1);
+        _log << endl;
         _log << "point:     " << Map<MatrixXd>(&p[0], 1, dim) << endl;
         _log << "fom:       " << fom << endl;
-        _log << "grad:      " << Map<MatrixXd>(&grad[0], 1, dim) << endl;
-        _log << "grad_norm: " << vec_norm(grad) << endl;
-        _log << "quasi_hess:   " << endl << quasi_hess << endl << endl;
+        _log << "grad:      " << grad.transpose() << endl;
+        _log << "grad_norm: " << grad.lpNorm<2>() << endl;
+        _log << "quasi_hess:   " << endl << quasi_hess << endl;
     }
 }

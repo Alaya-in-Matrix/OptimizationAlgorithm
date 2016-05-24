@@ -14,40 +14,63 @@
 class Optimizer
 {
 protected:
-    typedef std::vector<std::pair<double, double>> Range;
     ObjFunc _func;
-    Range _ranges;
-    Paras _init;
-    Paras random_init() const noexcept;
+    size_t  _dim;
 
 public:
-    Optimizer(ObjFunc func, Range r) noexcept : _func(func), _ranges(r), _init(random_init()) {}
-    Optimizer(ObjFunc func, Range r, Paras i) noexcept : _func(func), _ranges(r), _init(i) {}
+    Optimizer(ObjFunc func, size_t d) noexcept : _func(func), _dim(d) {}
     virtual Solution optimize() noexcept = 0;
 };
 
 class FibOptimizer : public Optimizer
 {
+    const double _lb;
+    const double _ub;
     const size_t _iter;
 
 public:
-    FibOptimizer(ObjFunc f, Range r, size_t iter = 16) noexcept : Optimizer(f, r), _iter(iter) {}
+    FibOptimizer(ObjFunc f, double lb, double ub, size_t iter = 16) noexcept : Optimizer(f, 1),
+                                                                               _lb(lb),
+                                                                               _ub(ub),
+                                                                               _iter(iter)
+    {}
     Solution optimize() noexcept;
     ~FibOptimizer() {}
 };
 class GoldenSelection : public Optimizer
 {
+    const double _lb;
+    const double _ub;
     const size_t _iter;
 
 public:
-    GoldenSelection(ObjFunc f, Range r, size_t iter = 16) noexcept : Optimizer(f, r), _iter(iter) {}
+    GoldenSelection(ObjFunc f, double lb, double ub, size_t iter = 16) noexcept
+        : Optimizer(f, 1),
+          _lb(lb),
+          _ub(ub),
+          _iter(iter)
+    {}
     Solution optimize() noexcept;
     ~GoldenSelection() {}
 };
 class Extrapolation : public Optimizer
 {
+    const Paras  _init;
+    const double _min_len;  // min extrapolation step
+    const double _max_len;  // max extrapolation step
 public:
-    Extrapolation(ObjFunc f, Range r, Paras i) noexcept : Optimizer(f, r, i) {}
+    Extrapolation(ObjFunc f, Paras i, double min_len, double max_len) noexcept : Optimizer(f, 1),
+                                                                                 _init(i),
+                                                                                 _min_len(min_len),
+                                                                                 _max_len(max_len)
+    {
+        if(!(min_len > 0 && max_len > 0 && min_len < max_len))
+        {
+            std::cerr << "Not satisfied: min_len > 0 && max_len > 0 && min_len < max_len"
+                      << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
     Solution optimize() noexcept;
     ~Extrapolation() {}
 };
@@ -55,64 +78,66 @@ public:
 class GradientMethod : public Optimizer
 {
 protected:
+    const Paras         _init;
     const double        _epsilon; // use _epsilon to calc gradient
     const double        _zero_grad; // threshold to judge whether gradient is zero
     const double        _min_walk; // minimum walk len during iteration
+    const double        _max_walk; // minimum walk len during iteration
     const size_t        _max_iter;
-    const size_t        _dim;
     const std::string   _func_name;
     const std::string   _algo_name;
-    std::ofstream _log;
-    size_t        _counter; // counter of line search
 
-    virtual std::vector<double> get_gradient(const Paras& p) const noexcept;
-    virtual std::vector<double> get_gradient(ObjFunc, const Paras&) const noexcept;
+    std::ofstream _log;
+    size_t _counter;  // counter of line search
+
+    virtual Eigen::VectorXd get_gradient(const Paras& p) const noexcept;
+    virtual Eigen::VectorXd get_gradient(ObjFunc, const Paras&) const noexcept;
     virtual Eigen::MatrixXd hessian(const Paras& point) const noexcept;
-    virtual Solution line_search(const Paras& point, const std::vector<double>& direc) const noexcept;
+    virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc) noexcept;
 
 public:
     void clear_counter() noexcept { _counter = 0; }
-    GradientMethod(ObjFunc f, Range r, Paras i, double epsi, double zgrad, double mwalk, size_t max_iter,
-                      std::string fname, std::string aname) noexcept;
+    GradientMethod(ObjFunc f, size_t d, Paras i, double epsi, double zgrad, double minwalk,
+                   double maxwalk, size_t max_iter, std::string fname, std::string aname) noexcept;
     size_t counter() const noexcept { return _counter; } 
     ~GradientMethod() { if(_log.is_open()) _log.close(); } 
 };
 
-#define TYPICAL_DEF(ClassName)                                                      \
-    ClassName(ObjFunc f, Range r, Paras i, double epsi, double zgrad, double mwalk, \
-              size_t max_iter, std::string fname, std::string aname)                \
-        : GradientMethod(f, r, i, epsi, zgrad, mwalk, max_iter, fname, aname)       \
-    {                                                                               \
-    }                                                                               \
-    Solution optimize() noexcept;                                                   \
+#define TYPICAL_DEF(ClassName)                                                           \
+    ClassName(ObjFunc f, size_t d, Paras i, double epsi, double zgrad, double minwalk,   \
+              double maxwalk, size_t max_iter, std::string fname, std::string aname)     \
+        : GradientMethod(f, d, i, epsi, zgrad, minwalk, maxwalk, max_iter, fname, aname) \
+    {                                                                                    \
+    }                                                                                    \
+    Solution optimize() noexcept;                                                        \
     ~ClassName() {}
 class GradientDescent : public GradientMethod
 {
-    void write_log(Paras& p, double fom, std::vector<double>& grad) noexcept;
+    void write_log(Paras& p, double fom, Eigen::VectorXd& grad) noexcept;
 public:
     TYPICAL_DEF(GradientDescent);
 };
 class ConjugateGradient : public GradientMethod
 {
-    void write_log(Paras& p, double fom, std::vector<double>& grad, std::vector<double>& conj_grad) noexcept;
+    void write_log(Paras& p, double fom, Eigen::VectorXd& grad, Eigen::VectorXd& conj_grad) noexcept;
 public:
     TYPICAL_DEF(ConjugateGradient);
 };
 class Newton : public GradientMethod
 {
-    void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& hess) noexcept;
+    void write_log(Paras& p, double fom, Eigen::VectorXd& grad, Eigen::MatrixXd& hess) noexcept;
 public:
     TYPICAL_DEF(Newton);
 };
 class DFP : public GradientMethod
 {
-    void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& quasi_hess) noexcept;
+    void write_log(Paras& p, double fom, Eigen::VectorXd& grad, Eigen::MatrixXd& quasi_hess) noexcept;
 public:
     TYPICAL_DEF(DFP);
 };
 class BFGS : public GradientMethod
 {
-    void write_log(Paras& p, double fom, std::vector<double>& grad, Eigen::MatrixXd& quasi_hess) noexcept;
+    void write_log(Paras& p, double fom, Eigen::VectorXd& grad, Eigen::MatrixXd& quasi_hess) noexcept;
 public:
     TYPICAL_DEF(BFGS);
 };

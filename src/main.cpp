@@ -65,13 +65,15 @@ Paras rand_vec(const vector<pair<double, double>>& rg) noexcept
     return rand_init;
 }
 template<class Algorithm>
-void run_algo(ObjFunc f, const vector<pair<double, double>>& range, const Paras init, string algo_name, string fname) noexcept
+void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const Paras init, string algo_name, string fname) noexcept
 {
     const double grad_epsilon = 1e-5;
     const double zero_grad    = 1e-2;
     const double min_walk     = 5e-6;
+    const double max_walk     = 10;
     const size_t max_iter     = 1000;
-    Algorithm algo(f, range, init, grad_epsilon, zero_grad, min_walk, max_iter, fname, algo_name);
+    const size_t dim          = range.size();
+    Algorithm algo(f, dim, init, grad_epsilon, zero_grad, min_walk, max_walk, max_iter, fname, algo_name);
     Solution sol = algo.optimize();
     
     printf("fom of %s: %g, iter: %zu\n", algo_name.c_str(), sol.fom(), algo.counter());
@@ -83,11 +85,11 @@ void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname)
     Eigen::Map<Eigen::MatrixXd> mf(&init[0], 3, 1);
     cout << "init: " << Eigen::Map<Eigen::MatrixXd>(&init[0], 1, init.size()) << endl;
 
-    run_algo<GradientDescent>(f, range, init, "GradientDescent", fname);
-    run_algo<ConjugateGradient>(f, range, init, "ConjugateGradient", fname);
-    run_algo<Newton>(f, range, init, "Newton", fname);
-    run_algo<DFP>(f, range, init, "DFP", fname);
-    run_algo<BFGS>(f, range, init, "BFGS", fname);
+    run_grad_algo<GradientDescent>(f, range, init, "GradientDescent", fname);
+    run_grad_algo<ConjugateGradient>(f, range, init, "ConjugateGradient", fname);
+    run_grad_algo<Newton>(f, range, init, "Newton", fname);
+    run_grad_algo<DFP>(f, range, init, "DFP", fname);
+    run_grad_algo<BFGS>(f, range, init, "BFGS", fname);
 
     printf("===============================================\n");
 }
