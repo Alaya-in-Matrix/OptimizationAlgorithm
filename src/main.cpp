@@ -84,8 +84,8 @@ void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fn
     const double gamma    = 2;
     const double rho      = 0.5;
     const double sigma    = 0.5;
-    const double conv_len = 0.01;
-    const size_t max_iter = 100;
+    const double conv_len = 1e-3;
+    const size_t max_iter = 200;
     vector<Paras> inits(range.size() + 1);
     for(auto& iv : inits)
         iv = rand_vec(range);

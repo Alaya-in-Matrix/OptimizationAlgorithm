@@ -526,18 +526,47 @@ NelderMead::NelderMead(ObjFunc f, size_t d, std::vector<Paras> inits, double a, 
     for(size_t i = 0; i < _dim + 1; ++i)
         _points.push_back(_func(inits[i]));
 }
-bool NelderMead::converged() const noexcept
+double NelderMead::max_simplex_len() const noexcept
 {
-    return false;
+    const double inf = numeric_limits<double>::infinity();
+    Paras min_vec(_dim, inf);
+    Paras max_vec(_dim, -1 * inf);
+    for(const auto& s : _points)
+    {
+        const Paras& pp  = s.solution();
+        assert(pp.size() == _dim);
+        for(size_t i = 0; i < _dim; ++i)
+        {
+            if(pp[i] < min_vec[i]) min_vec[i] = pp[i];
+            if(pp[i] > max_vec[i]) max_vec[i] = pp[i];
+        }
+    }
+    return vec_norm(max_vec - min_vec);
+}
+void NelderMead::write_log(const Solution& s) noexcept
+{
+    Paras p = s.solution();
+    const double y = s.fom();
+    _log << endl;
+    _log << "point: " << Map<MatrixXd>(&p[0], 1, _dim) << endl;
+    _log << "fom:   " << y << endl;
 }
 Solution NelderMead::optimize() noexcept
 {
     _counter = 0;
-    while(_counter < _max_iter && ! converged())
+    _log << _func_name << endl;
+    double len = numeric_limits<double>::infinity();
+    while(_counter < _max_iter)
     {
         // 1. order
         ++_counter;
         std::sort(_points.begin(), _points.end(), std::less<Solution>());
+        len = max_simplex_len();
+        if(len < _converge_len) break;
+#ifdef WRITE_LOG
+        write_log(_points[0]);
+        _log << "max simplex len: " << len << endl;
+#endif
         const Solution& worst     = _points[_dim];
         const Solution& sec_worst = _points[_dim - 1];
         const Solution& best      = _points[0];
@@ -585,5 +614,7 @@ Solution NelderMead::optimize() noexcept
         }
     }
     std::sort(_points.begin(), _points.end(), std::less<Solution>());
+    _log << "=========================================" << endl;
+    write_log(_points[0]);
     return _points[0];
 }

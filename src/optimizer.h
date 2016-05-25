@@ -154,7 +154,8 @@ class NelderMead : public Optimizer
     std::vector<Solution> _points;
     size_t                _counter;
 
-    bool converged() const noexcept;
+    double max_simplex_len() const noexcept;
+    void write_log(const Solution& s) noexcept;
 
 public:
     size_t counter() const noexcept { return _counter; } 
