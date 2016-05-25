@@ -73,7 +73,7 @@ void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const P
     const double max_walk     = 50;
     const size_t max_iter     = 1000;
     const size_t dim          = range.size();
-    Algorithm algo(f, dim, init, grad_epsilon, zero_grad, min_walk, max_walk, max_iter, fname, algo_name);
+    Algorithm algo(f, dim, init, grad_epsilon, zero_grad, min_walk, max_walk, max_iter, fname);
     Solution sol = algo.optimize();
     
     printf("fom of %s: %g, iter: %zu\n", algo_name.c_str(), sol.fom(), algo.counter());

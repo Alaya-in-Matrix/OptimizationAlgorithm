@@ -6,7 +6,6 @@
 #include <utility>
 #include <iostream>
 #include <fstream>
-#include <random>
 #include <iomanip>
 #include <cstdio>
 #include <cassert>
@@ -93,7 +92,7 @@ protected:
     virtual Eigen::VectorXd get_gradient(const Paras& p) const noexcept;
     virtual Eigen::VectorXd get_gradient(ObjFunc, const Paras&) const noexcept;
     virtual Eigen::MatrixXd hessian(const Paras& point) const noexcept;
-    virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc) noexcept;
+    virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc) const noexcept;
 
 public:
     void clear_counter() noexcept { _counter = 0; }
@@ -103,13 +102,13 @@ public:
     ~GradientMethod() { if(_log.is_open()) _log.close(); } 
 };
 
-#define TYPICAL_DEF(ClassName)                                                           \
-    ClassName(ObjFunc f, size_t d, Paras i, double epsi, double zgrad, double minwalk,   \
-              double maxwalk, size_t max_iter, std::string fname, std::string aname)     \
-        : GradientMethod(f, d, i, epsi, zgrad, minwalk, maxwalk, max_iter, fname, aname) \
-    {                                                                                    \
-    }                                                                                    \
-    Solution optimize() noexcept;                                                        \
+#define TYPICAL_DEF(ClassName)                                                               \
+    ClassName(ObjFunc f, size_t d, Paras i, double epsi, double zgrad, double minwalk,       \
+              double maxwalk, size_t max_iter, std::string fname)                            \
+        : GradientMethod(f, d, i, epsi, zgrad, minwalk, maxwalk, max_iter, fname, #ClassName) \
+    {                                                                                         \
+    }                                                                                         \
+    Solution optimize() noexcept;                                                             \
     ~ClassName() {}
 class GradientDescent : public GradientMethod
 {
