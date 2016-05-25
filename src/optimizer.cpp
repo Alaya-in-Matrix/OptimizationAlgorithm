@@ -499,34 +499,91 @@ void BFGS::write_log(Paras& p, double fom, VectorXd& grad, Eigen::MatrixXd& quas
         _log << "point:     " << Map<MatrixXd>(&p[0], 1, dim) << endl;
         _log << "fom:       " << fom << endl;
         _log << "grad:      " << grad.transpose() << endl;
-        _log << "grad_norm: " << grad.lpNorm<2>() << endl;
+        _log << "grad_norm: " << grad.lpNorm<2>() << endl;  
         _log << "quasi_hess:   " << endl << quasi_hess << endl;
     }
 }
 
-// NelderMead::NelderMead(ObjFunc f, size_t d, double a, double g, double r, double s,
-//                        const std::vector<Paras>& inits) noexcept : Optimizer(f, d),
-//                                                                    _alpha(a),
-//                                                                    _gamma(g),
-//                                                                    _rho(r),
-//                                                                    _sigma(s)
-// {
-//     assert(d >= 1);
-//     if(inits.size() != _dim + 1)
-//     {
-//         cerr << "inits.size() != _dim + 1" << endl;
-//         exit(EXIT_FAILURE);
-//     }
-//     _points = vector<Solution>(_dim + 1);
-//     for(size_t i = 0; i < _dim + 1; ++i)
-//         _points[i] = _func(inits[i]);
-// }
-// Solution NelderMead::optimize() noexcept
-// {
-//     // std::sort(_points.begin(), _points.end(), std::less<Solution>());
-//     // Paras central(_dim, 0);
-//     // for(size_t i = 1; i < _points.size(); ++i)
-//     //     central = central + _points[i].solution();
-//     // central = (1.0/static_cast<double>(_dim)) * central;
-//     // Solution reflected = _func(central + _alpha * (central - _points.back().solution()));
-// }
+NelderMead::NelderMead(ObjFunc f, size_t d, std::vector<Paras> inits, double a, double g, double r,
+                       double s, double conv_len, size_t max_iter, std::string fname) noexcept
+    : Optimizer(f, d),
+      _alpha(a),
+      _gamma(g),
+      _rho(r),
+      _sigma(s),
+      _converge_len(conv_len),
+      _max_iter(max_iter), 
+      _func_name(fname), 
+      _log(fname + ".NelderMead.log")
+
+{
+    assert(inits.size() == _dim + 1);
+    assert(_alpha > 0);
+    assert(_gamma > 0);
+    assert(0 < _rho && _rho <= 0.5);
+    assert(0 < _sigma && _sigma < 1);
+    _points.reserve(_dim + 1);
+    for(size_t i = 0; i < _dim + 1; ++i)
+        _points.push_back(_func(inits[i]));
+}
+bool NelderMead::converged() const noexcept
+{
+    return false;
+}
+Solution NelderMead::optimize() noexcept
+{
+    _counter = 0;
+    while(_counter < _max_iter && ! converged())
+    {
+        // 1. order
+        ++_counter;
+        std::sort(_points.begin(), _points.end(), std::less<Solution>());
+        const Solution& worst     = _points[_dim];
+        const Solution& sec_worst = _points[_dim - 1];
+        const Solution& best      = _points[0];
+
+        // 2. centroid calc
+        Paras centroid(_dim, 0);
+        for(size_t i = 0; i < _dim; ++i)
+            centroid = centroid + _points[i].solution();
+        centroid = 1.0/static_cast<double>(_dim) * centroid;
+
+        // 3. reflection
+        Solution reflect = _func(centroid + _alpha * (centroid - worst.solution()));
+        if(best <= reflect && reflect < sec_worst)
+        {
+            _points[_dim] = reflect;
+            continue;
+        }
+        // 4. expansion
+        else if(reflect < best)
+        {
+            Solution expanded = _func(centroid + _gamma * (reflect.solution() - centroid));
+            _points[_dim] = expanded < reflect ? expanded : reflect;
+            continue;
+        }
+        else
+        {
+            // 5. contract
+            assert(!(reflect < sec_worst));
+            Solution contracted = _func(centroid + _rho * (worst.solution() - centroid));
+            if(contracted < worst)
+            {
+                _points[_dim] = contracted;
+                continue;
+            }
+            // 6. shrink
+            else
+            {
+                for(size_t i = 1; i < _dim + 1; ++i)
+                {
+                    // _points[i] = _points[0] + _sigma * (_points[i] - _points[0]);
+                    Paras p = _points[0].solution() - _sigma * (_points[i].solution() - _points[0].solution());
+                    _points[i] = _func(p);
+                }
+            }
+        }
+    }
+    std::sort(_points.begin(), _points.end(), std::less<Solution>());
+    return _points[0];
+}

@@ -140,3 +140,25 @@ class BFGS : public GradientMethod
 public:
     TYPICAL_DEF(BFGS);
 };
+class NelderMead : public Optimizer
+{
+    const double _alpha;
+    const double _gamma;
+    const double _rho;
+    const double _sigma;
+    const double _converge_len;
+    const size_t _max_iter;
+    const std::string _func_name;
+
+    std::ofstream         _log;
+    std::vector<Solution> _points;
+    size_t                _counter;
+
+    bool converged() const noexcept;
+
+public:
+    size_t counter() const noexcept { return _counter; } 
+    NelderMead(ObjFunc f, size_t d, std::vector<Paras> i, double a, double g, double r, double s,
+               double conv_len, size_t max_iter, std::string fname) noexcept;
+    Solution optimize() noexcept;
+};

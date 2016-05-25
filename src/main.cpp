@@ -78,6 +78,21 @@ void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const P
     
     printf("fom of %s: %g, iter: %zu\n", algo_name.c_str(), sol.fom(), algo.counter());
 }
+void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
+{
+    const double alpha    = 1;
+    const double gamma    = 2;
+    const double rho      = 0.5;
+    const double sigma    = 0.5;
+    const double conv_len = 0.01;
+    const size_t max_iter = 100;
+    vector<Paras> inits(range.size() + 1);
+    for(auto& iv : inits)
+        iv = rand_vec(range);
+    NelderMead nmo(f, range.size(), inits, alpha, gamma, rho, sigma, conv_len, max_iter, fname);
+    Solution sol = nmo.optimize();
+    printf("fom of NelderMead: %g, iter: %zu\n", sol.fom(), nmo.counter());
+}
 void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {
     puts(fname.c_str());
@@ -90,6 +105,7 @@ void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname)
     run_grad_algo<Newton>(f, range, init, "Newton", fname);
     run_grad_algo<DFP>(f, range, init, "DFP", fname);
     run_grad_algo<BFGS>(f, range, init, "BFGS", fname);
+    run_simplex(f, range, fname);
 
     printf("===============================================\n");
 }
