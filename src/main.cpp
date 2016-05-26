@@ -1,5 +1,5 @@
 #include "def.h"
-#include "optimizer.h"
+#include "multi_dim_optimizer.h"
 #include "benchmark.h"
 #include <iostream>
 #include <utility>
@@ -76,35 +76,36 @@ void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const P
     Algorithm algo(f, dim, init, grad_epsilon, zero_grad, min_walk, max_walk, max_iter, fname);
     Solution sol = algo.optimize();
     
-    printf("fom of %s: %g, iter: %zu\n", algo_name.c_str(), sol.fom(), algo.counter());
+    printf("fom of %s: %g, iter: %zu, linesearch: %zu\n", algo_name.c_str(), sol.fom(), algo.eval_counter(), algo.linesearch_counter());
 }
 void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {
-    const double alpha    = 1;
-    const double gamma    = 2;
-    const double rho      = 0.5;
-    const double sigma    = 0.5;
-    const double conv_len = 1e-3;
-    const size_t max_iter = 1000;
+    const double alpha     = 1;
+    const double gamma     = 2;
+    const double rho       = 0.5;
+    const double sigma     = 0.5;
+    const double conv_len  = 1e-3;
+    const size_t max_iter  = 2000;
+    const string algo_name = "NelderMead";
     vector<Paras> inits(range.size() + 1);
     for(auto& iv : inits)
         iv = rand_vec(range);
-    NelderMead nmo(f, range.size(), inits, alpha, gamma, rho, sigma, conv_len, max_iter, fname);
-    Solution sol = nmo.optimize();
-    printf("fom of NelderMead: %g, iter: %zu\n", sol.fom(), nmo.counter());
+    NelderMead algo(f, range.size(), inits, alpha, gamma, rho, sigma, conv_len, max_iter, fname);
+    Solution sol = algo.optimize();
+    printf("fom of %s: %g, iter: %zu, linesearch: %zu\n", algo_name.c_str(), sol.fom(), algo.eval_counter(), algo.linesearch_counter());
 }
 void run_powell(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {
-    const double min_walk = 5e-6;
-    const double max_walk = 10;
-    const size_t max_iter = 1000;
-    const size_t dim      = range.size();
-    const Paras  init     = rand_vec(range);
+    const double min_walk  = 5e-6;
+    const double max_walk  = 10;
+    const size_t max_iter  = 2000;
+    const size_t dim       = range.size();
+    const Paras  init      = rand_vec(range);
+    const string algo_name = "Powell";
 
-    Powell pwo(f, dim, init, max_iter, min_walk, max_walk, fname);
-    // NelderMead nmo(f, range.size(), inits, alpha, gamma, rho, sigma, conv_len, max_iter, fname);
-    Solution sol = pwo.optimize();
-    printf("fom of Powell: %g, iter: %zu\n", sol.fom(), pwo.counter());
+    Powell algo(f, dim, init, max_iter, min_walk, max_walk, fname);
+    Solution sol = algo.optimize();
+    printf("fom of %s: %g, iter: %zu, linesearch: %zu\n", algo_name.c_str(), sol.fom(), algo.eval_counter(), algo.linesearch_counter());
 }
 void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {

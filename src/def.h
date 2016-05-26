@@ -13,3 +13,11 @@
 #define RAND_SEED std::random_device{}()
 #endif
 #endif
+#define CHECK(COND)                                        \
+    {                                                      \
+        if (!(COND))                                       \
+        {                                                  \
+            std::cerr << "Failed: " << #COND << std::endl; \
+            exit(EXIT_FAILURE);                            \
+        }                                                  \
+    }
