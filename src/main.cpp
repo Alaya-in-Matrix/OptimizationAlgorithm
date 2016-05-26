@@ -85,13 +85,26 @@ void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fn
     const double rho      = 0.5;
     const double sigma    = 0.5;
     const double conv_len = 1e-3;
-    const size_t max_iter = 200;
+    const size_t max_iter = 1000;
     vector<Paras> inits(range.size() + 1);
     for(auto& iv : inits)
         iv = rand_vec(range);
     NelderMead nmo(f, range.size(), inits, alpha, gamma, rho, sigma, conv_len, max_iter, fname);
     Solution sol = nmo.optimize();
     printf("fom of NelderMead: %g, iter: %zu\n", sol.fom(), nmo.counter());
+}
+void run_powell(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
+{
+    const double min_walk = 5e-6;
+    const double max_walk = 10;
+    const size_t max_iter = 1000;
+    const size_t dim      = range.size();
+    const Paras  init     = rand_vec(range);
+
+    Powell pwo(f, dim, init, max_iter, min_walk, max_walk, fname);
+    // NelderMead nmo(f, range.size(), inits, alpha, gamma, rho, sigma, conv_len, max_iter, fname);
+    Solution sol = pwo.optimize();
+    printf("fom of Powell: %g, iter: %zu\n", sol.fom(), pwo.counter());
 }
 void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {
@@ -106,6 +119,7 @@ void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname)
     run_grad_algo<DFP>(f, range, init, "DFP", fname);
     run_grad_algo<BFGS>(f, range, init, "BFGS", fname);
     run_simplex(f, range, fname);
+    run_powell(f, range, fname);
 
     printf("===============================================\n");
 }

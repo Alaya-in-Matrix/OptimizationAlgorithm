@@ -218,18 +218,19 @@ MatrixXd GradientMethod::hessian(const Paras& p) const noexcept
     }
     return h;
 }
-Solution GradientMethod::line_search(const Paras& point, const VectorXd& direction) const noexcept
+Solution line_search(ObjFunc func, const Paras& point, const VectorXd& direction, double min_walk,
+                     double max_walk) noexcept
 {
-    double max_step = _max_walk / direction.lpNorm<2>();
-    double min_step = _min_walk / direction.lpNorm<2>();
-    assert(point.size() == _dim && static_cast<size_t>(direction.size()) == _dim);
+    double max_step = max_walk / direction.lpNorm<2>();
+    double min_step = min_walk / direction.lpNorm<2>();
+    assert(point.size() == static_cast<size_t>(direction.size()));
     assert(max_step > min_step);
 
     ObjFunc line_func = [&](const vector<double> step) -> Solution {
         Paras p = point;
         const double factor = step[0];
         for (size_t i = 0; i < p.size(); ++i) p[i] += factor * direction[i];
-        return _func(p);
+        return func(p);
     };
     return Extrapolation(line_func, {0}, min_step, max_step).optimize();
 }
@@ -259,7 +260,7 @@ Solution GradientDescent::optimize() noexcept
         write_log(point, _func(point).fom(), grad);
 #endif
         const VectorXd direction = -1 * grad;
-        const Solution new_sol = line_search(point, direction);
+        const Solution new_sol = line_search(_func, point, direction, _min_walk, _max_walk);
 
         len_walk = vec_norm(new_sol.solution() - point);
         point = new_sol.solution();
@@ -307,7 +308,7 @@ Solution ConjugateGradient::optimize() noexcept
 #ifdef WRITE_LOG
             write_log(point, _func(point).fom(), grad, conj_grad);
 #endif
-            const Solution sol = line_search(point, -1 * conj_grad);
+            const Solution sol = line_search(_func, point, -1 * conj_grad, _min_walk, _max_walk);
             const Paras new_point = sol.solution();
             VectorXd new_grad = get_gradient(sol.solution());
             double beta = static_cast<double>(new_grad.transpose() * new_grad) /
@@ -364,7 +365,7 @@ Solution Newton::optimize() noexcept
         write_log(point, _func(point).fom(), grad, hess);
 #endif
         direction *= dir;
-        Solution sol = line_search(point, direction);
+        Solution sol = line_search(_func, point, direction, _min_walk, _max_walk);
         len_walk = vec_norm(sol.solution() - point);
 #ifdef WRITE_LOG
         _log << "len walk: " << len_walk << endl;
@@ -417,7 +418,7 @@ Solution DFP::optimize() noexcept
 #endif
         VectorXd dvec = -1 * (quasi_hess_inverse * grad);
 
-        Solution sol = line_search(point, dvec);
+        Solution sol = line_search(_func, point, dvec, _min_walk, _max_walk);
         const VectorXd new_grad = get_gradient(sol.solution());
         const vector<double> delta_x = sol.solution() - point;
         const VectorXd ev_dg = new_grad - grad;
@@ -463,7 +464,7 @@ Solution BFGS::optimize() noexcept
 #endif
         VectorXd direction = -1 * (quasi_hess.colPivHouseholderQr().solve(grad));
 
-        Solution sol = line_search(point, direction);
+        Solution sol = line_search(_func, point, direction, _min_walk, _max_walk);
         const VectorXd new_grad = get_gradient(sol.solution());
         VectorXd ev_dg = new_grad - grad;
         const vector<double> delta_x = sol.solution() - point;
@@ -524,7 +525,13 @@ NelderMead::NelderMead(ObjFunc f, size_t d, std::vector<Paras> inits, double a, 
     assert(0 < _sigma && _sigma < 1);
     _points.reserve(_dim + 1);
     for(size_t i = 0; i < _dim + 1; ++i)
-        _points.push_back(_func(inits[i]));
+    {
+        const Solution sol = _func(inits[i]);
+#ifdef WRITE_LOG
+        write_log(sol);
+#endif
+        _points.push_back(sol);
+    }
 }
 double NelderMead::max_simplex_len() const noexcept
 {
@@ -563,10 +570,6 @@ Solution NelderMead::optimize() noexcept
         std::sort(_points.begin(), _points.end(), std::less<Solution>());
         len = max_simplex_len();
         if(len < _converge_len) break;
-#ifdef WRITE_LOG
-        write_log(_points[0]);
-        _log << "max simplex len: " << len << endl;
-#endif
         const Solution& worst     = _points[_dim];
         const Solution& sec_worst = _points[_dim - 1];
         const Solution& best      = _points[0];
@@ -579,6 +582,9 @@ Solution NelderMead::optimize() noexcept
 
         // 3. reflection
         Solution reflect = _func(centroid + _alpha * (centroid - worst.solution()));
+#ifdef WRITE_LOG
+        write_log(reflect);
+#endif
         if(best <= reflect && reflect < sec_worst)
         {
             _points[_dim] = reflect;
@@ -588,6 +594,9 @@ Solution NelderMead::optimize() noexcept
         else if(reflect < best)
         {
             Solution expanded = _func(centroid + _gamma * (reflect.solution() - centroid));
+#ifdef WRITE_LOG
+        write_log(expanded);
+#endif
             _points[_dim] = expanded < reflect ? expanded : reflect;
             continue;
         }
@@ -596,6 +605,9 @@ Solution NelderMead::optimize() noexcept
             // 5. contract
             assert(!(reflect < sec_worst));
             Solution contracted = _func(centroid + _rho * (worst.solution() - centroid));
+#ifdef WRITE_LOG
+        write_log(contracted);
+#endif
             if(contracted < worst)
             {
                 _points[_dim] = contracted;
@@ -604,11 +616,17 @@ Solution NelderMead::optimize() noexcept
             // 6. shrink
             else
             {
+#ifdef WRITE_LOG
+                _log << "shrink: " << endl;
+#endif
                 for(size_t i = 1; i < _dim + 1; ++i)
                 {
                     // _points[i] = _points[0] + _sigma * (_points[i] - _points[0]);
                     Paras p = _points[0].solution() - _sigma * (_points[i].solution() - _points[0].solution());
                     _points[i] = _func(p);
+#ifdef WRITE_LOG
+                    write_log(_points[i]);
+#endif
                 }
             }
         }
@@ -617,4 +635,64 @@ Solution NelderMead::optimize() noexcept
     _log << "=========================================" << endl;
     write_log(_points[0]);
     return _points[0];
+}
+Powell::Powell(ObjFunc f, size_t d, const Paras& i, size_t max_iter, double min_walk,
+               double max_walk, string fname) noexcept : Optimizer(f, d),
+                                                         _init(i),
+                                                         _max_iter(max_iter),
+                                                         _min_walk(min_walk),
+                                                         _max_walk(max_walk),
+                                                         _func_name(fname),
+                                                         _counter(0),
+                                                         _log(_func_name + ".Powell.log")
+{}
+void Powell::write_log(const Solution& s) noexcept
+{
+    Paras p = s.solution();
+    const double y = s.fom();
+    _log << endl;
+    _log << "point: " << Map<MatrixXd>(&p[0], 1, _dim) << endl;
+    _log << "fom:   " << y << endl;
+}
+Solution Powell::optimize() noexcept
+{
+    _counter = 0;
+    Paras point     = _init;
+    double walk_len = numeric_limits<double>::infinity();
+    Solution sol    = _func(point);
+
+    // initial search directions are axes
+    vector<VectorXd> search_direction(_dim, VectorXd(_dim));
+    for(size_t i = 0; i < _dim; ++i)
+    {
+        for(size_t j = 0; j < _dim; ++j)
+        search_direction[i][j] = i == j ? 1.0 : 0.0;
+    }
+    while(_counter < _max_iter && walk_len > _min_walk)
+    {
+        double max_deltay = 0;
+        size_t max_delta_id;
+        Paras backup_point = point;
+        for(size_t i = 0; i < _dim; ++i)
+        {
+            _counter++;
+#ifdef WRITE_LOG
+            write_log(sol);
+            _log << "direction: " << search_direction[i].transpose() << endl;
+#endif
+            Solution search_sol = line_search(_func, point, search_direction[i], _min_walk, _max_walk);
+            if(sol.fom() - search_sol.fom() > max_deltay)
+            {
+                max_deltay   = sol.fom() - search_sol.fom();
+                max_delta_id = i;
+            }
+            point = search_sol.solution();
+            sol   = search_sol;
+        }
+        Paras new_direc                = point - backup_point;
+        VectorXd new_direc_vxd         = Map<VectorXd>(&new_direc[0], _dim);
+        walk_len                       = new_direc_vxd.lpNorm<2>();
+        search_direction[max_delta_id] = new_direc_vxd;
+    }
+    return sol;
 }

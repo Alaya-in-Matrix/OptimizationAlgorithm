@@ -73,7 +73,8 @@ public:
     Solution optimize() noexcept;
     ~Extrapolation() {}
 };
-
+Solution line_search(ObjFunc func, const Paras& point, const Eigen::VectorXd& direc,
+                     double min_walk, double max_walk) noexcept;
 class GradientMethod : public Optimizer
 {
 protected:
@@ -92,7 +93,6 @@ protected:
     virtual Eigen::VectorXd get_gradient(const Paras& p) const noexcept;
     virtual Eigen::VectorXd get_gradient(ObjFunc, const Paras&) const noexcept;
     virtual Eigen::MatrixXd hessian(const Paras& point) const noexcept;
-    virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc) const noexcept;
 
 public:
     void clear_counter() noexcept { _counter = 0; }
@@ -161,5 +161,24 @@ public:
     size_t counter() const noexcept { return _counter; } 
     NelderMead(ObjFunc f, size_t d, std::vector<Paras> i, double a, double g, double r, double s,
                double conv_len, size_t max_iter, std::string fname) noexcept;
+    Solution optimize() noexcept;
+};
+class Powell : public Optimizer
+{
+    Paras _init;
+
+    const size_t _max_iter;
+    const double _min_walk;
+    const double _max_walk;
+    const std::string _func_name;
+
+    size_t _counter;
+    std::ofstream _log;
+    void write_log(const Solution& s) noexcept;
+
+public:
+    size_t counter() const noexcept { return _counter; }
+    Powell(ObjFunc f, size_t d, const Paras& i, size_t max_iter, double min_walk, double max_walk,
+           std::string fname) noexcept;
     Solution optimize() noexcept;
 };
