@@ -20,6 +20,8 @@ protected:
     virtual Solution armijo_bracketing_linesearch(
         const Paras& point, const Eigen::VectorXd& direc,
         double guess = std::numeric_limits<double>::infinity()) noexcept;
+    virtual Solution interpolation(const Solution& sol, const Eigen::VectorXd& direc,
+                                   double guess = std::numeric_limits<double>::infinity()) noexcept;
     // virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc,
     //                              const Eigen::VectorXd& grad) noexcept;
 
