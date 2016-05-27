@@ -1,4 +1,4 @@
-#include "optimizer.h"
+#include "optimizer_1d.h"
 #include <algorithm>
 using namespace std;
 using namespace Eigen;

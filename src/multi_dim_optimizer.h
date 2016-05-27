@@ -1,5 +1,5 @@
 #pragma once
-#include "optimizer.h"
+#include "optimizer_1d.h"
 class MultiDimOptimizer
 {
 private:
@@ -17,6 +17,9 @@ protected:
     std::ofstream _log;
     virtual Solution run_func(const Paras&) noexcept;
     virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc) noexcept;
+    virtual Solution armijo_bracketing_linesearch(
+        const Paras& point, const Eigen::VectorXd& direc,
+        double guess = std::numeric_limits<double>::infinity()) noexcept;
     // virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc,
     //                              const Eigen::VectorXd& grad) noexcept;
 

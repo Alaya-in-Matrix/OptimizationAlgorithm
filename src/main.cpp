@@ -39,7 +39,7 @@ int main()
     vector<pair<double, double>> rg_GoldsteinPrice{{-2, 2}, {-2, 2}};
     compare(GoldsteinPrice, rg_GoldsteinPrice, "GoldsteinPrice");
 
-    vector<pair<double, double>> rg_ellip(10, {-10, 10});
+    vector<pair<double, double>> rg_ellip(10, {-3, 3});
     compare(ellip, rg_ellip, "Ellip");
 
     // vector<pair<double, double>> rg_matyas(2, {-10, 10});
@@ -70,8 +70,8 @@ void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const P
     const double grad_epsilon = 1e-5;
     const double zero_grad    = 1e-2;
     const double min_walk     = 5e-6;
-    const double max_walk     = 50;
-    const size_t max_iter     = 1000;
+    const double max_walk     = 10;
+    const size_t max_iter     = 10000;
     const size_t dim          = range.size();
     Algorithm algo(f, dim, init, grad_epsilon, zero_grad, min_walk, max_walk, max_iter, fname);
     Solution sol = algo.optimize();
@@ -85,7 +85,7 @@ void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fn
     const double rho       = 0.5;
     const double sigma     = 0.5;
     const double conv_len  = 1e-3;
-    const size_t max_iter  = 2000;
+    const size_t max_iter  = 10000;
     const string algo_name = "NelderMead";
     vector<Paras> inits(range.size() + 1);
     for(auto& iv : inits)
@@ -98,7 +98,7 @@ void run_powell(ObjFunc f, const vector<pair<double, double>>& range, string fna
 {
     const double min_walk  = 5e-6;
     const double max_walk  = 10;
-    const size_t max_iter  = 2000;
+    const size_t max_iter  = 10000;
     const size_t dim       = range.size();
     const Paras  init      = rand_vec(range);
     const string algo_name = "Powell";

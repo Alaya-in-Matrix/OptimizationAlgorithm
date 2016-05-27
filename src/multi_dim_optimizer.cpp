@@ -43,6 +43,41 @@ Solution MultiDimOptimizer::line_search(const Paras& point, const VectorXd& dire
     };
     return Extrapolation(line_func, {0}, min_step, max_step).optimize();
 }
+Solution MultiDimOptimizer::armijo_bracketing_linesearch(const Paras& point, const VectorXd& direction, double guess) noexcept
+{
+    ++_linesearch_counter;
+    const double max_step = _max_walk / direction.lpNorm<2>();
+    const double min_step = _min_walk / direction.lpNorm<2>();
+    const double c        = 1e-4;
+    const double rho      = 0.618;
+    if(std::isinf(guess))
+        guess = max_step;
+    
+    ObjFunc line_func = [&](const vector<double> step) -> Solution {
+        Paras p = point;
+        const double factor = step[0];
+        for (size_t i = 0; i < p.size(); ++i) p[i] += factor * direction[i];
+        return run_func(p);
+    };
+    double epsi   = 1e-4;
+    double step   = guess;
+    Solution sol0 = line_func({0});
+    double g0     = (line_func({epsi}).fom() - sol0.fom()) / epsi;
+    Solution sol  = line_func({step});
+    while(step > min_step && sol.fom() > sol0.fom() + c * step * g0)
+    {
+        step *= rho;
+        sol = line_func({step});
+    }
+    _log << "max_step: " << max_step << ", step:" << step << endl;
+    _log << "guess: " << guess << endl;
+    _log << "shrink rate: " << (guess / step) << endl;
+    return sol;
+    // if(step < min_step)
+    //     return sol0;
+    // else
+    //     return sol;
+}
 GradientMethod::GradientMethod(ObjFunc f, size_t d, Paras i, double epsi, double zgrad,
                                double min_walk, double max_walk, size_t max_iter, string fname,
                                string aname) noexcept
@@ -103,12 +138,18 @@ Solution GradientDescent::optimize() noexcept
     VectorXd grad    = get_gradient(sol);
     double grad_norm = grad.lpNorm<2>();
     double len_walk  = numeric_limits<double>::infinity();
+    double deltaFom  = -1 * numeric_limits<double>::infinity();
+    double guess     = 1;
     while (grad_norm > _zero_grad && _eval_counter < _max_iter && len_walk > _min_walk)
     {
 #ifdef WRITE_LOG
         write_log(sol, grad);
 #endif
+        guess = 1.01 * (-2 * deltaFom) / grad.lpNorm<2>();
+        if(guess > 1)
+            guess = 1.0;
         const Solution new_sol   = line_search(sol.solution(), -1 * grad);
+        deltaFom  = new_sol.fom() - sol.fom();
         len_walk  = vec_norm(new_sol.solution() - sol.solution());
         sol       = new_sol;
         grad      = get_gradient(sol);
