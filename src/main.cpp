@@ -69,7 +69,7 @@ void run_grad_algo(ObjFunc f, const vector<pair<double, double>>& range, const P
 {
     const double grad_epsilon = 1e-5;
     const double zero_grad    = 1e-2;
-    const double min_walk     = 5e-6;
+    const double min_walk     = 5e-3;
     const double max_walk     = 10;
     const size_t max_iter     = 10000;
     const size_t dim          = range.size();
@@ -96,7 +96,7 @@ void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fn
 }
 void run_powell(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
 {
-    const double min_walk  = 5e-6;
+    const double min_walk  = 5e-3;
     const double max_walk  = 10;
     const size_t max_iter  = 10000;
     const size_t dim       = range.size();

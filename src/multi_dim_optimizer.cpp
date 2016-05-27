@@ -113,17 +113,24 @@ Solution MultiDimOptimizer::interpolation(const Solution& sol, const Eigen::Vect
     {
         return new_sol;
     }
+    else if(line_func(min_step).fom() > sol.fom() + c * min_step * g0)
+    {
+        // minimimum less than min_step
+        return sol;
+    }
     else
     {
         step    = (-0.5 * g0 * step * step) / (new_sol.fom() - sol.fom() - g0 * step);
 #ifdef WRITE_LOG
     _log << "step: " << step << endl;
 #endif
-        new_sol = line_func(step);
-        size_t damp = 0;
-        while(damp < 2 || (new_sol.fom() > sol.fom() + c * step * g0 && step > min_step))
+        if(step < min_step) 
+            step = guess / 2;
+        new_sol  = line_func(step);
+        int damp = 0;
+        while(damp < 2 || (new_sol.fom() > sol.fom() + c * step * g0))
         {
-            ++damp;
+            ++ damp;
             last2 = last1;
             last1 = new_sol;
 
@@ -144,14 +151,10 @@ Solution MultiDimOptimizer::interpolation(const Solution& sol, const Eigen::Vect
             double lambda_2 = lambda_vec(1);
             
             double new_step;
-            if(lambda_1 > 0)
+            if(lambda_1 != 0)
             {
                 new_step = (-1 * lambda_2 + sqrt(pow(lambda_2, 2) - 3 * lambda_1 * g0)) / (3 * lambda_1);
-            }
-            else if(lambda_1 < 0)
-            {
-                new_step = (-1 * lambda_2 - sqrt(pow(lambda_2, 2) - 3 * lambda_1 * g0)) / (3 * lambda_1);
-                if(std::isnan(step) || step < 0)
+                if(std::isnan(new_step) || new_step < 0)
                     new_step = std::max(a1, a2);
             }
             else if(lambda_1 == 0 && lambda_2 > 0)
@@ -162,10 +165,14 @@ Solution MultiDimOptimizer::interpolation(const Solution& sol, const Eigen::Vect
             {
                 new_step = std::max(a1, a2);
             }
-            if(fabs(new_step - step) < min_step)
+            if(fabs(new_step - step) < min_step || new_step < min_step)
                 new_step = step / 2;
             step = new_step;
 #ifdef WRITE_LOG
+            // _log << "a1 = " << a1 << ", a2 = " << a2 << endl;
+            // _log << "y1 = " << y1 << ", y2 = " << y2 << endl;
+            // _log << last1.solution()[0] << ", " << last1.solution()[1] << endl;
+            // _log << last2.solution()[0] << ", " << last2.solution()[1] << endl;
             _log << "lambda: " << lambda_vec.transpose() << ", step: " << step << endl;
 #endif
             new_sol = line_func(step);
@@ -241,6 +248,11 @@ Solution GradientDescent::optimize() noexcept
         write_log(sol, grad);
 #endif
         guess = 1;
+#ifdef WRITE_LOG
+        const Solution ref_sol   = line_search(sol.solution(), -1 * grad);
+        double ref_step = vec_norm(ref_sol.solution() - sol.solution()) / grad.lpNorm<2>();
+        _log << "ref_step: " << ref_step << endl;
+#endif
         const Solution new_sol   = interpolation(sol, -1 * grad);
         deltaFom  = new_sol.fom() - sol.fom();
         len_walk  = vec_norm(new_sol.solution() - sol.solution());
@@ -435,7 +447,7 @@ Solution BFGS::optimize() noexcept
         write_log(sol, grad, quasi_hess);
 #endif
         const VectorXd direction     = -1 * (quasi_hess.colPivHouseholderQr().solve(grad));
-        const Solution new_sol       = interpolation(sol, direction);
+        const Solution new_sol       = interpolation(sol, direction, 1.618);
         const VectorXd new_grad      = get_gradient(new_sol);
         const vector<double> delta_x = new_sol.solution() - sol.solution();
         const VectorXd ev_dg         = new_grad - grad;
