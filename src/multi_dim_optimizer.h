@@ -16,14 +16,14 @@ protected:
     size_t _linesearch_counter;
     std::ofstream _log;
     virtual Solution run_func(const Paras&) noexcept;
-    virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc) noexcept;
-    virtual Solution armijo_bracketing_linesearch(
+    Solution line_search(const Paras& point, const Eigen::VectorXd& direc) noexcept;
+    Solution armijo_bracketing_linesearch(
         const Paras& point, const Eigen::VectorXd& direc,
         double guess = std::numeric_limits<double>::infinity()) noexcept;
-    virtual Solution interpolation(const Solution& sol, const Eigen::VectorXd& direc,
+    Solution interpolation(const Solution& sol, const Eigen::VectorXd& direc,
                                    double guess = std::numeric_limits<double>::infinity()) noexcept;
-    // virtual Solution line_search(const Paras& point, const Eigen::VectorXd& direc,
-    //                              const Eigen::VectorXd& grad) noexcept;
+    Solution wolfe_linesearch(const Solution& sol, const Eigen::VectorXd& direc) noexcept;
+    double zoom(const Solution& sol, double g0, const Eigen::VectorXd& direc, double lo, double hi) noexcept;
 
 public:
     void clear_counter() noexcept { _eval_counter = 0; _linesearch_counter = 0;}

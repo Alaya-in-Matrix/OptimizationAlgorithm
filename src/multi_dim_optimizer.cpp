@@ -93,17 +93,18 @@ Solution MultiDimOptimizer::interpolation(const Solution& sol, const Eigen::Vect
     if(guess > max_step) guess = max_step;
     const double c        = 1e-4;
     double g0 = (line_func(min_step).fom() - sol.fom()) / min_step;
-    if(g0 > 0)
-    {
-        return sol;
-    }
 #ifdef WRITE_LOG
+    _log << "direction: " << direction.transpose() << endl;
     _log << "direction norm: " << direction.lpNorm<2>() << endl;
     _log << "max_step: " << max_step << endl;
     _log << "min_step: " << min_step << endl;
     _log << "guess:    " << guess << endl;
     _log << "g0: "       << g0 << endl;
 #endif
+    if(g0 > 0)
+    {
+        return sol;
+    }
     
     double step      = guess;
     Solution new_sol = line_func(step);
@@ -180,6 +181,150 @@ Solution MultiDimOptimizer::interpolation(const Solution& sol, const Eigen::Vect
         return new_sol;
     }
 }
+Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
+                                             const Eigen::VectorXd& direction) noexcept
+{
+    ++_linesearch_counter;
+    auto line_func = [&](double step) -> Solution {
+        Paras p = sol.solution();
+        for (size_t i = 0; i < p.size(); ++i) 
+            p[i] += step * direction[i];
+        return run_func(p);
+    };
+    const double c1       = 1e-4;
+    const double c2       = 0.9;
+    const double max_step = _max_walk / direction.lpNorm<2>();
+    const double min_step = _min_walk / direction.lpNorm<2>();
+    const double y0       = sol.fom();
+    const double g0       = (line_func(min_step).fom() - sol.fom()) / min_step;
+#ifdef WRITE_LOG
+    _log << "direction: " << direction.transpose() << endl;
+    _log << "direction norm: " << direction.lpNorm<2>() << endl;
+    _log << "max_step: " << max_step << endl;
+    _log << "min_step: " << min_step << endl;
+    _log << "g0: "       << g0 << endl;
+#endif
+    if(g0 > 0 || line_func(min_step).fom() - y0 > c1 * min_step * g0)
+    {
+        // even min_step is not suffciently small!
+        return sol;
+    }
+    double step_lo   = 0;
+    double step_hi   = min_step;
+    double g_lo      = g0;
+    Solution sol_lo  = sol;
+    size_t i         = 0;
+    double best_step = 0;
+    while(true)
+    {
+#ifdef WRITE_LOG
+    _log << "step_hi: " << step_hi << endl;
+#endif
+        Solution sol_hi = line_func(step_hi);
+        if(sol_hi.fom() - y0 > c1 * step_hi * g0 || (i > 1 && sol_hi.fom() >= sol_lo.fom()))
+        {
+            best_step = zoom(sol, g0, direction, step_lo, step_hi);
+            break;
+        }
+        double g_hi = (line_func(step_hi + min_step).fom() - sol_hi.fom()) / min_step;
+        if(fabs(g_hi) <= -1 * c2 * g0)
+        {
+            best_step = step_hi;
+            break;
+        }
+        if(g_hi >= 0)
+        {
+            best_step = zoom(sol, g0, direction, step_lo, step_hi);
+            break;
+        }
+        double x1 = 0,  y1 = y0, g1 = g0;
+        double x2 = step_hi;
+        double y2 = sol_hi.fom();
+        if(fabs(g_lo) > fabs(g_hi))
+        {
+            x1 = step_lo;
+            y1 = sol_lo.fom();
+            g1 = g_lo;
+        }
+        MatrixXd mat(3, 3);
+        mat << (2*x1), 1, 0, 
+               (x1*x1), x1, 1, 
+               (x2*x2), x2, 1;
+        VectorXd vec(3);
+        vec << g1, y1, y2;
+        VectorXd abc = mat.colPivHouseholderQr().solve(vec);
+        double new_step_hi = -1 * vec(1) / (2 * vec(0));
+        if(new_step_hi / step_hi < 2.0) new_step_hi = 2 * step_hi;
+        step_lo = step_hi;
+        sol_lo  = sol_hi;
+        g_lo    = g_hi;
+        if(new_step_hi > max_step)
+        {
+            _log << "step_hi above max_step << endl" << endl;
+            cerr << "step_hi above max_step << endl" << endl;
+            if(i == 0)
+            {
+                new_step_hi = (step_hi + max_step) / 2;
+            }
+            else
+            {
+                best_step = step_lo;
+                break;
+            }
+        }
+        step_hi = new_step_hi;
+        ++i;
+    }
+#ifdef WRITE_LOG
+    _log << "step: " << best_step << endl;
+#endif
+    return line_func(best_step);
+}
+double MultiDimOptimizer::zoom(const Solution& sol, double g0, const VectorXd& direction, double lo, double hi) noexcept
+{
+    auto line_func = [&](double step) -> Solution {
+        Paras p = sol.solution();
+        for (size_t i = 0; i < p.size(); ++i) 
+            p[i] += step * direction[i];
+        return run_func(p);
+    };
+    const double c1 = 1e-4;
+    const double c2 = 0.9;
+    double best_step = 0;
+    Solution sol_lo = line_func(lo);
+    Solution sol_hi = line_func(hi);
+    while(true)
+    {
+        const double   step = (lo + hi) / 2;
+#ifdef WRITE_LOG
+        _log << "step: " << step << endl;
+#endif
+        const Solution res  = line_func(step);
+        if(res.fom() > sol.fom() + c1 * step * g0 || res.fom() >= sol_lo.fom())
+        {
+            hi     = step;
+            sol_hi = res;
+        }
+        else
+        {
+            const double epsi   = std::min(1e-6, fabs(hi - lo) / 100);
+            const double g_step = (line_func(step + epsi).fom() - res.fom()) / epsi;
+            if(fabs(g_step) <= -1 * c2 * g0)
+            {
+                best_step = step;
+                break;
+            }
+            if(g_step * (hi - lo) >= 0)
+            {
+                hi     = lo;
+                sol_hi = sol_lo;
+            }
+            lo     = step;
+            sol_lo = res;
+        }
+    }
+    return best_step;
+}
 GradientMethod::GradientMethod(ObjFunc f, size_t d, Paras i, double epsi, double zgrad,
                                double min_walk, double max_walk, size_t max_iter, string fname,
                                string aname) noexcept
@@ -241,19 +386,12 @@ Solution GradientDescent::optimize() noexcept
     double grad_norm = grad.lpNorm<2>();
     double len_walk  = numeric_limits<double>::infinity();
     double deltaFom  = -1 * numeric_limits<double>::infinity();
-    double guess     = 1;
     while (grad_norm > _zero_grad && _eval_counter < _max_iter && len_walk > _min_walk)
     {
 #ifdef WRITE_LOG
         write_log(sol, grad);
 #endif
-        guess = 1;
-#ifdef WRITE_LOG
-        const Solution ref_sol   = line_search(sol.solution(), -1 * grad);
-        double ref_step = vec_norm(ref_sol.solution() - sol.solution()) / grad.lpNorm<2>();
-        _log << "ref_step: " << ref_step << endl;
-#endif
-        const Solution new_sol   = interpolation(sol, -1 * grad);
+        const Solution new_sol   = wolfe_linesearch(sol, -1 * grad);
         deltaFom  = new_sol.fom() - sol.fom();
         len_walk  = vec_norm(new_sol.solution() - sol.solution());
         sol       = new_sol;
@@ -297,7 +435,7 @@ Solution ConjugateGradient::optimize() noexcept
 #ifdef WRITE_LOG
             write_log(sol, grad, conj_grad);
 #endif
-            const Solution new_sol = interpolation(sol, -1 * conj_grad);
+            const Solution new_sol = wolfe_linesearch(sol, -1 * conj_grad);
             VectorXd new_grad      = get_gradient(new_sol);
             double beta            = pow(new_grad.lpNorm<2>() / grad.lpNorm<2>(), 2);
 
@@ -346,7 +484,7 @@ Solution Newton::optimize() noexcept
         write_log(sol, grad, hess);
 #endif
         direction *= dir;
-        Solution new_sol = interpolation(sol, direction, 2);
+        Solution new_sol = wolfe_linesearch(sol, direction);
         len_walk         = vec_norm(new_sol.solution() - sol.solution());
 #ifdef WRITE_LOG
         _log << "len walk: " << len_walk << endl;
@@ -394,7 +532,7 @@ Solution DFP::optimize() noexcept
 #endif
         VectorXd dvec = -1 * (quasi_hess_inverse * grad);
 
-        const Solution new_sol       = interpolation(sol, dvec, 2);
+        const Solution new_sol       = wolfe_linesearch(sol, dvec);
         const VectorXd new_grad      = get_gradient(new_sol);
         const vector<double> delta_x = new_sol.solution() - sol.solution();
         const VectorXd ev_dg         = new_grad - grad;
@@ -447,7 +585,7 @@ Solution BFGS::optimize() noexcept
         write_log(sol, grad, quasi_hess);
 #endif
         const VectorXd direction     = -1 * (quasi_hess.colPivHouseholderQr().solve(grad));
-        const Solution new_sol       = interpolation(sol, direction, 1.618);
+        const Solution new_sol       = wolfe_linesearch(sol, direction);
         const VectorXd new_grad      = get_gradient(new_sol);
         const vector<double> delta_x = new_sol.solution() - sol.solution();
         const VectorXd ev_dg         = new_grad - grad;
@@ -627,7 +765,7 @@ Solution Powell::optimize() noexcept
     }
     while(_eval_counter < _max_iter && walk_len > _min_walk)
     {
-        double max_deltay = 0;
+        double max_deltay = -1 * numeric_limits<double>::infinity();
         size_t max_delta_id;
         Paras backup_point = sol.solution();
         for(size_t i = 0; i < _dim; ++i)
@@ -636,7 +774,7 @@ Solution Powell::optimize() noexcept
             write_log(sol);
             _log << "direction: " << search_direction[i].transpose() << endl;
 #endif
-            Solution search_sol = line_search(sol.solution(), search_direction[i]);
+            Solution search_sol = wolfe_linesearch(sol, search_direction[i]);
             if(sol.fom() - search_sol.fom() > max_deltay)
             {
                 max_deltay   = sol.fom() - search_sol.fom();
