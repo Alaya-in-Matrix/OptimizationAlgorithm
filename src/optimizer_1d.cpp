@@ -141,10 +141,12 @@ Solution Extrapolation::optimize() noexcept
     }
     else
     {
-        while (y3 < y2 && (lb <= x3 && x3 <= ub))
+        while (y3 < y2 && (lb < x3 && x3 < ub))
         {
             factor *= 2;
             x3 += factor * step;
+            if (x3 >= ub) x3 = ub;
+            if (x3 <= lb) x3 = lb;
             y3 = _func({x3}).fom();
         }
         double xtmp1 = x3 - factor * step;
@@ -174,5 +176,6 @@ Solution Extrapolation::optimize() noexcept
     }
     const double interv_len = xc - xa;
     const size_t gso_iter = 2 + static_cast<size_t>(log10(_min_len / interv_len) / log10(0.618));
+    cout << "debug: " << xa << ", " << xc << endl;
     return GoldenSelection(_func, xa, xc, gso_iter).optimize();
 }

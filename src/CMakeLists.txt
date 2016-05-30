@@ -11,7 +11,12 @@ set(SRC main.cpp
         multi_dim_optimizer.cpp)
 include_directories(eigen/include/eigen3)
 add_executable(${EXE} ${SRC})
-set_property(TARGET ${EXE} ${DE_SHARED} ${DE_STATIC} ${TEST} PROPERTY CXX_STANDARD 11)
+add_executable(line_search line_search.cpp 
+                           test_line_search.cpp
+                           linear_algebra.cpp
+                           optimizer_1d.cpp
+                           obj.cpp)
+set_property(TARGET ${EXE} line_search PROPERTY CXX_STANDARD 11)
 
 option(DEBUG_OPTIMIZER "Debug macro for optimizer" OFF)
 option(WRITE_LOG "Write log during optimization" ON)
