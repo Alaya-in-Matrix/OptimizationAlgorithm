@@ -16,6 +16,7 @@ public:
     // min_walk 不是min_step, 而是min_step * direction.lpNorm<2>()
     virtual Solution search(const Solution& sol, const EVec& direction, double min_walk,
                             double max_walk) const noexcept = 0;
+    virtual ~LineSearch(){}
 };
 
 class ExactGoldenSelectionLineSearch : public LineSearch

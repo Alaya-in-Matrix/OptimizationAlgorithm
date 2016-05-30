@@ -1,4 +1,5 @@
 #include "line_search.h"
+#include "benchmark.h"
 #include <iostream>
 #include <cmath>
 #include <fstream>
@@ -35,7 +36,14 @@ int main()
     test(Cos,   log, "cos", 0.1);
     test(quad1, log, "quad1", 0.1);
     test(quad2, log, "quad2", 0.1);
-    test(cubic, log, "quad2", 0.1);
+
+    Solution sp = sphere({2, 3});
+    VectorXd direction(2);
+    direction << -2, -3;
+    StrongWolfe swo(sphere, log, 1e-4, 0.9);
+    Solution ssw = swo.search(sp, direction, 1e-5, 10);
+    cout << "sphere" << endl;
+    cout << ssw.fom() << endl;
     log.close();
 
     return EXIT_SUCCESS;

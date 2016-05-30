@@ -1,27 +1,25 @@
 #pragma once
 #include "optimizer_1d.h"
+#include "line_search.h"
 class MultiDimOptimizer
 {
-private:
-    ObjFunc _func;
-
 protected:
-    const size_t _dim;
-    const size_t _max_iter;
-    const double _min_walk;
-    const double _max_walk;
+    const size_t      _dim;
+    const size_t      _max_iter;
+    const double      _min_walk;
+    const double      _max_walk;
     const std::string _func_name;
     const std::string _algo_name;
-    size_t _eval_counter;
-    size_t _linesearch_counter;
-    std::ofstream _log;
+    std::ofstream     _log;
+
     virtual Solution run_func(const Paras&) noexcept;
-    Solution line_search(const Paras& point, const Eigen::VectorXd& direc) noexcept;
-    Solution armijo_bracketing_linesearch(
-        const Paras& point, const Eigen::VectorXd& direc,
-        double guess = std::numeric_limits<double>::infinity()) noexcept;
-    Solution wolfe_linesearch(const Solution& sol, const Eigen::VectorXd& direc) noexcept;
-    double zoom(const Solution& sol, double g0, const Eigen::VectorXd& direc, double lo, double hi) noexcept;
+    virtual Solution run_line_search(const Solution& s, const Eigen::VectorXd& direction) noexcept;
+
+private:
+    ObjFunc     _func;
+    StrongWolfe _line_searcher;
+    size_t      _eval_counter;
+    size_t      _linesearch_counter;
 
 public:
     void clear_counter() noexcept { _eval_counter = 0; _linesearch_counter = 0;}
@@ -34,9 +32,9 @@ public:
 class GradientMethod : public MultiDimOptimizer
 {
 protected:
-    const Paras         _init;
-    const double        _epsilon; // use _epsilon to calc gradient
-    const double        _zero_grad; // threshold to judge whether gradient is zero
+    const Paras  _init;
+    const double _epsilon; // use _epsilon to calc gradient
+    const double _zero_grad; // threshold to judge whether gradient is zero
 
     // virtual Eigen::VectorXd get_gradient(const Paras& p)    noexcept;
     virtual Eigen::VectorXd get_gradient(const Solution& s) noexcept;

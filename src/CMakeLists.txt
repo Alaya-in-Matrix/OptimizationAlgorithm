@@ -6,6 +6,7 @@ set(EXE solver)
 set(SRC main.cpp 
         benchmark.cpp 
         obj.cpp 
+        line_search.cpp
         optimizer_1d.cpp 
         linear_algebra.cpp 
         multi_dim_optimizer.cpp)
@@ -15,6 +16,7 @@ add_executable(line_search line_search.cpp
                            test_line_search.cpp
                            linear_algebra.cpp
                            optimizer_1d.cpp
+                           benchmark.cpp
                            obj.cpp)
 set_property(TARGET ${EXE} line_search PROPERTY CXX_STANDARD 11)
 

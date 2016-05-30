@@ -1,4 +1,5 @@
 #include "line_search.h"
+#include "linear_algebra.h"
 #include <cassert>
 using namespace std;
 using namespace Eigen;
@@ -54,9 +55,6 @@ VectorXd StrongWolfe::cubic_interpolation(double x1, double y1, double g1, doubl
 Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, double min_walk,
                              double max_walk) const noexcept
 {
-#ifdef WRITE_LOG
-        _log << "StrongWolfe Search" << endl;
-#endif
     ObjFunc line_func = [&](Paras step) -> Solution {
         Paras p = sol.solution();
         for (size_t i = 0; i < p.size(); ++i) p[i] += step[0] * direction[i];
@@ -68,6 +66,13 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
     const double max_step = max_walk / direction.lpNorm<2>();
     const double y0       = sol.fom();
     const double g0       = (line_func({min_step}).fom() - y0) / min_step;
+#ifdef WRITE_LOG
+        _log << "StrongWolfe Search" << endl;
+        _log << "direction:      " << direction.transpose() << endl;
+        _log << "direction norm: " << direction.lpNorm<2>() << endl;
+        _log << "min_step:       " << min_step              << endl;
+        _log << "max_step:       " << max_step              << endl;
+#endif
     if(g0 >= 0) return sol;
 
     double   step_lo  = 0;
@@ -123,7 +128,10 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         sol_hi  = line_func({step_hi});
     }
     const double best_step = best_sol.solution()[0];
-    return Solution({best_step}, {0}, best_sol.fom());
+    Paras best_point = sol.solution();
+    for(size_t i = 0; i < best_point.size(); ++i)
+        best_point[i] += best_step * direction(i);
+    return Solution(best_point, {0}, best_sol.fom());
 }
 
 double StrongWolfe::cubic_predict(double x1, double y1, double g1, double x2, double y2,
