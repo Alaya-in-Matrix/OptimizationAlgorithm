@@ -24,8 +24,8 @@ int main()
     system("clear && rm -rf *.log");
     cout << "seed: " << rseed << endl;
 
-    // vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
-    // compare(rosenbrock, rg_rosenbrock, "Rosenbrock");
+    vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
+    compare(rosenbrock, rg_rosenbrock, "Rosenbrock");
 
     // vector<pair<double, double>> rg_sphere(3, {-10, 10});
     // compare(sphere, rg_sphere, "Sphere");
@@ -48,8 +48,8 @@ int main()
     // vector<pair<double, double>> rg_camel(2, {-5, 5});
     // compare(threeHumpCamel, rg_camel, "ThreeHumpCamel");
 
-    vector<pair<double, double>> rg_himmel(2, {-5, 5});
-    compare(Himmelblau, rg_himmel, "Himmelblau");
+    // vector<pair<double, double>> rg_himmel(2, {-5, 5});
+    // compare(Himmelblau, rg_himmel, "Himmelblau");
 
     return EXIT_SUCCESS;
 }

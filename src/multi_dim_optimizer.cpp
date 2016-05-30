@@ -20,7 +20,7 @@ MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, size_t d, size_t max_iter, doubl
         cerr << "Func name: " << _func_name << endl << "Algo name: " << _algo_name << endl;
         exit(EXIT_FAILURE);
     }
-    _log << setprecision(9);
+    _log << setprecision(16);
 }
 Solution MultiDimOptimizer::run_func(const Paras& p) noexcept
 {
@@ -204,13 +204,13 @@ Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
     _log << "min_step: " << min_step << endl;
     _log << "g0: "       << g0 << endl;
 #endif
-    if(g0 > 0 || line_func(min_step).fom() - y0 > c1 * min_step * g0)
+    if(g0 >= 0 || line_func(min_step).fom() - y0 > c1 * min_step * g0)
     {
         // even min_step is not suffciently small!
         return sol;
     }
     double step_lo   = 0;
-    double step_hi   = min_step;
+    double step_hi   = std::min(max_step, 64 * min_step);
     double g_lo      = g0;
     Solution sol_lo  = sol;
     size_t i         = 0;
@@ -237,15 +237,8 @@ Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
             best_step = zoom(sol, g0, direction, step_lo, step_hi);
             break;
         }
-        double x1 = 0,  y1 = y0, g1 = g0;
-        double x2 = step_hi;
-        double y2 = sol_hi.fom();
-        if(fabs(g_lo) > fabs(g_hi))
-        {
-            x1 = step_lo;
-            y1 = sol_lo.fom();
-            g1 = g_lo;
-        }
+        double x1 = step_lo,  y1 = sol_lo.fom(), g1 = g_lo;
+        double x2 = step_hi,  y2 = sol_hi.fom();
         MatrixXd mat(3, 3);
         mat << (2*x1), 1, 0, 
                (x1*x1), x1, 1, 
@@ -253,7 +246,14 @@ Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
         VectorXd vec(3);
         vec << g1, y1, y2;
         VectorXd abc = mat.colPivHouseholderQr().solve(vec);
-        double new_step_hi = -1 * vec(1) / (2 * vec(0));
+        double new_step_hi = 0;
+        if(abc(0) > 0)
+            new_step_hi = -1 * abc(1) / (2 * abc(0));
+        else
+            new_step_hi = (step_hi + max_step) / 2;
+#ifdef WRITE_LOG
+        _log << "new_step_hi: " << new_step_hi << endl;
+#endif
         if(new_step_hi / step_hi < 2.0) new_step_hi = 2 * step_hi;
         step_lo = step_hi;
         sol_lo  = sol_hi;
@@ -261,15 +261,16 @@ Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
         if(new_step_hi > max_step)
         {
             _log << "step_hi above max_step << endl" << endl;
-            cerr << "step_hi above max_step << endl" << endl;
-            if(i == 0)
+            if(step_lo > (min_step + max_step) / 2)
             {
-                new_step_hi = (step_hi + max_step) / 2;
+                _log << "set step_lo as best step, curvature condition maight be violated" << endl;
+                cerr << "set step_lo as best step, curvature condition maight be violated" << endl;
+                best_step = step_lo;
+                break;
             }
             else
             {
-                best_step = step_lo;
-                break;
+                new_step_hi = (step_hi + max_step) / 2;
             }
         }
         step_hi = new_step_hi;
@@ -288,16 +289,19 @@ double MultiDimOptimizer::zoom(const Solution& sol, double g0, const VectorXd& d
             p[i] += step * direction[i];
         return run_func(p);
     };
-    const double c1 = 1e-4;
-    const double c2 = 0.9;
-    double best_step = 0;
-    Solution sol_lo = line_func(lo);
-    Solution sol_hi = line_func(hi);
+    const double c1       = 1e-4;
+    const double c2       = 0.9;
+    const double min_step = _min_walk / direction.lpNorm<2>();
+    double best_step      = 0;
+    Solution sol_lo       = line_func(lo);
+    Solution sol_hi       = line_func(hi);
     while(true)
     {
         const double   step = (lo + hi) / 2;
+        if(step < min_step) 
+            return 0;
 #ifdef WRITE_LOG
-        _log << "step: " << step << endl;
+        _log << "lo: " << lo << ", hi: " << hi << ", step: " << step << endl;
 #endif
         const Solution res  = line_func(step);
         if(res.fom() > sol.fom() + c1 * step * g0 || res.fom() >= sol_lo.fom())
@@ -307,8 +311,9 @@ double MultiDimOptimizer::zoom(const Solution& sol, double g0, const VectorXd& d
         }
         else
         {
-            const double epsi   = std::min(1e-6, fabs(hi - lo) / 100);
-            const double g_step = (line_func(step + epsi).fom() - res.fom()) / epsi;
+            const double g_step   = (line_func(step + min_step).fom() - res.fom()) / min_step;
+#ifdef WRITE_LOG
+#endif
             if(fabs(g_step) <= -1 * c2 * g0)
             {
                 best_step = step;
@@ -322,6 +327,9 @@ double MultiDimOptimizer::zoom(const Solution& sol, double g0, const VectorXd& d
             lo     = step;
             sol_lo = res;
         }
+#ifdef WRITE_LOG
+        _log << "=========================" << endl;
+#endif
     }
     return best_step;
 }
@@ -531,7 +539,11 @@ Solution DFP::optimize() noexcept
         write_log(sol, grad, quasi_hess_inverse);
 #endif
         VectorXd dvec = -1 * (quasi_hess_inverse * grad);
-
+#ifdef WRITE_LOG
+        const double judge = grad.transpose() * dvec;
+        _log << "judge: " << judge << endl;
+        assert(judge < 0);
+#endif
         const Solution new_sol       = wolfe_linesearch(sol, dvec);
         const VectorXd new_grad      = get_gradient(new_sol);
         const vector<double> delta_x = new_sol.solution() - sol.solution();
