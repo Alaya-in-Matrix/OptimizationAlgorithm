@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 using namespace std;
 using namespace Eigen;
 Solution Cos(const Paras& inp) noexcept
@@ -21,41 +22,34 @@ Solution quad2(const Paras& inp) noexcept
     double fom = 1 - pow(inp[0], 2);
     return Solution(inp, {0}, fom);
 }
-void test(ObjFunc, ofstream& l, string fname);
+Solution cubic(const Paras& inp) noexcept
+{
+    double x = inp[0];
+    double fom = pow(x-1, 3) + 5 * pow(x-1, 2) + x;
+    return Solution(inp, {0}, fom);
+}
+void test(ObjFunc, ofstream& l, string fname, double p0);
 int main()
 {
     ofstream log("log");
+    test(Cos,   log, "cos", 0.1);
+    test(quad1, log, "quad1", 0.1);
+    test(quad2, log, "quad2", 0.1);
+    test(cubic, log, "quad2", 0.1);
     log.close();
-
-    test(Cos,   log, "cos");
-    test(quad1, log, "quad1");
-    test(quad2, log, "quad2");
 
     return EXIT_SUCCESS;
 }
 
-template<typename S> void run_search(ObjFunc f, ofstream& l, double min_walk, double max_walk)
-{
-    S s(f, l);
-    Solution sp  = f({0});
-    VectorXd direction(1);
-    direction << 1;
-    Solution sol = s.search(sp, direction, min_walk, max_walk);
-
-    double x = sol.solution()[0];
-    double y = sol.fom();
-    cout << x << ", " << y << endl;
-}
-
-void test(ObjFunc f, ofstream& l, string fname)
+void test(ObjFunc f, ofstream& l, string fname, double p0)
 {
     cout << fname << endl;
-    Solution sp = f({0});
+    Solution sp = f({p0});
     VectorXd direction(1);
     direction << 1;
-    ExactGoldenSelectionLineSearch egs(f, l);
-    Solution seg = egs.search(sp, direction, 1e-5, 2*3.14159);
-    cout << seg.solution()[0] << ", " << seg.fom() << endl;
+    // ExactGoldenSelectionLineSearch egs(f, l);
+    // Solution seg = egs.search(sp, direction, 1e-5, 2*3.14159);
+    // cout << seg.solution()[0] << ", " << seg.fom() << endl;
 
     StrongWolfe swo(f, l, 1e-4, 0.9);
     Solution ssw = swo.search(sp, direction, 1e-5, 2*3.14159);
