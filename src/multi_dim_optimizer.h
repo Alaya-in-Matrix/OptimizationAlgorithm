@@ -20,8 +20,6 @@ protected:
     Solution armijo_bracketing_linesearch(
         const Paras& point, const Eigen::VectorXd& direc,
         double guess = std::numeric_limits<double>::infinity()) noexcept;
-    Solution interpolation(const Solution& sol, const Eigen::VectorXd& direc,
-                                   double guess = std::numeric_limits<double>::infinity()) noexcept;
     Solution wolfe_linesearch(const Solution& sol, const Eigen::VectorXd& direc) noexcept;
     double zoom(const Solution& sol, double g0, const Eigen::VectorXd& direc, double lo, double hi) noexcept;
 

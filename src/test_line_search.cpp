@@ -50,7 +50,15 @@ template<typename S> void run_search(ObjFunc f, ofstream& l, double min_walk, do
 void test(ObjFunc f, ofstream& l, string fname)
 {
     cout << fname << endl;
-    run_search<ExactGoldenSelectionLineSearch>(f, l, 1e-5, 2*3.141592653);
-    cout << endl;
+    Solution sp = f({0});
+    VectorXd direction(1);
+    direction << 1;
+    ExactGoldenSelectionLineSearch egs(f, l);
+    Solution seg = egs.search(sp, direction, 1e-5, 2*3.14159);
+    cout << seg.solution()[0] << ", " << seg.fom() << endl;
+
+    StrongWolfe swo(f, l, 1e-4, 0.9);
+    Solution ssw = swo.search(sp, direction, 1e-5, 2*3.14159);
+    cout << ssw.solution()[0] << ", " << ssw.fom() << endl;
 }
 

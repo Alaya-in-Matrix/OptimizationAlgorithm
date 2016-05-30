@@ -78,109 +78,6 @@ Solution MultiDimOptimizer::armijo_bracketing_linesearch(const Paras& point, con
 #endif
     return sol;
 }
-Solution MultiDimOptimizer::interpolation(const Solution& sol, const Eigen::VectorXd& direction,
-                                          double guess) noexcept
-{
-    ++_linesearch_counter;
-    auto line_func = [&](double step) -> Solution {
-        Paras p = sol.solution();
-        for (size_t i = 0; i < p.size(); ++i) 
-            p[i] += step * direction[i];
-        return run_func(p);
-    };
-    const double max_step = _max_walk / direction.lpNorm<2>();
-    const double min_step = _min_walk / direction.lpNorm<2>();
-    if(guess > max_step) guess = max_step;
-    const double c        = 1e-4;
-    double g0 = (line_func(min_step).fom() - sol.fom()) / min_step;
-#ifdef WRITE_LOG
-    _log << "direction: " << direction.transpose() << endl;
-    _log << "direction norm: " << direction.lpNorm<2>() << endl;
-    _log << "max_step: " << max_step << endl;
-    _log << "min_step: " << min_step << endl;
-    _log << "guess:    " << guess << endl;
-    _log << "g0: "       << g0 << endl;
-#endif
-    if(g0 > 0)
-    {
-        return sol;
-    }
-    
-    double step      = guess;
-    Solution new_sol = line_func(step);
-    Solution last1   = new_sol;
-    Solution last2   = new_sol;
-    if(new_sol.fom() < sol.fom() + c * step * g0)
-    {
-        return new_sol;
-    }
-    else if(line_func(min_step).fom() > sol.fom() + c * min_step * g0)
-    {
-        // minimimum less than min_step
-        return sol;
-    }
-    else
-    {
-        step    = (-0.5 * g0 * step * step) / (new_sol.fom() - sol.fom() - g0 * step);
-#ifdef WRITE_LOG
-    _log << "step: " << step << endl;
-#endif
-        if(step < min_step) 
-            step = guess / 2;
-        new_sol  = line_func(step);
-        int damp = 0;
-        while(damp < 2 || (new_sol.fom() > sol.fom() + c * step * g0))
-        {
-            ++ damp;
-            last2 = last1;
-            last1 = new_sol;
-
-            const double a1 = vec_norm(last1.solution() - sol.solution()) / direction.lpNorm<2>();
-            const double a2 = vec_norm(last2.solution() - sol.solution()) / direction.lpNorm<2>();
-            const double y1 = last1.fom();
-            const double y2 = last2.fom();
-            VectorXd vec(2);
-            MatrixXd mat(2, 2);
-            vec(0)    = y1 - g0 * a1 - sol.fom();
-            vec(1)    = y2 - g0 * a2 - sol.fom();
-            mat(0, 0) = pow(a1, 3);
-            mat(0, 1) = pow(a1, 2);
-            mat(1, 0) = pow(a2, 3);
-            mat(1, 1) = pow(a2, 2);
-            VectorXd lambda_vec = mat.colPivHouseholderQr().solve(vec);
-            double lambda_1 = lambda_vec(0);
-            double lambda_2 = lambda_vec(1);
-            
-            double new_step;
-            if(lambda_1 != 0)
-            {
-                new_step = (-1 * lambda_2 + sqrt(pow(lambda_2, 2) - 3 * lambda_1 * g0)) / (3 * lambda_1);
-                if(std::isnan(new_step) || new_step < 0)
-                    new_step = std::max(a1, a2);
-            }
-            else if(lambda_1 == 0 && lambda_2 > 0)
-            {
-                new_step = g0 / (-2 * lambda_2);
-            }
-            else
-            {
-                new_step = std::max(a1, a2);
-            }
-            if(fabs(new_step - step) < min_step || new_step < min_step)
-                new_step = step / 2;
-            step = new_step;
-#ifdef WRITE_LOG
-            // _log << "a1 = " << a1 << ", a2 = " << a2 << endl;
-            // _log << "y1 = " << y1 << ", y2 = " << y2 << endl;
-            // _log << last1.solution()[0] << ", " << last1.solution()[1] << endl;
-            // _log << last2.solution()[0] << ", " << last2.solution()[1] << endl;
-            _log << "lambda: " << lambda_vec.transpose() << ", step: " << step << endl;
-#endif
-            new_sol = line_func(step);
-        }
-        return new_sol;
-    }
-}
 Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
                                              const Eigen::VectorXd& direction) noexcept
 {
@@ -204,9 +101,8 @@ Solution MultiDimOptimizer::wolfe_linesearch(const Solution& sol,
     _log << "min_step: " << min_step << endl;
     _log << "g0: "       << g0 << endl;
 #endif
-    if(g0 >= 0 || line_func(min_step).fom() - y0 > c1 * min_step * g0)
+    if(g0 >= 0)
     {
-        // even min_step is not suffciently small!
         return sol;
     }
     double step_lo   = 0;

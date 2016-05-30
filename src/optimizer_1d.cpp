@@ -176,6 +176,5 @@ Solution Extrapolation::optimize() noexcept
     }
     const double interv_len = xc - xa;
     const size_t gso_iter = 2 + static_cast<size_t>(log10(_min_len / interv_len) / log10(0.618));
-    cout << "debug: " << xa << ", " << xc << endl;
     return GoldenSelection(_func, xa, xc, gso_iter).optimize();
 }
