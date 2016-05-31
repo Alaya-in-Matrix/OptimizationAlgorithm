@@ -1,7 +1,6 @@
 #include "def.h"
 #include "benchmark.h"
-#include "multi_dim_optimizer.h"
-#include "Powell.h"
+#include "Optimizer/Algos.h"
 #include <iostream>
 #include <utility>
 #include <vector>

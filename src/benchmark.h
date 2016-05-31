@@ -1,5 +1,5 @@
 #pragma once
-#include "obj.h"
+#include "Optimizer/obj.h"
 
 Solution linear(const std::vector<double>& inp) noexcept;
 Solution sphere(const std::vector<double>& inp) noexcept;

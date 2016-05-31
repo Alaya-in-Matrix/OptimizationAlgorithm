@@ -32,6 +32,20 @@ vector<double> operator+(const vector<double>& v1, const vector<double>& v2) noe
     }
     return v;
 }
+vector<double> operator+(const vector<double>& v1, const VectorXd& v2) noexcept
+{
+    if (v1.size() != static_cast<size_t>(v2.size()))
+    {
+        cerr << "v1.size() != v2.size() in 'v1 + v2'" << endl;
+        exit(EXIT_FAILURE);
+    }
+    vector<double> v = v1;
+    for (size_t i = 0; i < v1.size(); ++i)
+    {
+        v[i] += v2[i];
+    }
+    return v;
+}
 vector<double> operator*(const double factor, const vector<double>& vec) noexcept
 {
     vector<double> v = vec;

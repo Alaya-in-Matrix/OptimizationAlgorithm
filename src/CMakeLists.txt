@@ -6,15 +6,21 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(EXE solver)
-set(SRC main.cpp 
-    benchmark.cpp 
-    obj.cpp 
-    line_search.cpp
-    optimizer_1d.cpp 
-    util.cpp 
-    multi_dim_optimizer.cpp
-    Powell.cpp
-    )
+set(SRC test.cpp 
+        benchmark.cpp 
+        Optimizer/obj.cpp 
+        Optimizer/util.cpp 
+        Optimizer/LineSearch.cpp
+        Optimizer/StrongWolfe.cpp
+        Optimizer/optimizer_1d.cpp 
+        Optimizer/MultiDimOptimizer.cpp
+        Optimizer/GradientDescent.cpp
+        Optimizer/ConjugateGradient.cpp
+        Optimizer/Newton.cpp
+        Optimizer/DFP.cpp
+        Optimizer/BFGS.cpp
+        Optimizer/NelderMead.cpp
+        Optimizer/Powell.cpp)
 include_directories(eigen/include/eigen3)
 add_executable(${EXE} ${SRC})
 set_property(TARGET ${EXE} PROPERTY CXX_STANDARD 11)

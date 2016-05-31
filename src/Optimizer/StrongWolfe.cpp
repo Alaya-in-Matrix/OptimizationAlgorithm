@@ -1,24 +1,6 @@
-#include "line_search.h"
-#include "util.h"
-#include <cassert>
+#include "StrongWolfe.h"
 using namespace std;
 using namespace Eigen;
-LineSearch::LineSearch(ObjFunc f, ofstream& l) noexcept : _func(f), _log(l) {}
-Solution ExactGoldenSelectionLineSearch::search(const Solution& sol, const VectorXd& direction,
-                                                double min_walk, double max_walk) const noexcept
-{
-    const double min_step = min_walk / direction.lpNorm<2>();
-    const double max_step = max_walk / direction.lpNorm<2>();
-    assert(sol.solution().size() == static_cast<size_t>(direction.size()));
-    assert(max_step > min_step);
-    ObjFunc line_func = [&](const vector<double> step) -> Solution {
-        Paras p = sol.solution();
-        const double factor = step[0];
-        for (size_t i = 0; i < p.size(); ++i) p[i] += factor * direction[i];
-        return _func(p);
-    };
-    return Extrapolation(line_func, {0}, min_step, max_step).optimize();
-}
 StrongWolfe::StrongWolfe(ObjFunc f, ofstream& l, double c1, double c2) noexcept
     : LineSearch(f, l), 
       _c1(c1), 
@@ -62,10 +44,10 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         Solution s = _func(p);
         return Solution(step, {0}, s.fom());
     };
+    const Solution zero_sol = Solution({0}, {0}, sol.fom());
     const double   min_step = min_walk / direction.lpNorm<2>();
     const double   max_step = max_walk / direction.lpNorm<2>();
-    const double   y0       = sol.fom();
-    const Solution zero_sol = Solution({0}, {0}, y0);
+    const double   y0       = zero_sol.fom();
     const double   g0       = line_grad(line_func, zero_sol, min_step);
 #ifdef WRITE_LOG
         _log << "StrongWolfe Search" << endl;
@@ -76,7 +58,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         _log << "\ty0:             " << y0                    << endl;
         _log << "\tg0:             " << g0                    << endl;
 #endif
-    if(g0 >= 0) return sol;
+    if(g0 >= 0) return zero_sol;
 
     double   step_lo  = 0;
     double   step_hi  = std::min(max_step, 64 * min_step);
@@ -130,11 +112,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         step_hi = new_step_hi;
         sol_hi  = line_func({step_hi});
     }
-    const double best_step = best_sol.solution()[0];
-    Paras best_point = sol.solution();
-    for(size_t i = 0; i < best_point.size(); ++i)
-        best_point[i] += best_step * direction(i);
-    return Solution(best_point, {0}, best_sol.fom());
+    return best_sol;
 }
 
 double StrongWolfe::cubic_predict(double x1, double y1, double g1, double x2, double y2,
@@ -206,9 +184,9 @@ Solution StrongWolfe::zoom(ObjFunc line_func, double y0, double g0, const Soluti
 double StrongWolfe::line_grad(ObjFunc line_f, const Solution& sol, double epsi) const noexcept
 {
     assert(sol.solution().size() == 1);
-    double step = sol.solution()[0];
+    double step  = sol.solution()[0];
     Solution shi = line_f({step + epsi});
-    Solution slo = line_f({step - epsi});
-    return (shi.fom() - slo.fom()) / (2 * epsi);
-    //return (line_f({step + epsi}).fom() - line_f({step - epsi}).fom()) / (2 * epsi);
+    return (shi.fom() - sol.fom()) / epsi;
+    // Solution slo = line_f({step - epsi});
+    // return (shi.fom() - slo.fom()) / (2 * epsi);
 }

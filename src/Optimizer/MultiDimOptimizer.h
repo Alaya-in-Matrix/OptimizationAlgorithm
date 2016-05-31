@@ -1,6 +1,6 @@
 #pragma once
 #include "optimizer_1d.h"
-#include "line_search.h"
+#include "StrongWolfe.h"
 class MultiDimOptimizer
 {
 protected:
@@ -54,59 +54,3 @@ public:
     {}                                                                                        \
     Solution optimize() noexcept;                                                             \
     ~ClassName() {}
-class GradientDescent : public GradientMethod
-{
-    void write_log(const Solution&, const Eigen::VectorXd& grad) noexcept;
-public:
-    TYPICAL_DEF(GradientDescent);
-};
-class ConjugateGradient : public GradientMethod
-{
-    void write_log(const Solution&, const Eigen::VectorXd& grad,
-                   const Eigen::VectorXd& conj_grad) noexcept;
-
-public:
-    TYPICAL_DEF(ConjugateGradient);
-};
-class Newton : public GradientMethod
-{
-    void write_log(const Solution& s, const Eigen::VectorXd& grad,
-                   const Eigen::MatrixXd& hess) noexcept;
-
-public:
-    TYPICAL_DEF(Newton);
-};
-class DFP : public GradientMethod
-{
-    void write_log(const Solution& s, const Eigen::VectorXd& grad,
-                   const Eigen::MatrixXd& quasi_hess) noexcept;
-
-public:
-    TYPICAL_DEF(DFP);
-};
-class BFGS : public GradientMethod
-{
-    void write_log(const Solution&, const Eigen::VectorXd& grad,
-                   const Eigen::MatrixXd& quasi_hess) noexcept;
-
-public:
-    TYPICAL_DEF(BFGS);
-};
-class NelderMead : public MultiDimOptimizer
-{
-    const double _alpha;
-    const double _gamma;
-    const double _rho;
-    const double _sigma;
-    const double _converge_len;
-    const std::vector<Paras> _inits;
-    std::vector<Solution>    _sols;
-    double max_simplex_len() const noexcept;
-    void write_log(const Solution& s) noexcept;
-
-public:
-    NelderMead(ObjFunc f, size_t d, std::vector<Paras> i, double a, double g, double r, double s,
-               double conv_len, size_t max_iter, std::string fname) noexcept;
-    Solution optimize() noexcept;
-    ~NelderMead(){}
-};

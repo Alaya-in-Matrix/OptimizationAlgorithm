@@ -1,5 +1,5 @@
 #pragma once
-#include "multi_dim_optimizer.h"
+#include "MultiDimOptimizer.h"
 class Powell : public MultiDimOptimizer
 {
     Paras _init;

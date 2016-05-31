@@ -2,7 +2,6 @@
 #include <algorithm>
 using namespace std;
 using namespace Eigen;
-mt19937_64 engine(RAND_SEED);
 FibOptimizer::FibOptimizer(ObjFunc f, double lb, double ub, size_t iter) noexcept
     : Optimizer1D(f),
       _lb(lb),

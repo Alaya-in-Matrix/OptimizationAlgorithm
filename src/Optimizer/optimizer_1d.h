@@ -1,5 +1,4 @@
 #pragma once
-#include "def.h"
 #include "obj.h"
 #include "Eigen/Dense"
 #include "util.h"

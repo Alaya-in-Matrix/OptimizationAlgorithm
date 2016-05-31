@@ -13,7 +13,6 @@ class Solution
 
 public:
     Solution(const Paras& s, const std::vector<double>& cv, double fom) noexcept;
-    explicit Solution(const Paras& s) noexcept;
     Solution() =delete;
     double fom() const noexcept;
     double sum_violation() const noexcept;

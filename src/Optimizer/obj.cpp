@@ -7,11 +7,6 @@ Solution::Solution(const vector<double>& s, const vector<double>& cv, double fom
       _violation(cv),
       _fom(fom)
 {}
-Solution::Solution(const vector<double>& s) noexcept
-    : _solution(s),
-      _violation({numeric_limits<double>::infinity()}),
-      _fom(numeric_limits<double>::infinity())
-{}
 double Solution::fom() const noexcept { return _fom; }
 double Solution::sum_violation() const noexcept
 {
