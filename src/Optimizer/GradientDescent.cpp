@@ -22,9 +22,7 @@ Solution GradientDescent::optimize() noexcept
     double deltaFom = -1 * numeric_limits<double>::infinity();
     while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
     {
-#ifdef WRITE_LOG
-        write_log(sol, grad);
-#endif
+        LOG(sol, grad);
         const Solution new_sol = run_line_search(sol, -1 * grad);
         deltaFom = new_sol.fom() - sol.fom();
         len_walk = vec_norm(new_sol.solution() - sol.solution());

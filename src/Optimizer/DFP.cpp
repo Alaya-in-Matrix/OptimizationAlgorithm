@@ -24,9 +24,7 @@ Solution DFP::optimize() noexcept
 
     while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
     {
-#ifdef WRITE_LOG
-        write_log(sol, grad, quasi_hess_inverse);
-#endif
+        LOG(sol, grad, quasi_hess_inverse);
         VectorXd dvec = -1 * (quasi_hess_inverse * grad);
 #ifdef WRITE_LOG
         const double judge = grad.transpose() * dvec;

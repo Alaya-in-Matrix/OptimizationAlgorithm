@@ -24,9 +24,7 @@ Solution BFGS::optimize() noexcept
 
     while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
     {
-#ifdef WRITE_LOG
-        write_log(sol, grad, quasi_hess);
-#endif
+        LOG(sol, grad, quasi_hess);
         const VectorXd direction     = -1 * (quasi_hess.colPivHouseholderQr().solve(grad));
         const Solution new_sol       = run_line_search(sol, direction);
         const VectorXd new_grad      = get_gradient(new_sol);

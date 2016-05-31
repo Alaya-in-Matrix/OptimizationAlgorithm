@@ -1,7 +1,6 @@
 #include "NelderMead.h"
 using namespace std;
 using namespace Eigen;
-#include <iostream>
 #define CHECK(COND)                                                              \
     {                                                                            \
         if (!(COND))                                                             \
@@ -17,7 +16,7 @@ NelderMead::NelderMead(ObjFunc f, size_t d, std::vector<Paras> inits, double a, 
       _gamma(g),
       _rho(r),
       _sigma(s),
-      _converge_len(conv_len),
+      _min_walk(conv_len),
       _inits(inits)
 
 {
@@ -27,23 +26,13 @@ NelderMead::NelderMead(ObjFunc f, size_t d, std::vector<Paras> inits, double a, 
     CHECK(0 < _rho && _rho <= 0.5);
     CHECK(0 < _sigma && _sigma < 1);
 }
-double NelderMead::max_simplex_len() const noexcept
+double NelderMead::update_sols(size_t idx, const Solution& new_sol) noexcept
 {
-    const double inf = numeric_limits<double>::infinity();
-    Paras min_vec(_dim, inf);
-    Paras max_vec(_dim, -1 * inf);
     assert(_sols.size() == _dim + 1);
-    for (const auto& s : _sols)
-    {
-        const Paras& pp = s.solution();
-        assert(pp.size() == _dim);
-        for (size_t i = 0; i < _dim; ++i)
-        {
-            if (pp[i] < min_vec[i]) min_vec[i] = pp[i];
-            if (pp[i] > max_vec[i]) max_vec[i] = pp[i];
-        }
-    }
-    return vec_norm(max_vec - min_vec);
+    assert(idx <= _dim);
+    const double walk_len = vec_norm(new_sol.solution() - _sols[idx].solution());
+    _sols[idx] = new_sol;
+    return walk_len;
 }
 void NelderMead::write_log(const Solution& s) noexcept
 {
@@ -60,16 +49,14 @@ Solution NelderMead::optimize() noexcept
     _sols.clear();
     _sols.reserve(_dim + 1);
     for (size_t i = 0; i < _dim + 1; ++i) _sols.push_back(run_func(_inits[i]));
-    double len = numeric_limits<double>::infinity();
-    while (eval_counter() < _max_iter)
+    double walk_len = numeric_limits<double>::infinity();
+    while (eval_counter() < _max_iter && walk_len > _min_walk)
     {
         // 1. order
         std::sort(_sols.begin(), _sols.end(), std::less<Solution>());
-        len = max_simplex_len();
-        if (len < _converge_len) break;
-        const Solution& worst     = _sols[_dim];
+        const Solution& worst = _sols[_dim];
         const Solution& sec_worst = _sols[_dim - 1];
-        const Solution& best      = _sols[0];
+        const Solution& best = _sols[0];
 
         // 2. centroid calc
         Paras centroid(_dim, 0);
@@ -78,51 +65,39 @@ Solution NelderMead::optimize() noexcept
 
         // 3. reflection
         Solution reflect = run_func(centroid + _alpha * (centroid - worst.solution()));
-#ifdef WRITE_LOG
-        write_log(reflect);
-#endif
+        LOG(reflect);
         if (best <= reflect && reflect < sec_worst)
         {
-            _sols[_dim] = reflect;
-            continue;
+            walk_len = update_sols(_dim, reflect);
         }
-        // 4. expansion
-        else if (reflect < best)
+        else if (reflect < best)  // 4. expansion
         {
             Solution expanded = run_func(centroid + _gamma * (reflect.solution() - centroid));
-#ifdef WRITE_LOG
-            write_log(expanded);
-#endif
-            _sols[_dim] = expanded < reflect ? expanded : reflect;
-            continue;
+            LOG(expanded);
+            const Solution& new_sol = expanded < reflect ? expanded : reflect;
+            walk_len = update_sols(_dim, new_sol);
         }
-        else
+        else  // 5. contract
         {
-            // 5. contract
             assert(!(reflect < sec_worst));
             Solution contracted = run_func(centroid + _rho * (worst.solution() - centroid));
-#ifdef WRITE_LOG
-            write_log(contracted);
-#endif
+            LOG(contracted);
             if (contracted < worst)
             {
-                _sols[_dim] = contracted;
-                continue;
+                walk_len = update_sols(_dim, contracted);
             }
-            // 6. shrink
-            else
+            else  // 6. shrink
             {
 #ifdef WRITE_LOG
                 _log << "shrink: " << endl;
 #endif
+                walk_len = 0;
                 for (size_t i = 1; i < _dim + 1; ++i)
                 {
-                    Paras p =
-                        _sols[0].solution() - _sigma * (_sols[i].solution() - _sols[0].solution());
-                    _sols[i] = run_func(p);
-#ifdef WRITE_LOG
-                    write_log(_sols[i]);
-#endif
+                    Paras p         = best.solution() - _sigma * (_sols[i].solution() - best.solution());
+                    double tmp_walk = update_sols(i, run_func(p));
+                    walk_len        = max(tmp_walk, walk_len);
+                    LOG(_sols[i]);
                 }
             }
         }

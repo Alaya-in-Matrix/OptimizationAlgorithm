@@ -25,9 +25,7 @@ Solution Newton::optimize() noexcept
         VectorXd direction = -1 * hess.colPivHouseholderQr().solve(grad);
         double judge = grad.transpose() * direction;
         double dir = judge < 0 ? 1 : -1;
-#ifdef WRITE_LOG
-        write_log(sol, grad, hess);
-#endif
+        LOG(sol, grad, hess);
         direction *= dir;
         Solution new_sol = run_line_search(sol, direction);
         len_walk = vec_norm(new_sol.solution() - sol.solution());

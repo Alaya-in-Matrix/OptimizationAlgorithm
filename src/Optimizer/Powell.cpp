@@ -35,9 +35,7 @@ Solution Powell::optimize() noexcept
         Paras backup_point = sol.solution();
         for (size_t i = 0; i < _dim; ++i)
         {
-#ifdef WRITE_LOG
-            write_log(sol);
-#endif
+            LOG(sol);
             Solution search_sol = run_line_search(sol, search_direction[i]);
             if (sol.fom() - search_sol.fom() > max_delta_y)
             {
@@ -51,6 +49,8 @@ Solution Powell::optimize() noexcept
         walk_len               = new_direc_vxd.lpNorm<2>();
         search_direction[max_delta_id] = new_direc_vxd;
     }
+    _log << endl << "==========================================" << endl;
+    write_log(sol);
     return sol;
 }
 Solution Powell::run_line_search(const Solution& s, const Eigen::VectorXd& direction) noexcept 

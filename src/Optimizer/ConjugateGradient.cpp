@@ -28,9 +28,7 @@ Solution ConjugateGradient::optimize() noexcept
         conj_grad = grad;
         for (size_t i = 0; i < _dim; ++i)
         {
-#ifdef WRITE_LOG
-            write_log(sol, grad, conj_grad);
-#endif
+            LOG(sol, grad, conj_grad);
             const Solution new_sol = run_line_search(sol, -1 * conj_grad);
             VectorXd new_grad = get_gradient(new_sol);
             double beta = pow(new_grad.lpNorm<2>() / grad.lpNorm<2>(), 2);

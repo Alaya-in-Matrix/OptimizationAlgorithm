@@ -1,6 +1,11 @@
 #pragma once
 #include "optimizer_1d.h"
 #include "StrongWolfe.h"
+#ifdef WRITE_LOG
+#define LOG(...) write_log(__VA_ARGS__)
+#else
+#define LOG(p)
+#endif
 class MultiDimOptimizer
 {
 protected:

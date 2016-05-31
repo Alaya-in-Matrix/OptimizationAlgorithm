@@ -84,7 +84,7 @@ void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fn
     const double gamma     = 2;
     const double rho       = 0.5;
     const double sigma     = 0.5;
-    const double conv_len  = 1e-3;
+    const double conv_len  = 5e-6;
     const size_t max_iter  = 10000;
     const string algo_name = "NelderMead";
     vector<Paras> inits(range.size() + 1);
