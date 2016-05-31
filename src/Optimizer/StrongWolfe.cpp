@@ -112,6 +112,9 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         step_hi = new_step_hi;
         sol_hi  = line_func({step_hi});
     }
+#ifdef WRITE_LOG
+    _log << "final step: " << best_sol.solution()[0] << endl;
+#endif
     return best_sol;
 }
 
@@ -134,6 +137,10 @@ Solution StrongWolfe::zoom(ObjFunc line_func, double y0, double g0, const Soluti
                            double g_lo, const Solution& sol_hi, double g_hi, double min_step) const
     noexcept
 {
+#ifdef WRITE_LOG
+    _log << "\tzoom lo: " << sol_lo.solution()[0] << endl;
+    _log << "\tzoom hi: " << sol_hi.solution()[0] << endl;
+#endif
     Solution slo = sol_lo;
     Solution shi = sol_hi;
     double step  = slo.solution()[0];
@@ -155,7 +162,6 @@ Solution StrongWolfe::zoom(ObjFunc line_func, double y0, double g0, const Soluti
             return slo;
         else if(fabs(step - step_hi) <= min_step)
             return shi;
-
 #ifdef WRITE_LOG
         _log << "\tzoom trial step: " << step << endl;
 #endif
