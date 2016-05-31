@@ -1,5 +1,5 @@
 #include "line_search.h"
-#include "linear_algebra.h"
+#include "util.h"
 #include <cassert>
 using namespace std;
 using namespace Eigen;
@@ -62,10 +62,11 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         Solution s = _func(p);
         return Solution(step, {0}, s.fom());
     };
-    const double min_step = min_walk / direction.lpNorm<2>();
-    const double max_step = max_walk / direction.lpNorm<2>();
-    const double y0       = sol.fom();
-    const double g0       = line_grad(line_func, Solution({0}, {0}, y0), min_step);
+    const double   min_step = min_walk / direction.lpNorm<2>();
+    const double   max_step = max_walk / direction.lpNorm<2>();
+    const double   y0       = sol.fom();
+    const Solution zero_sol = Solution({0}, {0}, y0);
+    const double   g0       = line_grad(line_func, zero_sol, min_step);
 #ifdef WRITE_LOG
         _log << "StrongWolfe Search" << endl;
         _log << "\tdirection:      " << direction.transpose() << endl;
@@ -79,7 +80,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
 
     double   step_lo  = 0;
     double   step_hi  = std::min(max_step, 64 * min_step);
-    Solution sol_lo   = sol;
+    Solution sol_lo   = zero_sol;
     Solution sol_hi   = line_func({step_hi});
     double   g_lo     = g0;
     Solution best_sol = sol_lo;
@@ -206,5 +207,8 @@ double StrongWolfe::line_grad(ObjFunc line_f, const Solution& sol, double epsi) 
 {
     assert(sol.solution().size() == 1);
     double step = sol.solution()[0];
-    return (line_f({step + epsi}).fom() - line_f({step - epsi}).fom()) / (2 * epsi);
+    Solution shi = line_f({step + epsi});
+    Solution slo = line_f({step - epsi});
+    return (shi.fom() - slo.fom()) / (2 * epsi);
+    //return (line_f({step + epsi}).fom() - line_f({step - epsi}).fom()) / (2 * epsi);
 }

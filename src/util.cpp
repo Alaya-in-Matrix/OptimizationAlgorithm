@@ -1,4 +1,4 @@
-#include "linear_algebra.h"
+#include "util.h"
 #include <iostream>
 #include <algorithm>
 #include <cmath>

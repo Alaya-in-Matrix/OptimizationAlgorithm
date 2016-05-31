@@ -2,7 +2,7 @@
 #include "def.h"
 #include "obj.h"
 #include "Eigen/Dense"
-#include "linear_algebra.h"
+#include "util.h"
 #include <utility>
 #include <iostream>
 #include <fstream>

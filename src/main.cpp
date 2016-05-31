@@ -1,6 +1,7 @@
 #include "def.h"
-#include "multi_dim_optimizer.h"
 #include "benchmark.h"
+#include "multi_dim_optimizer.h"
+#include "Powell.h"
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -48,8 +49,8 @@ int main()
     // vector<pair<double, double>> rg_camel(2, {-5, 5});
     // compare(threeHumpCamel, rg_camel, "ThreeHumpCamel");
 
-    vector<pair<double, double>> rg_himmel(2, {-5, 5});
-    compare(Himmelblau, rg_himmel, "Himmelblau");
+    // vector<pair<double, double>> rg_himmel(2, {-5, 5});
+    // compare(Himmelblau, rg_himmel, "Himmelblau");
 
     return EXIT_SUCCESS;
 }

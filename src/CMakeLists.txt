@@ -11,8 +11,10 @@ set(SRC main.cpp
     obj.cpp 
     line_search.cpp
     optimizer_1d.cpp 
-    linear_algebra.cpp 
-    multi_dim_optimizer.cpp)
+    util.cpp 
+    multi_dim_optimizer.cpp
+    Powell.cpp
+    )
 include_directories(eigen/include/eigen3)
 add_executable(${EXE} ${SRC})
 set_property(TARGET ${EXE} PROPERTY CXX_STANDARD 11)
