@@ -65,13 +65,15 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
     const double min_step = min_walk / direction.lpNorm<2>();
     const double max_step = max_walk / direction.lpNorm<2>();
     const double y0       = sol.fom();
-    const double g0       = (line_func({min_step}).fom() - y0) / min_step;
+    const double g0       = line_grad(line_func, Solution({0}, {0}, y0), min_step);
 #ifdef WRITE_LOG
         _log << "StrongWolfe Search" << endl;
-        _log << "direction:      " << direction.transpose() << endl;
-        _log << "direction norm: " << direction.lpNorm<2>() << endl;
-        _log << "min_step:       " << min_step              << endl;
-        _log << "max_step:       " << max_step              << endl;
+        _log << "\tdirection:      " << direction.transpose() << endl;
+        _log << "\tdirection norm: " << direction.lpNorm<2>() << endl;
+        _log << "\tmin_step:       " << min_step              << endl;
+        _log << "\tmax_step:       " << max_step              << endl;
+        _log << "\ty0:             " << y0                    << endl;
+        _log << "\tg0:             " << g0                    << endl;
 #endif
     if(g0 >= 0) return sol;
 
@@ -84,7 +86,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
     while(true)
     {
 #ifdef WRITE_LOG
-        _log << "trial step: " << step_hi << endl;
+        _log << "\ttrial step: " << step_hi << endl;
 #endif
         if(sol_hi.fom() - y0 > _c1 * step_hi * g0 || (sol_hi.fom() >= sol_lo.fom()))
         {
@@ -93,7 +95,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
         }
         
         // step_hi satisfies sufficiently-decrease condition
-        double g_hi = (line_func({step_hi + min_step}).fom() - sol_hi.fom()) / min_step;
+        double g_hi = line_grad(line_func, sol_hi, min_step);
         if(fabs(g_hi) <= -1 * _c2 * g0) // curvature condition satisfied
         {
             best_sol = sol_hi;
@@ -113,7 +115,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
             if(step_hi > (min_step + max_step) / 2)
             {
 #ifdef WRITE_LOG
-                _log << "new trial step exceeds max_step, curvature condition might be violated" << endl;
+                _log << "\tWARN: new trial step exceeds max_step, curvature condition might be violated" << endl;
 #endif
                 best_sol = sol_hi;
                 break;
@@ -176,14 +178,14 @@ Solution StrongWolfe::zoom(ObjFunc line_func, double y0, double g0, const Soluti
             return shi;
 
 #ifdef WRITE_LOG
-        _log << "zoom trial step: " << step << endl;
+        _log << "\tzoom trial step: " << step << endl;
 #endif
         Solution res = line_func({step});
         if (res.fom() > y0 + _c1 * step * g0 || res.fom() >= slo.fom())
             shi = res;
         else
         {
-            const double g_step = (line_func({step + min_step}).fom() - res.fom()) / min_step;
+            const double g_step = line_grad(line_func, res, min_step);
             if (fabs(g_step) <= -1 * _c2 * g0) 
                 return res;
             if (g_step * (step_hi - step_lo) >= 0) 
@@ -196,7 +198,13 @@ Solution StrongWolfe::zoom(ObjFunc line_func, double y0, double g0, const Soluti
                            double g_lo, const Solution& sol_hi, double min_step) const
     noexcept
 {
-    const double step_hi = sol_hi.solution()[0];
-    const double g_hi    = (line_func({step_hi + min_step}).fom() - sol_hi.fom()) / min_step;
+    const double g_hi = line_grad(line_func, sol_hi, min_step);
     return zoom(line_func, y0, g0, sol_lo, g_lo, sol_hi, g_hi, min_step);
+}
+
+double StrongWolfe::line_grad(ObjFunc line_f, const Solution& sol, double epsi) const noexcept
+{
+    assert(sol.solution().size() == 1);
+    double step = sol.solution()[0];
+    return (line_f({step + epsi}).fom() - line_f({step - epsi}).fom()) / (2 * epsi);
 }

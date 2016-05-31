@@ -48,8 +48,8 @@ int main()
     // vector<pair<double, double>> rg_camel(2, {-5, 5});
     // compare(threeHumpCamel, rg_camel, "ThreeHumpCamel");
 
-    // vector<pair<double, double>> rg_himmel(2, {-5, 5});
-    // compare(Himmelblau, rg_himmel, "Himmelblau");
+    vector<pair<double, double>> rg_himmel(2, {-5, 5});
+    compare(Himmelblau, rg_himmel, "Himmelblau");
 
     return EXIT_SUCCESS;
 }
@@ -94,13 +94,12 @@ void run_simplex(ObjFunc f, const vector<pair<double, double>>& range, string fn
     Solution sol = algo.optimize();
     printf("fom of %s: %g, iter: %zu, linesearch: %zu\n", algo_name.c_str(), sol.fom(), algo.eval_counter(), algo.linesearch_counter());
 }
-void run_powell(ObjFunc f, const vector<pair<double, double>>& range, string fname) noexcept
+void run_powell(ObjFunc f, Paras init, string fname) noexcept
 {
     const double min_walk  = 5e-6;
     const double max_walk  = 10;
     const size_t max_iter  = 10000;
-    const size_t dim       = range.size();
-    const Paras  init      = rand_vec(range);
+    const size_t dim       = init.size();
     const string algo_name = "Powell";
 
     Powell algo(f, dim, init, max_iter, min_walk, max_walk, fname);
@@ -120,7 +119,7 @@ void compare(ObjFunc f, const vector<pair<double, double>>& range, string fname)
     run_grad_algo<DFP>(f, range, init, "DFP", fname);
     run_grad_algo<BFGS>(f, range, init, "BFGS", fname);
     run_simplex(f, range, fname);
-    run_powell(f, range, fname);
+    run_powell(f, init, fname);
 
     printf("===============================================\n");
 }

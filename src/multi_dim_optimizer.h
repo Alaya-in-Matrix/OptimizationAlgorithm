@@ -22,7 +22,7 @@ private:
     size_t      _linesearch_counter;
 
 public:
-    void clear_counter() noexcept { _eval_counter = 0; _linesearch_counter = 0;}
+    void   clear_counter() noexcept { _eval_counter = 0; _linesearch_counter = 0;}
     size_t eval_counter() noexcept { return _eval_counter; }
     size_t linesearch_counter() noexcept { return _linesearch_counter; }
     MultiDimOptimizer(ObjFunc f, size_t d, size_t max_iter, double min_walk, double max_walk,
@@ -108,14 +108,17 @@ public:
     NelderMead(ObjFunc f, size_t d, std::vector<Paras> i, double a, double g, double r, double s,
                double conv_len, size_t max_iter, std::string fname) noexcept;
     Solution optimize() noexcept;
+    ~NelderMead(){}
 };
 class Powell : public MultiDimOptimizer
 {
     Paras _init;
-    void write_log(const Solution& s) noexcept;
-
+    void  write_log(const Solution& s) noexcept;
+    Solution run_line_search(const Solution& s, const Eigen::VectorXd& direction) noexcept;
+    
 public:
     Powell(ObjFunc f, size_t d, const Paras& i, size_t max_iter, double min_walk, double max_walk,
            std::string fname) noexcept;
     Solution optimize() noexcept;
+    ~Powell(){}
 };

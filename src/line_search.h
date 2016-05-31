@@ -39,6 +39,7 @@ class StrongWolfe : public LineSearch
                   const Solution& sol_hi, double min_step) const noexcept;
     EVec cubic_interpolation(double x1, double y1, double g1, double x2, double y2, double g2, bool cubic = true) const noexcept;
     double cubic_predict(double x1, double y1, double g1, double x2, double y2, double g2, bool cubic = true) const noexcept;
+    double line_grad(ObjFunc line_f, const Solution& sol, double epsi) const noexcept;
 
 public:
     StrongWolfe(ObjFunc f, std::ofstream& log, double c1, double c2) noexcept;

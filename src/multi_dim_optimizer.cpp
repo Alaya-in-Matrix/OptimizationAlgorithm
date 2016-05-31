@@ -491,7 +491,6 @@ Solution Powell::optimize() noexcept
         {
 #ifdef WRITE_LOG
             write_log(sol);
-            _log << "direction: " << search_direction[i].transpose() << endl;
 #endif
             Solution search_sol = run_line_search(sol, search_direction[i]);
             if (sol.fom() - search_sol.fom() > max_deltay)
@@ -501,10 +500,17 @@ Solution Powell::optimize() noexcept
             }
             sol = search_sol;
         }
-        Paras new_direc = sol.solution() - backup_point;
+        Paras    new_direc     = sol.solution() - backup_point;
         VectorXd new_direc_vxd = Map<VectorXd>(&new_direc[0], _dim);
-        walk_len = new_direc_vxd.lpNorm<2>();
+        walk_len               = new_direc_vxd.lpNorm<2>();
         search_direction[max_delta_id] = new_direc_vxd;
     }
+    return sol;
+}
+Solution Powell::run_line_search(const Solution& s, const Eigen::VectorXd& direction) noexcept 
+{
+    Solution sol = MultiDimOptimizer::run_line_search(s, direction);
+    if(sol.fom() >= s.fom())
+        sol = MultiDimOptimizer::run_line_search(s, -1 * direction);
     return sol;
 }
