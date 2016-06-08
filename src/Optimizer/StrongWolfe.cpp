@@ -114,6 +114,7 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
     }
 #ifdef WRITE_LOG
     _log << "final step: " << best_sol.solution()[0] << endl;
+    _log << "walk len: "   << best_sol.solution()[0] * direction.lpNorm<2>() << endl;
 #endif
     return best_sol;
 }
@@ -192,7 +193,7 @@ double StrongWolfe::line_grad(ObjFunc line_f, const Solution& sol, double epsi) 
     assert(sol.solution().size() == 1);
     double step  = sol.solution()[0];
     Solution shi = line_f({step + epsi});
-    return (shi.fom() - sol.fom()) / epsi;
-    // Solution slo = line_f({step - epsi});
-    // return (shi.fom() - slo.fom()) / (2 * epsi);
+    Solution slo = line_f({step - epsi});
+    return (shi.fom() - slo.fom()) / (2 * epsi);
+    // return (shi.fom() - sol.fom()) / epsi;
 }
