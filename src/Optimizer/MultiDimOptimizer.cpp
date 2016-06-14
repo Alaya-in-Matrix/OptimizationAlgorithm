@@ -12,7 +12,7 @@ MultiDimOptimizer::MultiDimOptimizer(ObjFunc f, size_t d, size_t max_iter, doubl
       _algo_name(algo_name),
       _log(func_name + "." + algo_name + ".log"),
       _func(f),
-      _line_searcher([&](const Paras p) -> Solution { return run_func(p); }, _log, 1e-4, 0.75),
+      _line_searcher([&](const Paras p) -> Solution { return run_func(p); }, _log, 1e-4, 0.25),
       _eval_counter(0),
       _linesearch_counter(0)
 {
