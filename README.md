@@ -1,9 +1,8 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年06月14日 星期二 22时31分06秒 二
+* Last Modified:2016年06月14日 星期二 22时53分47秒 二
 
-[TOC]
 
 ## project简介
 
@@ -32,6 +31,35 @@ cd ..
 * `-DDEBUG_OPTIMIZER=ON/OFF`, 是否开启debug模式，如果为`ON`,则会使用统一的随机数发生器种子，这样保证每次运行，都得到相同的结果。
 
 ## 基本数据结构
+
+这个 project 处理无约束优化问题，关注的重点在算法运行的迭代次数。因此，并没对算法运行时采用的数据结构进行优化。
+在算法运行时，将多元函数的输入`std::vector<double>`，与输出`double`打包成一个数据结构:
+
+```cpp
+// 优化函数输入参数向量
+typedef std::vector<double> Paras;
+// 优化函数执行结果
+class Solution
+{
+    // Para与evaluated result放在一个class中，方便(partial) sort
+    Paras _solution;
+    std::vector<double> _violation;  // sum of constraint violation
+    double _fom;
+
+public:
+    Solution(const Paras& s, const std::vector<double>& cv, double fom) noexcept;
+    Solution() =delete;
+    double fom() const noexcept;
+    double sum_violation() const noexcept;
+    const std::vector<double>& violations() const noexcept;
+    const Paras& solution() const noexcept;
+    Solution& operator=(const Solution&) =default;
+    bool operator<(const Solution& s) const noexcept { return _fom < s.fom(); }
+    bool operator<=(const Solution& s) const noexcept { return _fom <= s.fom(); }
+};
+typedef std::function<Solution(const std::vector<double>&)> ObjFunc;
+```
+
 
 ## 一维优化算法
 

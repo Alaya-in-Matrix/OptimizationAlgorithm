@@ -3,7 +3,9 @@
 #include <string>
 #include <functional>
 
+// 优化函数输入参数向量
 typedef std::vector<double> Paras;
+// 优化函数执行结果
 class Solution
 {
     // Para与evaluated result放在一个class中，方便(partial) sort
