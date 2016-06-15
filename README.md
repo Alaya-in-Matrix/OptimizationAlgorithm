@@ -1,7 +1,7 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年06月14日 星期二 22时53分47秒 二
+* Last Modified:2016年06月15日 星期三 18时49分12秒 三
 
 
 ## project简介
@@ -32,8 +32,9 @@ cd ..
 
 ## 基本数据结构
 
-这个 project 处理无约束优化问题，关注的重点在算法运行的迭代次数。因此，并没对算法运行时采用的数据结构进行优化。
-在算法运行时，将多元函数的输入`std::vector<double>`，与输出`double`打包成一个数据结构:
+这个 project 关注的重点在算法运行的迭代次数。因此，并没对算法运行时采用的数据结构进行优化。
+
+用来表示函数输入参数、函数返回结果、以及待优化函数的数据类型定义如下：
 
 ```cpp
 // 优化函数输入参数向量
@@ -57,9 +58,16 @@ public:
     bool operator<(const Solution& s) const noexcept { return _fom < s.fom(); }
     bool operator<=(const Solution& s) const noexcept { return _fom <= s.fom(); }
 };
-typedef std::function<Solution(const std::vector<double>&)> ObjFunc;
+typedef std::function<Solution(const Paras&)> ObjFunc;
 ```
+使用`std::vector<double>`来表示待优化函数的输入参数，并将其`typedef`为`Paras`。
 
+将输入参数、目标函数的值fom, 以及约束violation打包成一个class `Solution`, 这样会带来额外的拷贝开销，但好处是编程时更加方便，比如，可以很方便的对一组函数的解进行
+排序，选出最好或者最差的解，如果把输入参数跟目标函数输出分开存储，则如果要对目标函数的解进行排序，则需要额外处理输入参数与目标函数输出的同步问题。
+
+对于目标函数的表示，我采用了c++11中函数式编程的特性。在c++11中，可以用 lambda expression 来表示一个函数，这样表示的函数可以作为数据处理，可以作为另一个函数的输入参
+数，也可以作为一个函数的返回值。在这个 project 中，目标函数表示为一个输入为`const Paras&`，输出类型为`Solution`的函数。这个函数由用户定义，并作为 optimizer 的构造
+函数的一个参数。
 
 ## 一维优化算法
 
