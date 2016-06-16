@@ -1,7 +1,7 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016/06/16-23:03:59
+* Last Modified:2016/06/17-00:27:50
 
 
 ## 1. project 简介 
@@ -334,7 +334,60 @@ Strong wolfe Condition 是一个常用的不精确线搜索的判据，其判据
 Strong wolfe condition 寻找算法代码，可以去 src/Optimizer/StrongWolfe.cpp 中查看。
 
 
+## 6. 多维函数优化
+
+首先定义了两个基类, `MultiDimOptimizer` 与 `GradientMethod`，其中，`MultiDimOptimizer` 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数唯独、最大迭代次数，最大与最小步长等。`GradientMethod`是`MultiDimOptimizer`的一个派生类，它是所有基于梯度法的Optimizer的基类，包括梯度下降法、共轭梯度法、牛顿法和拟牛顿法。在其中定义了一些与梯度有关的变量与函数，如求梯度的函数`GradientMethod::get_gradient`，求Hessian矩阵的函数`GradientMethod::hessian`，这两个函数都是虚函数，可以被派生类重载。
+
+```cpp
+class MultiDimOptimizer
+{
+protected:
+    const size_t      _dim;
+    const size_t      _max_iter;
+    const double      _min_walk;
+    const double      _max_walk;
+    const std::string _func_name;
+    const std::string _algo_name;
+    std::ofstream     _log;
+
+    virtual Solution run_func(const Paras&) noexcept;
+    virtual Solution run_line_search(const Solution& s, const Eigen::VectorXd& direction) noexcept;
+
+private:
+    ObjFunc     _func;
+    StrongWolfe _line_searcher;
+    size_t      _eval_counter;
+    size_t      _linesearch_counter;
+
+public:
+    void   clear_counter() noexcept { _eval_counter = 0; _linesearch_counter = 0;}
+    size_t eval_counter() noexcept { return _eval_counter; }
+    size_t linesearch_counter() noexcept { return _linesearch_counter; }
+    MultiDimOptimizer(ObjFunc f, size_t d, size_t max_iter, double min_walk, double max_walk,
+                      std::string func_name, std::string algo_name) noexcept;
+    virtual ~MultiDimOptimizer(){}
+};
+class GradientMethod : public MultiDimOptimizer
+{
+protected:
+    const Paras  _init;
+    const double _epsilon; // use _epsilon to calc gradient
+    const double _zero_grad; // threshold to judge whether gradient is zero
+
+    // virtual Eigen::VectorXd get_gradient(const Paras& p)    noexcept;
+    virtual Eigen::VectorXd get_gradient(const Solution& s) noexcept;
+    // virtual Eigen::MatrixXd hessian(const Paras& point) noexcept;
+    virtual Eigen::MatrixXd hessian(const Solution& point, const Eigen::VectorXd& grad) noexcept;
+
+public:
+    GradientMethod(ObjFunc f, size_t d, Paras i, double epsi, double zgrad, double minwalk,
+                   double maxwalk, size_t max_iter, std::string fname, std::string aname) noexcept;
+    virtual ~GradientMethod() { if(_log.is_open()) _log.close(); } 
+};
+```
+
 ## Benchmark
 * 不同benchmark函数
 * 精确线搜索与StongWolfe
 ## Reference
+

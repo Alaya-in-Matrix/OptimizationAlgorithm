@@ -6,7 +6,7 @@ pandoc report.md \
        --template=template.tex \
        -S \
        -V mainfont=Hei \
-       -o test.pdf
+       -o test.pdf 2> err
 
 pandoc report.md -f markdown_github -o test.docx
 
