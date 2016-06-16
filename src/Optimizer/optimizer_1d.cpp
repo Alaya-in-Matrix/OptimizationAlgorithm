@@ -11,7 +11,6 @@ FibOptimizer::FibOptimizer(ObjFunc f, double lb, double ub, size_t iter) noexcep
 Solution FibOptimizer::optimize() noexcept
 {
     // 1-D function
-    // function shoulde be convex function
     double a1 = _lb;
     double a2 = _ub;
     if (a1 > a2)

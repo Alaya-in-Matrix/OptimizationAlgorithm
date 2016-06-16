@@ -1,7 +1,7 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年06月15日 星期三 23时39分20秒 三
+* Last Modified:2016年06月16日 星期四 10时56分42秒 四
 
 
 ## 1. project 简介 
@@ -10,6 +10,11 @@
 * 各种一维查找算法，如斐波那契法、黄金分割法、外推法
 * 基于 strong wolfe condition 的不精确线搜索方法
 * 梯度下降法(Gradient Descent Method)
+* 共轭梯度法(Conjugate Gradient Method)
+* 牛顿法(Newton's Method)
+* 拟牛顿法法(Quasi Newton Method), 包括 BFGS 算法与 DFP 算法。
+* 单纯形法(Simplex Method)
+* 鲍威尔法(Powell's Method)
 
 ## 2. 编译与构建
 
@@ -40,9 +45,7 @@ cd ..
 // 优化函数输入参数向量
 typedef std::vector<double> Paras;
 // 优化函数执行结果
-class Solution
-{
-    // Para与evaluated result放在一个class中，方便(partial) sort
+class Solution { // Para与evaluated result放在一个class中，方便(partial) sort
     Paras _solution;
     std::vector<double> _violation;  // sum of constraint violation
     double _fom;
@@ -93,7 +96,7 @@ public:
 
 `Optimizer1D::optimize()`是一个纯虚类，所有继承 `Optimizer1D` 类的派生类都需要实现这个方法，具体的一维优化算法就实现在这里。
 
-#### 4.1 Fibonacci 法
+### 4.1 Fibonacci 法
 
 Fibonacci 法的类型声明如下:
 ```cpp
@@ -111,37 +114,31 @@ public:
 ```
 Fibonacci 法需要提供一个一元目标函数，同时，需要提供搜索的下界与上界，Fibonacci最终的精度随迭代次数指数下降，因此还需要提供一个迭代次数，设置迭代次数默认为16。
 
-Fibonacci 法优化算法实现如下：
+Fibonacci 法实现代码如下:
 ```cpp
 Solution FibOptimizer::optimize() noexcept
 {
     // 1-D function
-    // function shoulde be convex function
     double a1 = _lb;
     double a2 = _ub;
-    
-    // ensure obj function is 1D function
     if (a1 > a2)
     {
         cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
         exit(EXIT_FAILURE);
     }
 
-    // pre-calculate fibonacci list
     vector<double> fib_list{1, 1};
     if (_iter > 2)
-        for (size_t i = 2; i < _iter; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
+        for (size_t i = 2; i < _iter + 1; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
 
     double y1, y2;
-    for (size_t i = _iter - 1; i > 0; --i)
+    for(size_t i = 0; i < _iter - 1; ++i)
     {
-        const double rate = fib_list[i - 1] / fib_list[i];
-        const double interv_len = a2 - a1;
-        const double a3 = a2 - rate * interv_len;
-        const double a4 = a1 + rate * interv_len;
-        assert(a3 <= a4);
-        const double y3 = _func({a3}).fom();
-        const double y4 = _func({a4}).fom();
+        const double rate = fib_list[_iter - 1 - i] / fib_list[_iter - i];
+        const double a3   = a2 - rate * (a2 - a1);
+        const double a4   = a1 + rate * (a2 - a1);
+        const double y3   = _func({a3}).fom();
+        const double y4   = _func({a4}).fom();
 
         if (y3 < y4)
         {
@@ -155,5 +152,162 @@ Solution FibOptimizer::optimize() noexcept
         }
     }
     return _func({a1});
+}
+```
+
+Fibonacci 的基本思路是，希望在区间 [a1, a2] 内寻找函数 f 的最小值，则在 [a1, a2] 内找两个点 a3 与 a4 ，分别计算 y3 = f(a3) 与 y4 = f(a4) ，比较 y3 与 y4 的值，若 y3 < y4, 则说明最小值在 [a1, a4]区间内，若 y3 > y4, 则说明最小值在 [a3, a2]区间内，然后依此递归。
+
+Fibonacci 法靠 Fibonacci 数列来确定 a3 与 a4 的值，因为迭代次数 `_iter` 已经确定，因此可以事先计算出从0到`_iter` Fibonacci 数列，对于第`i`次迭代（从0开始），计算 `rate = fib_list[_iter - 1 - i] / fib_list[_iter - i], 然后，令`a3   = a2 - rate * (a2 - a1)`, 令`a4   = a1 + rate * (a2 - a1)`。
+
+
+### 4.2 黄金分割法
+
+黄金分割法的类型声明如下, 其类型声明以与 Fibonacci 法一致。
+```cpp
+class GoldenSelection : public Optimizer1D
+{
+    const double _lb;
+    const double _ub;
+    const size_t _iter;
+
+public:
+    GoldenSelection(ObjFunc f, double lb, double ub, size_t iter = 16) noexcept;
+    Solution optimize() noexcept;
+    ~GoldenSelection() {}
+};
+```
+
+黄金分割法的优化算法实现如下，它的思路与 Fibonacci 法一致，不同的是它使用黄金分割数0.618作为固定的区间收缩比例。
+```cpp
+Solution GoldenSelection::optimize() noexcept
+{
+    // 1-D function
+    // function shoulde be convex function
+    double a1 = _lb;
+    double a2 = _ub;
+    if (a1 > a2)
+    {
+        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    const double rate = (sqrt(5) - 1) / 2;
+    double y1, y2;
+    for (size_t i = _iter - 1; i > 0; --i)
+    {
+        const double interv_len = a2 - a1;
+        const double a3 = a2 - rate * interv_len;
+        const double a4 = a1 + rate * interv_len;
+        if (a3 == a4)
+            break;
+        else
+        {
+            assert(a3 < a4);
+            const double y3 = _func({a3}).fom();
+            const double y4 = _func({a4}).fom();
+            if (y3 < y4)
+            {
+                a2 = a4;
+                y2 = y4;
+            }
+            else
+            {
+                a1 = a3;
+                y1 = y3;
+            }
+        }
+    }
+    return y1 < y2 ? _func({a1}) : _func({a2});
+}
+```
+
+### 4.3 外推内插法
+
+
+黄金分割法与 Fibonacci 法都需要事先知道最优点的范围，而 Extrapolation 法则可以适用于最优点范围不知道的情况，它先寻找一个最优点的范围，然后再去调用其他优化算法，比如黄金分隔法或二次插值法在找到的范围内进行优化。
+
+下面是外推内插法的类声明以及算法实现：
+```cpp
+class Extrapolation : public Optimizer1D
+{
+    const Paras  _init;
+    const double _min_len;  // min extrapolation step
+    const double _max_len;  // max extrapolation step
+public:
+    Extrapolation(ObjFunc f, Paras i, double min_len, double max_len) noexcept;
+    Solution optimize() noexcept;
+    ~Extrapolation() {}
+};
+
+Solution Extrapolation::optimize() noexcept
+{
+    // 1-D function
+    double step = _min_len;
+    double x1 = _init[0];
+    double x2 = x1 + step;
+    double y1 = _func({x1}).fom();
+    double y2 = _func({x2}).fom();
+
+    double lb = x1;
+    double ub = x1 + _max_len;
+    if (y2 > y1)
+    {
+        step *= -1;
+        ub = x1 - _min_len;
+        lb = x1 - _max_len;
+        x2 = x1 + step;
+        y2 = _func({x2}).fom();
+        if (y2 > y1) return _func({x1});
+    }
+    double factor = 2;
+    double x3 = x2 + factor * step;
+    double y3 = _func({x3}).fom();
+    double xa, xc;
+    double ya, yc;
+    if (y3 > y2)
+    {
+        xa = x1;
+        xc = x3;
+        ya = y1;
+        yc = y3;
+    }
+    else
+    {
+        while (y3 < y2 && (lb < x3 && x3 < ub))
+        {
+            factor *= 2;
+            x3 += factor * step;
+            if (x3 >= ub) x3 = ub;
+            if (x3 <= lb) x3 = lb;
+            y3 = _func({x3}).fom();
+        }
+        double xtmp1 = x3 - factor * step;
+        double xtmp2 = x3 - (factor / 2) * step;
+        double ytmp1 = _func({xtmp1}).fom();
+        double ytmp2 = _func({xtmp2}).fom();
+        if (ytmp1 < ytmp2)
+        {
+            xa = x2;
+            xc = xtmp2;
+            ya = y2;
+            yc = ytmp2;
+        }
+        else
+        {
+            xa = xtmp1;
+            xc = x3;
+            ya = ytmp1;
+            yc = y3;
+        }
+    }
+
+    if (xa > xc)
+    {
+        std::swap(xa, xc);
+        std::swap(ya, yc);
+    }
+    const double interv_len = xc - xa;
+    const size_t gso_iter = 2 + static_cast<size_t>(log10(_min_len / interv_len) / log10(0.618));
+    return GoldenSelection(_func, xa, xc, gso_iter).optimize();
 }
 ```
