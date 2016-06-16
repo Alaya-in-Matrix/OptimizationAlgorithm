@@ -1,4 +1,5 @@
 *.swp
-_build
+_build/
+.build/
 __pycache__/
 .ycm_extra_conf.py*
