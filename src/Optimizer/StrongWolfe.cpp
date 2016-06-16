@@ -98,7 +98,9 @@ Solution StrongWolfe::search(const Solution& sol, const VectorXd& direction, dou
             if(step_hi > (min_step + max_step) / 2)
             {
 #ifdef WRITE_LOG
-                _log << "\tWARN: new trial step exceeds max_step, curvature condition might be violated" << endl;
+                _log << "\tWARN: new trial step exceeds max_step, "
+                     << "curvature condition might be violated" 
+                     << endl;
 #endif
                 best_sol = sol_hi;
                 break;

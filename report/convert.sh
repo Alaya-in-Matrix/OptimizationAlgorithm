@@ -1,5 +1,5 @@
 #!/bin/bash
-# pandoc README.md \
+# pandoc report.md \
 #        -f markdown_github \
 #        -t latex \
 #        --latex-engine=xelatex \
@@ -8,8 +8,8 @@
 #        -V mainfont=Hei \
 #        -o test.latex
 
-pandoc README.md -f markdown_github -o test.docx
+pandoc report.md -f markdown_github -o test.docx
 
 pandoc -D html > tmp.html
-pandoc README.md -f markdown_github -o test.html --template=tmp.html
+pandoc report.md -f markdown_github -o test.html --template=tmp.html
 rm tmp.html

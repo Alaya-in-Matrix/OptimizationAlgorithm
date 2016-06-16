@@ -1,20 +1,20 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016年06月16日 星期四 18时42分12秒 四
+* Last Modified:2016/54/16-22:54:38
 
 
 ## 1. project 简介 
 
 这个 project 是杜建洪老师课程中介绍的优化算法的 c++ 实现。实现了如下算法：
 * 各种一维查找算法，如斐波那契法、黄金分割法、外推法
-    * 基于 strong wolfe condition 的不精确线搜索方法
-    * 梯度下降法(Gradient Descent Method)
+* 基于 strong wolfe condition 的不精确线搜索方法
+* 梯度下降法(Gradient Descent Method)
 * 共轭梯度法(Conjugate Gradient Method)
-    * 牛顿法(Newton's Method)
-    * 拟牛顿法法(Quasi Newton Method), 包括 BFGS 算法与 DFP 算法。
+* 牛顿法(Newton's Method)
+* 拟牛顿法法(Quasi Newton Method), 包括 BFGS 算法与 DFP 算法。
 * 单纯形法(Simplex Method)
-    * 鲍威尔法(Powell's Method)
+* 鲍威尔法(Powell's Method)
 
 ## 2. 编译与构建
 
@@ -123,7 +123,7 @@ Solution FibOptimizer::optimize() noexcept
     double a2 = _ub;
     if (a1 > a2)
     {
-        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
+        cerr << "Range error" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -190,7 +190,7 @@ Solution GoldenSelection::optimize() noexcept
     double a2 = _ub;
     if (a1 > a2)
     {
-        cerr << ("Range is [" + to_string(a1) + ", " + to_string(a2) + "]") << endl;
+        cerr << "Range error" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -314,9 +314,27 @@ Solution Extrapolation::optimize() noexcept
     return GoldenSelection(_func, xa, xc, gso_iter).optimize();
 }
 ```
-
 ## 5. 不精确线搜索 
 
 上一节实现的一维优化算法，都是期望找到在搜索方向上的最优点。但是，很多时候，找到严格意义上的最优点，往往需要很多次迭代; 而且, 因为搜索方向上的最优点并不是多元函数的最优点，在多元函数优化过程中，找到搜索方向上的最优点也没有必要。只要保证步长使得函数在搜索方向上下降足够多就可以了。因此，在实际的多元函数优化中，当需要确定在搜索方向上的步长时，常常并不采用精确的一元函数优化算法，而是规定一个“在搜索方向上足够下降”的标准，然后只要找到满足这样标准的点即可。
 
-Strong Wolfe condition 是一个常用的不精确线搜索的判据。
+
+Strong wolfe Condition 是一个常用的不精确线搜索的判据，其判据如下：
+
+![strongwolfe](./img/strong-wolfe.png)
+
+在上式中，c1 与 c2 满足 0 < c1 < c2 < 1, 其中，第一个不等式被称作 sufficient decrease condition，第二个不等式被称作 curvature condition。如果步长满足 sufficient decrease condition, 则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
+
+下图是 strong wolfe condition 的一个例子，对于图中一维函数，只要最终步长选在位于 "acceptable" 的区间内即可。:
+
+![strong-wolfe-illustration](./img/strong-wolfe-illustration.png)
+
+本次 project 实现了寻找满足 strong wolfe condition 的搜索步长的算法，其基本思路是，先通过插值与外推的方法，尝试一系列递增的 trial step，找到一个满足 strong wolfe condition 的区间。再在这个区间内，进行二次或三次插值，直到找到满蓄 strong wolfe condition 的步长。
+
+Strong wolfe condition 寻找算法代码，可以去 src/Optimizer/StrongWolfe.cpp 中查看。
+
+
+## Benchmark
+* 不同benchmark函数
+* 精确线搜索与StongWolfe
+## Reference
