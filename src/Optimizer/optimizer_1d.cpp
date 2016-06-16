@@ -22,18 +22,16 @@ Solution FibOptimizer::optimize() noexcept
 
     vector<double> fib_list{1, 1};
     if (_iter > 2)
-        for (size_t i = 2; i < _iter; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
+        for (size_t i = 2; i < _iter + 1; ++i) fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
 
     double y1, y2;
-    for (size_t i = _iter - 1; i > 0; --i)
+    for(size_t i = 0; i < _iter - 1; ++i)
     {
-        const double rate = fib_list[i - 1] / fib_list[i];
-        const double interv_len = a2 - a1;
-        const double a3 = a2 - rate * interv_len;
-        const double a4 = a1 + rate * interv_len;
-        assert(a3 <= a4);
-        const double y3 = _func({a3}).fom();
-        const double y4 = _func({a4}).fom();
+        const double rate = fib_list[_iter - 1 - i] / fib_list[_iter - i];
+        const double a3   = a2 - rate * (a2 - a1);
+        const double a4   = a1 + rate * (a2 - a1);
+        const double y3   = _func({a3}).fom();
+        const double y4   = _func({a4}).fom();
 
         if (y3 < y4)
         {
