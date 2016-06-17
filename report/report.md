@@ -734,7 +734,11 @@ Solution Powell::optimize() noexcept
 }
 ```
 
+## TODO
+* 算法解释
+* Benchmark
+* Latex 公式
+* 校验
+
 ## Benchmark
 * 不同benchmark函数
-* 精确线搜索与StongWolfe
-## Reference
