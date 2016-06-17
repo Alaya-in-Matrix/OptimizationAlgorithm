@@ -1,7 +1,6 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016/06/17-13:21:31
 
 
 ## 1. project 简介 
@@ -34,6 +33,8 @@ cd ..
 在运行`cmake ..`命令时，可以通过下列的两个命令行选项来控制程序的行为：
 * `-DWRITE_LOG=ON/OFF`, 是否在优化时对每个点进行记录，如果为`OFF`则只记录最终的最优点
 * `-DDEBUG_OPTIMIZER=ON/OFF`, 是否开启debug模式，如果为`ON`,则会使用统一的随机数发生器种子，这样保证每次运行，都得到相同的结果。
+
+许多算法都需要矩阵运算，在 project 中，矩阵运算调用[Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)实现
 
 ## 3. 基本数据结构
 
@@ -395,6 +396,8 @@ public:
 
 梯度下降法的实现如下，梯度下降法假定函数在搜索域内总是一阶可导，它给定一个初始点，沿着梯度的方向做线搜索，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
 
+梯度下降法实现代码如下：
+
 ```cpp
 Solution GradientDescent::optimize() noexcept
 {
@@ -407,6 +410,7 @@ Solution GradientDescent::optimize() noexcept
     double   len_walk  = numeric_limits<double>::infinity();
     while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
     {
+        // LOG is a macro used to record evaluated function input
         LOG(sol, grad);
         const Solution new_sol = run_line_search(sol, -1 * grad);
         len_walk  = vec_norm(new_sol.solution() - sol.solution());
@@ -424,10 +428,313 @@ Solution GradientDescent::optimize() noexcept
     return sol;
 }
 ```
+### 6.2 共轭梯度法
 
+当目标函数在极值点附近的条件数（即Hessian矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象, 导致收敛较慢。共轭梯度法(Conjugate Gradient Method)可以克服这种问题，它选择共轭梯度方向作为搜索方向。可以证明，如果目标函数在极值点附近是二次的，对于N维函数，则只需要N次一维查找，就可以找到极值点。当然上面的一维查找指的是精确的一维查找。如果使用不精确一维查找或者问题的阶数高于二阶，N为问题需要的查找次数会大于N。
+
+对于一个N维矩阵A, 如果向量u, v，满足`u'Av = 0`, 则这两个向量对于矩阵A共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索N步。如果N步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索N部。如此循环，直至找到极值点。
+
+共轭梯度法的实现代码如下:
+
+```cpp
+Solution ConjugateGradient::optimize() noexcept
+{
+    clear_counter();
+    _log << _func_name << endl;
+
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    VectorXd conj_grad = grad;
+    double grad_norm   = grad.lpNorm<2>();
+    double len_walk    = numeric_limits<double>::infinity();
+    assert(sol.solution().size() == _dim);
+    while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
+    {
+        conj_grad = grad;
+        for (size_t i = 0; i < _dim; ++i)
+        {
+            LOG(sol, grad, conj_grad);
+            const Solution new_sol = run_line_search(sol, -1 * conj_grad);
+            VectorXd new_grad      = get_gradient(new_sol);
+            double beta            = pow(new_grad.lpNorm<2>() / grad.lpNorm<2>(), 2);
+
+            len_walk  = vec_norm(new_sol.solution() - sol.solution());
+            sol       = new_sol;
+            conj_grad = new_grad + beta * conj_grad;
+            grad      = new_grad;
+            grad_norm = grad.lpNorm<2>();
+            if (!(grad_norm > _zero_grad)) break;
+        }
+    }
+    _log << "=======================================" << endl;
+    write_log(sol, grad, conj_grad);
+    _log << "len_walk:    " << len_walk             << endl;
+    _log << "eval:        " << eval_counter()       << endl;
+    _log << "line search: " << linesearch_counter() << endl;
+    if (eval_counter() >= _max_iter) 
+        _log << "max iter reached" << endl;
+    return sol;
+}
+```
+### 6.3 牛顿法
+
+梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。
+
+对于一个目标函数f, 一个输入点x, 先求出在x点处的梯度g, 再求出函数在x点的hessian矩阵H，则搜索方向d为现行方程`H x = -1 * g`的解。在这个方向上做一维搜索。
+
+牛顿法的实现代码如下:
+
+```cpp
+Solution Newton::optimize() noexcept
+{
+    clear_counter();
+    _log << "func: " << _func_name << endl;
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    MatrixXd hess      = hessian(sol, grad);
+    double   grad_norm = grad.lpNorm<2>();
+    double   len_walk  = numeric_limits<double>::infinity();
+    while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
+    {
+        VectorXd direction = -1 * hess.colPivHouseholderQr().solve(grad);
+        double   judge     = grad.transpose() * direction;
+        double   dir       = judge < 0 ? 1 : -1;
+        LOG(sol, grad, hess);
+        direction *= dir;
+        Solution new_sol = run_line_search(sol, direction);
+        len_walk  = vec_norm(new_sol.solution() - sol.solution());
+        sol       = new_sol;
+        grad      = get_gradient(sol);
+        hess      = hessian(sol, grad);
+        grad_norm = grad.lpNorm<2>();
+    }
+    _log << "=======================================" << endl;
+    write_log(sol, grad, hess);
+    _log << "len_walk:    " << len_walk             << endl;
+    _log << "iter:        " << eval_counter()       << endl;
+    _log << "line search: " << linesearch_counter() << endl;
+    _log << "eigenvalues of hess: " << endl << hess.eigenvalues() << endl;
+    if (eval_counter() >= _max_iter) 
+        _log << "max iter reached" << endl;
+    return sol;
+}
+```
+
+### 6.4 拟牛顿法：BFGS法与DFP法
+
+Newton法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出Hessian矩阵，则要用有限差分的方法近似Hessian矩阵。对于N维的问题，其复杂度为O(N^2)，当目标函数的维度上升时，求Hessian矩阵的代价就会变得不可接受。拟牛顿法通过迭代的方法，来近似Hessian矩阵。常见的拟牛顿法有DFP法与BFGS法。
+
+BFGS法的实现代码如下:
+
+```cpp
+Solution BFGS::optimize() noexcept
+{
+    clear_counter();
+    _log << "func: " << _func_name << endl;
+
+    Solution sol        = run_func(_init);
+    VectorXd grad       = get_gradient(sol);
+    MatrixXd quasi_hess = MatrixXd::Identity(_dim, _dim);
+    double grad_norm    = grad.lpNorm<2>();
+    double len_walk     = numeric_limits<double>::infinity();
+    while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
+    {
+        LOG(sol, grad, quasi_hess);
+        const VectorXd direction     = -1 * (quasi_hess.colPivHouseholderQr().solve(grad));
+        const Solution new_sol       = run_line_search(sol, direction);
+        const VectorXd new_grad      = get_gradient(new_sol);
+        const vector<double> delta_x = new_sol.solution() - sol.solution();
+        const VectorXd ev_dg         = new_grad - grad;
+        const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
+        len_walk = vec_norm(delta_x);
+        if (len_walk > 0)
+        {
+            quasi_hess += (ev_dg * ev_dg.transpose()) / (ev_dg.transpose() * ev_dx) -
+                          (quasi_hess * ev_dx * ev_dx.transpose() * quasi_hess) /
+                              (ev_dx.transpose() * quasi_hess * ev_dx);
+
+            sol = new_sol;
+            grad = new_grad;
+            grad_norm = grad.lpNorm<2>();
+        }
+    }
+    _log << "=======================================" << endl;
+    write_log(sol, grad, quasi_hess);
+    _log << "len_walk:    " << len_walk << endl;
+    _log << "eval:        " << eval_counter() << endl;
+    _log << "line search: " << linesearch_counter() << endl;
+
+    if (eval_counter() >= _max_iter) 
+        _log << "max iter reached" << endl;
+    return sol;
+}
+```
+
+DFP法的实现代码如下：
+
+```cpp
+Solution DFP::optimize() noexcept
+{
+    clear_counter();
+    _log << "func: " << _func_name << endl;
+
+    Solution sol     = run_func(_init);
+    VectorXd grad    = get_gradient(sol);
+    double grad_norm = grad.lpNorm<2>();
+    double len_walk  = numeric_limits<double>::infinity();
+    MatrixXd quasi_hess_inverse = MatrixXd::Identity(_dim, _dim);
+
+    while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
+    {
+        LOG(sol, grad, quasi_hess_inverse);
+        VectorXd dvec = -1 * (quasi_hess_inverse * grad);
+#ifdef WRITE_LOG
+        const double judge = grad.transpose() * dvec;
+        _log << "judge: " << judge << endl;
+        if(judge > 0)
+            _log << "judge greater than zero" << endl;
+#endif
+        const Solution new_sol       = run_line_search(sol, dvec);
+        const VectorXd new_grad      = get_gradient(new_sol);
+        const vector<double> delta_x = new_sol.solution() - sol.solution();
+        const VectorXd ev_dg         = new_grad - grad;
+        len_walk = vec_norm(delta_x);
+        const Map<const VectorXd> ev_dx(&delta_x[0], _dim, 1);
+        if (len_walk > 0)
+        {
+            quasi_hess_inverse +=
+                (ev_dx * ev_dx.transpose()) / (ev_dx.transpose() * ev_dg) -
+                (quasi_hess_inverse * ev_dg * ev_dg.transpose() * quasi_hess_inverse) /
+                    (ev_dg.transpose() * quasi_hess_inverse * ev_dg);
+
+            sol = new_sol;
+            grad = new_grad;
+            grad_norm = grad.lpNorm<2>();
+        }
+    }
+    _log << "=======================================" << endl;
+    write_log(sol, grad, quasi_hess_inverse);
+    _log << "len_walk:    " << len_walk             << endl;
+    _log << "eval:        " << eval_counter()       << endl;
+    _log << "line search: " << linesearch_counter() << endl;
+    if (eval_counter() >= _max_iter) 
+        _log << "max iter reached" << endl;
+    return sol;
+}
+```
+### 6.5 单纯形法
+
+```cpp
+Solution NelderMead::optimize() noexcept
+{
+    clear_counter();
+    _log << _func_name << endl;
+    _sols.clear();
+    _sols.reserve(_dim + 1);
+    for (size_t i = 0; i < _dim + 1; ++i) _sols.push_back(run_func(_inits[i]));
+    double walk_len = numeric_limits<double>::infinity();
+    while (eval_counter() < _max_iter && walk_len > _min_walk)
+    {
+        // 1. order
+        std::sort(_sols.begin(), _sols.end(), std::less<Solution>());
+        const Solution& worst = _sols[_dim];
+        const Solution& sec_worst = _sols[_dim - 1];
+        const Solution& best = _sols[0];
+
+        // 2. centroid calc
+        Paras centroid(_dim, 0);
+        for (size_t i = 0; i < _dim; ++i) centroid = centroid + _sols[i].solution();
+        centroid = 1.0 / static_cast<double>(_dim) * centroid;
+
+        // 3. reflection
+        Solution reflect = run_func(centroid + _alpha * (centroid - worst.solution()));
+        LOG(reflect);
+        if (best <= reflect && reflect < sec_worst)
+        {
+            walk_len = update_sols(_dim, reflect);
+        }
+        else if (reflect < best)  // 4. expansion
+        {
+            Solution expanded = run_func(centroid + _gamma * (reflect.solution() - centroid));
+            LOG(expanded);
+            const Solution& new_sol = expanded < reflect ? expanded : reflect;
+            walk_len = update_sols(_dim, new_sol);
+        }
+        else  // 5. contract
+        {
+            assert(!(reflect < sec_worst));
+            Solution contracted = run_func(centroid + _rho * (worst.solution() - centroid));
+            LOG(contracted);
+            if (contracted < worst)
+            {
+                walk_len = update_sols(_dim, contracted);
+            }
+            else  // 6. shrink
+            {
+#ifdef WRITE_LOG
+                _log << "shrink: " << endl;
+#endif
+                walk_len = 0;
+                for (size_t i = 1; i < _dim + 1; ++i)
+                {
+                    Paras p         = best.solution() - _sigma * (_sols[i].solution() - best.solution());
+                    double tmp_walk = update_sols(i, run_func(p));
+                    walk_len        = max(tmp_walk, walk_len);
+                    LOG(_sols[i]);
+                }
+            }
+        }
+    }
+    std::sort(_sols.begin(), _sols.end(), std::less<Solution>());
+    _log << "=========================================" << endl;
+    write_log(_sols[0]);
+    return _sols[0];
+}
+```
+
+### 6.6 Powell's Method
+
+```cpp
+Solution Powell::optimize() noexcept
+{
+    clear_counter();
+    Solution sol = run_func(_init);
+    double walk_len = numeric_limits<double>::infinity();
+
+    // initial search directions are axes
+    vector<VectorXd> search_direction(_dim, VectorXd(_dim));
+    for (size_t i = 0; i < _dim; ++i)
+    {
+        for (size_t j = 0; j < _dim; ++j) search_direction[i][j] = i == j ? 1.0 : 0.0;
+    }
+    while (eval_counter() < _max_iter && walk_len > _min_walk)
+    {
+        double max_delta_y = -1 * numeric_limits<double>::infinity();
+        size_t max_delta_id;
+        Paras backup_point = sol.solution();
+        for (size_t i = 0; i < _dim; ++i)
+        {
+            LOG(sol);
+            Solution search_sol = run_line_search(sol, search_direction[i]);
+            if (sol.fom() - search_sol.fom() > max_delta_y)
+            {
+                max_delta_y  = sol.fom() - search_sol.fom();
+                max_delta_id = i;
+            }
+            sol = search_sol;
+        }
+        Paras    new_direc     = sol.solution() - backup_point;
+        VectorXd new_direc_vxd = Map<VectorXd>(&new_direc[0], _dim);
+        walk_len               = new_direc_vxd.lpNorm<2>();
+        search_direction[max_delta_id] = new_direc_vxd;
+    }
+    _log << endl << "==========================================" << endl;
+    write_log(sol);
+    return sol;
+}
+```
 
 ## Benchmark
 * 不同benchmark函数
 * 精确线搜索与StongWolfe
 ## Reference
-
