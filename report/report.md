@@ -1,7 +1,7 @@
 # 优化算法实现报告
 
 * Author: lvwenlong_lambda@qq.com
-* Last Modified:2016/06/17-00:27:50
+* Last Modified:2016/06/17-13:21:31
 
 
 ## 1. project 简介 
@@ -99,6 +99,7 @@ class Optimizer1D
 ### 4.1 Fibonacci 法
 
 Fibonacci 法的类型声明如下:
+
 ```cpp
 class FibOptimizer : public Optimizer1D
 {
@@ -115,6 +116,7 @@ class FibOptimizer : public Optimizer1D
 Fibonacci 法需要提供一个一维目标函数，同时，需要提供搜索的下界与上界，Fibonacci最终的精度随迭代次数指数下降，因此还需要提供一个迭代次数，设置迭代次数默认为16。
 
 Fibonacci 法实现代码如下:
+
 ```cpp
 Solution FibOptimizer::optimize() noexcept
 {
@@ -160,12 +162,13 @@ Solution FibOptimizer::optimize() noexcept
 
 Fibonacci 的基本思路是，希望在区间 [a1, a2] 内寻找函数 f 的最小值，则在 [a1, a2] 内找两个点 a3 与 a4 ，分别计算 y3 = f(a3) 与 y4 = f(a4) ，比较 y3 与 y4 的值，若 y3 < y4, 则说明最小值在 [a1, a4]区间内，若 y3 > y4, 则说明最小值在 [a3, a2]区间内，然后依此递归。
 
-Fibonacci 法靠 Fibonacci 数列来确定 a3 与 a4 的值，因为迭代次数 `_iter` 已经确定，因此可以事先计算出从0到`_iter` Fibonacci 数列，对于第`i`次迭代（从0开始），计算 `rate = fib_list[_iter - 1 - i] / fib_list[_iter - i], 然后，令`a3   = a2 - rate * (a2 - a1)`, 令`a4   = a1 + rate * (a2 - a1)`。
+Fibonacci 法靠 Fibonacci 数列来确定 a3 与 a4 的值，因为迭代次数 `_iter` 已经确定，因此可以事先计算出从0到`_iter` Fibonacci 数列，对于第`i`次迭代（从0开始），计算 `rate = fib_list[_iter - 1 - i] / fib_list[_iter - i]`, 然后，令`a3   = a2 - rate * (a2 - a1)`, 令`a4   = a1 + rate * (a2 - a1)`
 
 
 ### 4.2 黄金分割法
 
 黄金分割法的类型声明如下, 其类型声明以与 Fibonacci 法一致。
+
 ```cpp
 class GoldenSelection : public Optimizer1D
 {
@@ -181,6 +184,7 @@ class GoldenSelection : public Optimizer1D
 ```
 
 黄金分割法的优化算法实现如下，它的思路与 Fibonacci 法一致，不同的是它使用黄金分割数0.618作为固定的区间收缩比例。
+
 ```cpp
 Solution GoldenSelection::optimize() noexcept
 {
@@ -230,6 +234,7 @@ Solution GoldenSelection::optimize() noexcept
 黄金分割法与 Fibonacci 法都需要事先知道最优点的范围，而 Extrapolation 法则可以适用于最优点范围不知道的情况，它先寻找一个最优点的范围，然后再去调用其他优化算法，比如黄金分隔法或二次插值法在找到的范围内进行优化。
 
 下面是外推内插法的类声明以及算法实现：
+
 ```cpp
 class Extrapolation : public Optimizer1D
 {
@@ -323,7 +328,7 @@ Strong wolfe Condition 是一个常用的不精确线搜索的判据，其判据
 
 ![strongwolfe](./img/strong-wolfe.png)
 
-在上式中，c1 与 c2 满足 0 < c1 < c2 < 1, 其中，第一个不等式被称作 sufficient decrease condition，第二个不等式被称作 curvature condition。如果步长满足 sufficient decrease condition, 则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
+在上式中，c1 与 c2 满足 `0 < c1 < c2 < 1`, 其中，第一个不等式被称作 sufficient decrease condition，第二个不等式被称作 curvature condition。如果步长满足 sufficient decrease condition, 则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
 
 下图是 strong wolfe condition 的一个例子，对于图中一维函数，只要最终步长选在位于 "acceptable" 的区间内即可。:
 
@@ -336,7 +341,9 @@ Strong wolfe condition 寻找算法代码，可以去 src/Optimizer/StrongWolfe.
 
 ## 6. 多维函数优化
 
-首先定义了两个基类, `MultiDimOptimizer` 与 `GradientMethod`，其中，`MultiDimOptimizer` 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数唯独、最大迭代次数，最大与最小步长等。`GradientMethod`是`MultiDimOptimizer`的一个派生类，它是所有基于梯度法的Optimizer的基类，包括梯度下降法、共轭梯度法、牛顿法和拟牛顿法。在其中定义了一些与梯度有关的变量与函数，如求梯度的函数`GradientMethod::get_gradient`，求Hessian矩阵的函数`GradientMethod::hessian`，这两个函数都是虚函数，可以被派生类重载。
+首先定义了两个基类, `MultiDimOptimizer` 与 `GradientMethod`，其中，`MultiDimOptimizer` 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数唯独、最大迭代次数，最大与最小步长等。
+
+`GradientMethod`是`MultiDimOptimizer`的一个派生类，它是所有基于梯度法的Optimizer的基类，包括梯度下降法、共轭梯度法、牛顿法和拟牛顿法。在其中定义了一些与梯度有关的变量与函数，如求梯度的函数`GradientMethod::get_gradient`，求Hessian矩阵的函数`GradientMethod::hessian`，这两个函数都是虚函数，可以被派生类重载。`MultiDimOptimizer`中还定义了一些与梯度相关的成员变量，如用数值法求梯度时用到的`_epsilon`。以及判定收敛（梯度为零）的最小梯度等。
 
 ```cpp
 class MultiDimOptimizer
@@ -374,9 +381,7 @@ protected:
     const double _epsilon; // use _epsilon to calc gradient
     const double _zero_grad; // threshold to judge whether gradient is zero
 
-    // virtual Eigen::VectorXd get_gradient(const Paras& p)    noexcept;
     virtual Eigen::VectorXd get_gradient(const Solution& s) noexcept;
-    // virtual Eigen::MatrixXd hessian(const Paras& point) noexcept;
     virtual Eigen::MatrixXd hessian(const Solution& point, const Eigen::VectorXd& grad) noexcept;
 
 public:
@@ -385,6 +390,41 @@ public:
     virtual ~GradientMethod() { if(_log.is_open()) _log.close(); } 
 };
 ```
+
+### 6.1 梯度下降法
+
+梯度下降法的实现如下，梯度下降法假定函数在搜索域内总是一阶可导，它给定一个初始点，沿着梯度的方向做线搜索，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
+
+```cpp
+Solution GradientDescent::optimize() noexcept
+{
+    clear_counter();
+    _log << _func_name << endl;
+
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    double   grad_norm = grad.lpNorm<2>();
+    double   len_walk  = numeric_limits<double>::infinity();
+    while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
+    {
+        LOG(sol, grad);
+        const Solution new_sol = run_line_search(sol, -1 * grad);
+        len_walk  = vec_norm(new_sol.solution() - sol.solution());
+        sol       = new_sol;
+        grad      = get_gradient(sol);
+        grad_norm = grad.lpNorm<2>();
+    }
+    _log << "=======================================" << endl;
+    write_log(sol, grad);
+    _log << "len_walk:    " << len_walk << endl;
+    _log << "eval:        " << eval_counter() << endl;
+    _log << "line search: " << linesearch_counter() << endl;
+    if (eval_counter() >= _max_iter) 
+        _log << "max iter reached" << endl;
+    return sol;
+}
+```
+
 
 ## Benchmark
 * 不同benchmark函数

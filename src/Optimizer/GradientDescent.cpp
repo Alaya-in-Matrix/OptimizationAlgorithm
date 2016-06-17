@@ -15,19 +15,17 @@ Solution GradientDescent::optimize() noexcept
     clear_counter();
     _log << _func_name << endl;
 
-    Solution sol = run_func(_init);
-    VectorXd grad = get_gradient(sol);
-    double grad_norm = grad.lpNorm<2>();
-    double len_walk = numeric_limits<double>::infinity();
-    double deltaFom = -1 * numeric_limits<double>::infinity();
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    double   grad_norm = grad.lpNorm<2>();
+    double   len_walk  = numeric_limits<double>::infinity();
     while (grad_norm > _zero_grad && eval_counter() < _max_iter && len_walk > _min_walk)
     {
         LOG(sol, grad);
         const Solution new_sol = run_line_search(sol, -1 * grad);
-        deltaFom = new_sol.fom() - sol.fom();
-        len_walk = vec_norm(new_sol.solution() - sol.solution());
-        sol = new_sol;
-        grad = get_gradient(sol);
+        len_walk  = vec_norm(new_sol.solution() - sol.solution());
+        sol       = new_sol;
+        grad      = get_gradient(sol);
         grad_norm = grad.lpNorm<2>();
     }
     _log << "=======================================" << endl;
