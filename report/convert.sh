@@ -1,15 +1,11 @@
 #!/bin/bash
 pandoc report.md \
-       -f markdown_github \
-       -t latex \
        --latex-engine=xelatex \
        --template=template.tex \
        -S \
        -V mainfont=Hei \
-       -o test.pdf 2> err
-
-pandoc report.md -f markdown_github -o test.docx
-
-pandoc -D html > tmp.html
-pandoc report.md -f markdown_github -o test.html --template=tmp.html
-rm tmp.html
+       -o test.pdf
+pandoc report.md -o test.docx
+pandoc -D html > template.html
+# pandoc report.md --template=template.html --mathjax=https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML -o test.html
+pandoc report.md --template=template.html --mathjax=./MathJax-master/MathJax.js?config=TeX-AMS-MML_HTMLorMML -o test.html

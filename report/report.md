@@ -327,7 +327,15 @@ Solution Extrapolation::optimize() noexcept
 
 Strong wolfe Condition 是一个常用的不精确线搜索的判据，其判据如下：
 
-![strongwolfe](./img/strong-wolfe.png)
+$$
+\left\{
+\begin{array}{ll}
+f(x_k + \alpha_k p_k)&\leq f(x_k) + c_1 \alpha_k \nabla f_k^T p_k\\
+|\nabla f(x_k + \alpha_k p_k)^T p_k|&\leq c_2 |\nabla f_k^T|
+\end{array}
+\right.
+$$
+
 
 在上式中，c1 与 c2 满足 `0 < c1 < c2 < 1`, 其中，第一个不等式被称作 sufficient decrease condition，第二个不等式被称作 curvature condition。如果步长满足 sufficient decrease condition, 则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
 
@@ -432,7 +440,7 @@ Solution GradientDescent::optimize() noexcept
 
 当目标函数在极值点附近的条件数（即Hessian矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象, 导致收敛较慢。共轭梯度法(Conjugate Gradient Method)可以克服这种问题，它选择共轭梯度方向作为搜索方向。可以证明，如果目标函数在极值点附近是二次的，对于N维函数，则只需要N次一维查找，就可以找到极值点。当然上面的一维查找指的是精确的一维查找。如果使用不精确一维查找或者问题的阶数高于二阶，N为问题需要的查找次数会大于N。
 
-对于一个N维矩阵A, 如果向量u, v，满足`u'Av = 0`, 则这两个向量对于矩阵A共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索N步。如果N步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索N部。如此循环，直至找到极值点。
+对于一个N维矩阵 $A$, 如果向量 $u$, $v$，满足 $u^T A v = 0$, 则这两个向量对于矩阵 $A$ 共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索N步。如果N步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索N部。如此循环，直至找到极值点。
 
 共轭梯度法的实现代码如下:
 
@@ -480,7 +488,7 @@ Solution ConjugateGradient::optimize() noexcept
 
 梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。
 
-对于一个目标函数f, 一个输入点x, 先求出在x点处的梯度g, 再求出函数在x点的hessian矩阵H，则搜索方向d为现行方程`H x = -1 * g`的解。在这个方向上做一维搜索。
+对于一个目标函数 $f$ , 一个输入点 $\vec x$, 先求出在 $\vec x$ 点处的梯度 $\vec g$, 再求出函数在 $\vec x$ 点的 hessian 矩阵 $H$，则搜索方向 $\vec d$ 为线性方程 $H \vec d = -\vec g$ 的解。
 
 牛顿法的实现代码如下:
 
@@ -737,7 +745,6 @@ Solution Powell::optimize() noexcept
 ## TODO
 * 算法解释
 * Benchmark
-* Latex 公式
 * 校验
 
 ## Benchmark
