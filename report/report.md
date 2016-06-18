@@ -8,12 +8,12 @@
 这个 project 是杜建洪老师课程中介绍的优化算法的 c++ 实现。实现了如下算法：
 * 各种一维查找算法，如斐波那契法、黄金分割法、外推法
 * 基于 strong wolfe condition 的不精确线搜索方法
-* 梯度下降法(Gradient Descent Method)
-* 共轭梯度法(Conjugate Gradient Method)
-* 牛顿法(Newton's Method)
-* 拟牛顿法法(Quasi Newton Method), 包括 BFGS 算法与 DFP 算法。
-* 单纯形法(Simplex Method)
-* 鲍威尔法(Powell's Method)
+* 梯度下降法（Gradient Descent Method）
+* 共轭梯度法（Conjugate Gradient Method）
+* 牛顿法（Newton's Method）
+* 拟牛顿法法（Quasi Newton Method）, 包括 BFGS 算法与 DFP 算法。
+* 单纯形法（Simplex Method）
+* 鲍威尔法（Powell's Method）
 
 ## 2. 编译与构建
 
@@ -116,9 +116,15 @@ class FibOptimizer : public Optimizer1D
 ```
 Fibonacci 法需要提供一个一维目标函数，同时，需要提供搜索的下界与上界，Fibonacci最终的精度随迭代次数指数下降，因此还需要提供一个迭代次数，设置迭代次数默认为16。
 
+
+Fibonacci 的基本思路是，希望在区间 $[a_1,a_2]$ 内寻找函数 $f$ 的最小值，则在 $[a_1, a_2]$ 内找两个点 $a_3$ 与 $a_4$ ，分别计算 $y_3 = f(a_3)$ 与 $y_4 = f(a_4)$ ，比较 $y_3$ 与 $y_4$ 的值，若 $y3 < y4$, 则说明最小值在 $[a_1, a_4]$ 区间内，若 $y_3 > y_4$, 则说明最小值在 $[a_3, a_2]$ 区间内，然后依此递归。
+
+Fibonacci 法靠 Fibonacci 数列来确定 $a_3$ 与 $a_4$ 的值，因为迭代次数 `_iter` 已经确定，因此可以事先计算出从0到`_iter` Fibonacci 数列，对于第`i`次迭代（从0开始），计算 `rate = fib_list[_iter - 1 - i] / fib_list[_iter - i]`, 然后，令`a3   = a2 - rate * (a2 - a1)`, 令`a4   = a1 + rate * (a2 - a1)`
+
 Fibonacci 法实现代码如下:
 
 ```cpp
+
 Solution FibOptimizer::optimize() noexcept
 {
     // 1-D function
@@ -129,14 +135,12 @@ Solution FibOptimizer::optimize() noexcept
         cerr << "Range error" << endl;
         exit(EXIT_FAILURE);
     }
-
     vector<double> fib_list{1, 1};
     if (_iter > 2)
     {
         for (size_t i = 2; i < _iter + 1; ++i) 
             fib_list.push_back(fib_list[i - 1] + fib_list[i - 2]);
     }
-
     double y1, y2;
     for(size_t i = 0; i < _iter - 1; ++i)
     {
@@ -145,7 +149,6 @@ Solution FibOptimizer::optimize() noexcept
         const double a4   = a1 + rate * (a2 - a1);
         const double y3   = _func({a3}).fom();
         const double y4   = _func({a4}).fom();
-
         if (y3 < y4)
         {
             a2 = a4;
@@ -159,11 +162,8 @@ Solution FibOptimizer::optimize() noexcept
     }
     return _func({a1});
 }
+
 ```
-
-Fibonacci 的基本思路是，希望在区间 [a1, a2] 内寻找函数 f 的最小值，则在 [a1, a2] 内找两个点 a3 与 a4 ，分别计算 y3 = f(a3) 与 y4 = f(a4) ，比较 y3 与 y4 的值，若 y3 < y4, 则说明最小值在 [a1, a4]区间内，若 y3 > y4, 则说明最小值在 [a3, a2]区间内，然后依此递归。
-
-Fibonacci 法靠 Fibonacci 数列来确定 a3 与 a4 的值，因为迭代次数 `_iter` 已经确定，因此可以事先计算出从0到`_iter` Fibonacci 数列，对于第`i`次迭代（从0开始），计算 `rate = fib_list[_iter - 1 - i] / fib_list[_iter - i]`, 然后，令`a3   = a2 - rate * (a2 - a1)`, 令`a4   = a1 + rate * (a2 - a1)`
 
 
 ### 4.2 黄金分割法
@@ -184,7 +184,7 @@ class GoldenSelection : public Optimizer1D
 };
 ```
 
-黄金分割法的优化算法实现如下，它的思路与 Fibonacci 法一致，不同的是它使用黄金分割数0.618作为固定的区间收缩比例。
+黄金分割法的优化算法实现如下，它的思路与 Fibonacci 法一致，不同的是它使用黄金分割数 0.618 作为固定的区间收缩比例。
 
 ```cpp
 Solution GoldenSelection::optimize() noexcept
@@ -230,7 +230,6 @@ Solution GoldenSelection::optimize() noexcept
 ```
 
 ### 4.3 外推内插法
-
 
 黄金分割法与 Fibonacci 法都需要事先知道最优点的范围，而 Extrapolation 法则可以适用于最优点范围不知道的情况，它先寻找一个最优点的范围，然后再去调用其他优化算法，比如黄金分隔法或二次插值法在找到的范围内进行优化。
 
@@ -325,7 +324,7 @@ Solution Extrapolation::optimize() noexcept
 上一节实现的一维优化算法，都是期望找到在搜索方向上的最优点。但是，很多时候，找到严格意义上的最优点，往往需要很多次迭代; 而且, 因为搜索方向上的最优点并不是多元函数的最优点，在多元函数优化过程中，找到搜索方向上的最优点也没有必要。只要保证步长使得函数在搜索方向上下降足够多就可以了。因此，在实际的多元函数优化中，当需要确定在搜索方向上的步长时，常常并不采用精确的一元函数优化算法，而是规定一个“在搜索方向上足够下降”的标准，然后只要找到满足这样标准的点即可。
 
 
-Strong wolfe Condition 是一个常用的不精确线搜索的判据，其判据如下：
+[**Strong wolfe condition**](https://www.wikiwand.com/en/Wolfe_conditions) 是一个常用的不精确线搜索的判据，其判据如下：
 
 $$
 \left\{
@@ -337,7 +336,7 @@ f(x_k + \alpha_k p_k)&\leq f(x_k) + c_1 \alpha_k \nabla f_k^T p_k\\
 $$
 
 
-在上式中，c1 与 c2 满足 `0 < c1 < c2 < 1`, 其中，第一个不等式被称作 sufficient decrease condition，第二个不等式被称作 curvature condition。如果步长满足 sufficient decrease condition, 则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
+在上式中，$c_1$ 与 $c_2$ 满足 $0&lt;c_1&lt;c_2&lt1;$, 其中，第一个不等式被称作 **sufficient decrease condition**，第二个不等式被称作 **curvature condition**。如果步长满足 sufficient decrease condition, 则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
 
 下图是 strong wolfe condition 的一个例子，对于图中一维函数，只要最终步长选在位于 "acceptable" 的区间内即可。:
 
@@ -402,7 +401,13 @@ public:
 
 ### 6.1 梯度下降法
 
-梯度下降法的实现如下，梯度下降法假定函数在搜索域内总是一阶可导，它给定一个初始点，沿着梯度的方向做线搜索，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
+梯度下降法的实现如下，梯度下降法假定函数在搜索域内总是一阶可导，队一个函数$~f~$,给定一个初始点$~x_k$，求出其梯度$~g_k=\nabla f(x_k)$，则搜索方向$~d_k = -g_k$，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
+
+梯度下降法算法描述如下：
+1. 对初始点 $x_k$，求出其梯度 $g_k = \nabla f(x_k)$，若 $g_k \leq g_{zero}$，或者达到 $max\_iter$，则判定收敛。
+2. 搜索方向 $d_k = -g_k$
+3. 在搜索方向上做一维搜索，找出最优步长$~\lambda_k=\arg\min_{\lambda} f(x_k + \lambda d_k)$
+4. $x_{k+1} = x_k + \lambda_k d_k$，置$k = k+1$，转 step 1。
 
 梯度下降法实现代码如下：
 
@@ -438,9 +443,20 @@ Solution GradientDescent::optimize() noexcept
 ```
 ### 6.2 共轭梯度法
 
-当目标函数在极值点附近的条件数（即Hessian矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象, 导致收敛较慢。共轭梯度法(Conjugate Gradient Method)可以克服这种问题，它选择共轭梯度方向作为搜索方向。可以证明，如果目标函数在极值点附近是二次的，对于N维函数，则只需要N次一维查找，就可以找到极值点。当然上面的一维查找指的是精确的一维查找。如果使用不精确一维查找或者问题的阶数高于二阶，N为问题需要的查找次数会大于N。
+当目标函数在极值点附近的条件数（即 Hessian 矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象, 导致收敛较慢。共轭梯度法（Conjugate Gradient Method）可以克服这种问题，它选择共轭梯度方向作为搜索方向。可以证明，如果目标函数在极值点附近是二次的，对于 N 维函数，则只需要 N 次一维查找，就可以找到极值点。当然上面的一维查找指的是精确的一维查找。如果使用不精确一维查找或者问题的阶数高于二阶，N 维问题需要的查找次数会大于N。
 
-对于一个N维矩阵 $A$, 如果向量 $u$, $v$，满足 $u^T A v = 0$, 则这两个向量对于矩阵 $A$ 共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索N步。如果N步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索N部。如此循环，直至找到极值点。
+对于一个 N 维矩阵 $A$, 如果向量 $u$, $v$，满足 $u^T A v = 0$，则这两个向量对于矩阵 $A$ 共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索 N 步。如果 N 步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索 N 步。如此循环，直至找到极值点。
+
+共轭梯度法算法描述如下
+1. $k=1$，$x_k$ 为初始点，计算梯度$~g_k = \nabla f(x_k)$，若 $g_k \leq g_{zero}$ 或者达到最大迭代次数，则算法终止。否则，选择搜索方向 $d_k = -1g_k$
+2. 在搜索方向上做一维搜索，找到最优步长 
+	* $\lambda_k= \arg\min_\lambda f(x_k + \lambda * d_k)$
+	* $x_{k+1} = x_k + \lambda_k d_k$。
+3. 计算 $x_{k+1}$ 点的梯度 $g_{k+1} = \nabla f(x_{k+1})$，计算$d_{k+1}$:
+	* $\beta = \frac{|g_{k+1}|^2}{|g_k|^2}$
+    * $d_{k+1} = -g_{k+1} + \beta d_k$。
+4. $k=k+1$，若$k \leq dim-1$，则转step 2, 否则，若 $g_k \leq g_{zero}$, 则算法终止，否则转 step 1。
+
 
 共轭梯度法的实现代码如下:
 
@@ -484,11 +500,17 @@ Solution ConjugateGradient::optimize() noexcept
     return sol;
 }
 ```
+
 ### 6.3 牛顿法
 
 梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。
 
-对于一个目标函数 $f$ , 一个输入点 $\vec x$, 先求出在 $\vec x$ 点处的梯度 $\vec g$, 再求出函数在 $\vec x$ 点的 hessian 矩阵 $H$，则搜索方向 $\vec d$ 为线性方程 $H \vec d = -\vec g$ 的解。
+牛顿法算法描述如下：
+
+1. 对于初始点 $x_k$，求出梯度 $g_k=\nabla f(x_k)$，若 $g_k \leq g_{zero}$，则判定收敛，算法终止。
+2. 求出 Hessian 矩阵 $H_k$，计算搜索方向 $d_k = -H_k g_k$。
+3. 在搜索方向上做一维搜索，计算最优步长 $\lambda_k = \arg\min_\lambda~f(x_k + \lambda d_k)$
+4. $x_{k+1} = x_k + \lambda_k d_k$，转 step 1。
 
 牛顿法的实现代码如下:
 
@@ -530,7 +552,7 @@ Solution Newton::optimize() noexcept
 
 ### 6.4 拟牛顿法：BFGS法与DFP法
 
-Newton法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出Hessian矩阵，则要用有限差分的方法近似Hessian矩阵。对于N维的问题，其复杂度为O(N^2)，当目标函数的维度上升时，求Hessian矩阵的代价就会变得不可接受。拟牛顿法通过迭代的方法，来近似Hessian矩阵。常见的拟牛顿法有DFP法与BFGS法。
+Newton 法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出 Hessian 矩阵，则要用有限差分的方法近似Hessian矩阵。对于N维的问题，其复杂度为$~O(N^2)$，当目标函数的维度上升时，求 Hessian 矩阵的代价就会变得不可接受。拟牛顿法通过迭代的方法，来近似 Hessian 矩阵。常见的拟牛顿法有 DFP 法与 BFGS 法。
 
 BFGS法的实现代码如下:
 
