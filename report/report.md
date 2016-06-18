@@ -583,18 +583,20 @@ G_{k+1} = G_k + \frac{\delta_k \delta_k^T}{\delta_k^T y_k} - \frac{G_k y_k y_k^T
 $$
 
 对BFGS
+
 $$
-\begin{equation}
+\begin{eqnarray}
 \left\{
-\begin{aligned}
-\mu_k &= 1 + \frac{y_k^TH_ky_k}{\delta_ky_k}\\
-G_{k+1} &= G_k + \frac{\mu_k\delta_k\delta_k^T - H_ky_k\delta_k^T - \delta_ky_k^TH_k}{\delta_k^T y_k}\\
-\end{aligned}
+\begin{array}{rll}
+\mu_k &= &1 + \frac{y_k^TH_ky_k}{\delta_ky_k}\\
+G_{k+1} &=& G_k + \frac{\mu_k\delta_k\delta_k^T - H_ky_k\delta_k^T - \delta_ky_k^TH_k}{\delta_k^T y_k}\\
+\end{array}
 \right.
-\end{equation}
+\end{eqnarray}
 $$
 
-搜索方向 $d_k = -H_k g_k$
+搜索方向 
+$$d_k = -H_k g_k$$
 
 BFGS法的实现代码如下:
 
