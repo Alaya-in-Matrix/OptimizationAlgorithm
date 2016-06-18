@@ -552,7 +552,49 @@ Solution Newton::optimize() noexcept
 
 ### 6.4 拟牛顿法：BFGS法与DFP法
 
-Newton 法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出 Hessian 矩阵，则要用有限差分的方法近似Hessian矩阵。对于N维的问题，其复杂度为$~O(N^2)$，当目标函数的维度上升时，求 Hessian 矩阵的代价就会变得不可接受。拟牛顿法通过迭代的方法，来近似 Hessian 矩阵。常见的拟牛顿法有 DFP 法与 BFGS 法。
+Newton 法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出 Hessian 矩阵，则要用有限差分的方法近似 Hessian 矩阵。对于N维的问题，其复杂度为 $O(N^2)$，当目标函数的维度上升时，求 Hessian 矩阵的代价就会变得不可接受。拟牛顿法（Quasi-Newton Method）通过迭代的方法，来近似 Hessian 矩阵。常见的拟牛顿法有 DFP 法与 BFGS 法。
+
+在牛顿法迭代过程中，Hessian 矩阵满足如下关系:
+
+$$
+g_{k+1} - g_k = H_k (x_{k+1} - x_k)
+$$
+
+记 $y_k = g_{k+1} - g_k$，$\delta_k = x_{k+1} - x_k$，则:
+
+$$
+y_k = H_k \delta_k
+$$
+
+或者:
+
+$$
+\delta_k = H_k^{-1} y_k
+$$
+
+上面两式称作**拟牛顿条件**。如果 $H_k$ 是正定的，则搜索方向 $d_k = -H_k g_k$ 是一个下降方向。
+
+选定初始的正定矩阵 $G_0$，对于空间中点 $x_k$，其梯度 $g_k$
+
+对 DFP 法，G 矩阵如此确定
+
+$$
+G_{k+1} = G_k + \frac{\delta_k \delta_k^T}{\delta_k^T y_k} - \frac{G_k y_k y_k^T G_k}{y_k^T G_k y_k}
+$$
+
+对BFGS
+$$
+\begin{equation}
+\left\{
+\begin{aligned}
+\mu_k &= 1 + \frac{y_k^TH_ky_k}{\delta_ky_k}\\
+G_{k+1} &= G_k + \frac{\mu_k\delta_k\delta_k^T - H_ky_k\delta_k^T - \delta_ky_k^TH_k}{\delta_k^T y_k}\\
+\end{aligned}
+\right.
+\end{equation}
+$$
+
+搜索方向 $d_k = -H_k g_k$
 
 BFGS法的实现代码如下:
 
