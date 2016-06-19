@@ -1,6 +1,6 @@
 % 优化算法实现报告
 % Author: [lvwenlong_lambda@qq.com](mailto:lvwenlong_lambda@qq.com)
-% Last Modified: 2016/06/18-20:24:18
+% Last Modified: 2016/06/19-13:41:55
 
 ## 1. project 简介 
 
@@ -10,10 +10,10 @@
 * 基于 strong wolfe condition 的不精确线搜索方法
 * 梯度下降法（Gradient Descent Method）
 * 共轭梯度法（Conjugate Gradient Method）
-* 牛顿法（Newton's Method）
+* 牛顿法（Newton Method）
 * 拟牛顿法法（Quasi Newton Method），包括 BFGS 算法与 DFP 算法。
 * 单纯形法（Simplex Method）
-* 鲍威尔法（Powell's Method）
+* 鲍威尔法（Powell Method）
 
 ## 2. 编译与构建
 
@@ -32,12 +32,12 @@ cd ..
 
 要安装 CMake，在 ubuntu 系统中，可以直接 `sudo apt-get install cmake` 来执行，在 Windows 系统中，可以去网站下载安装包。在其他系统中，可以查看 CMake 网站相关帮助。
 
-在运行`cmake ..`命令时，可以通过下列的两个命令行选项来控制程序的行为：
+在运行 `cmake ..` 命令时，可以通过下列的两个命令行选项来控制程序的行为：
 
 * `-DWRITE_LOG=ON/OFF`，是否在优化时对每个点进行记录，如果为 `OFF` 则只记录最终的最优点
 * `-DDEBUG_OPTIMIZER=ON/OFF`，是否开启debug模式，如果为 `ON`，则会使用统一的随机数发生器种子，这样保证每次运行，都得到相同的结果。
 
-许多算法都需要矩阵运算，在 project 中，矩阵运算调用 [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)实现
+许多算法都需要矩阵运算，在 project 中，矩阵运算调用 [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) 实现
 
 ## 3. 基本数据结构
 
@@ -126,7 +126,7 @@ Fibonacci 法需要提供一个一维目标函数，同时，需要提供搜索�
 
 Fibonacci 的基本思路是，希望在区间 $[a_1,a_2]$ 内寻找函数 $f$ 的最小值，则在 $[a_1, a_2]$ 内找两个点 $a_3$ 与 $a_4$ ，分别计算 $y_3 = f(a_3)$ 与 $y_4 = f(a_4)$ ，比较 $y_3$ 与 $y_4$ 的值，若 $y_3 < y_4$，则说明最小值在 $[a_1, a_4]$ 区间内，若 $y_3 > y_4$, 则说明最小值在 $[a_3, a_2]$ 区间内，然后依此递归。
 
-Fibonacci 法靠 Fibonacci 数列来确定 $a_3$ 与 $a_4$ 的值，因为迭代次数 `_iter` 已经确定，因此可以事先计算出从0到 `_iter` 的Fibonacci 数列，对于第`i`次迭代（从0开始），计算 `rate = fib_list[_iter - 1 - i] / fib_list[_iter - i]`, 然后，令`a3 = a2 - rate * (a2 - a1)`, 令`a4 = a1 + rate * (a2 - a1)`
+Fibonacci 法靠 Fibonacci 数列来确定 $a_3$ 与 $a_4$ 的值，因为迭代次数 $iter$ 已经确定，因此可以事先计算出从 0 到 $iter$ 的 Fibonacci 数列，对于第`i`次迭代（从 0 开始），计算 $rate=fib_{iter-1-i} / fib_{iter-i}$，然后，令 $a3 = a2 - rate * (a2 - a1)$, 令 $a4 = a1 + rate * (a2 - a1)$。
 
 Fibonacci 法实现代码如下:
 
@@ -447,14 +447,14 @@ public:
 
 ### 6.1 梯度下降法
 
-梯度下降法的实现如下，梯度下降法假定函数在搜索域内总是一阶可导，队一个函数 $f$，给定一个初始点$~x_k$，求出其梯度$~g_k=\nabla f(x_k)$，则搜索方向$~d_k = -g_k$，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
+梯度下降法假定函数在搜索域内总是一阶可导，对一个函数 $f$，给定一个初始点$~x_k$，梯度$~g_k=\nabla f(x_k)$，则搜索方向$~d_k=-g_k$，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
 
 
 梯度下降法算法描述如下：
 
 1. 对初始点 $x_k$，求出其梯度 $g_k = \nabla f(x_k)$，若 $g_k \leq g_{zero}$，或者达到 $max\_iter$，则判定收敛。
 2. 搜索方向 $d_k = -g_k$
-3. 在搜索方向上做一维搜索，找出最优步长$~\lambda_k=\arg\min_{\lambda} f(x_k + \lambda d_k)$
+3. 在搜索方向上做一维搜索，找出最优步长$~\lambda_k=\arg\min_{\lambda}~f(x_k + \lambda d_k)$
 4. $x_{k+1} = x_k + \lambda_k d_k$，置$k = k+1$，转 step 1。
 
 梯度下降法实现代码如下：
@@ -560,7 +560,7 @@ Solution ConjugateGradient::optimize() noexcept
 
 ### 6.3 牛顿法
 
-梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。
+梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian 矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。
 
 牛顿法算法描述如下：
 
@@ -852,7 +852,7 @@ Solution NelderMead::optimize() noexcept
 }
 ```
 
-### 6.6 Powell's Method
+### 6.6 Powell Method
 
 ```cpp
 Solution Powell::optimize() noexcept
