@@ -24,7 +24,7 @@ int main()
     system("clear && rm -rf *.log");
     cout << "seed: " << rseed << endl;
 
-    vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 3}};
+    vector<pair<double, double>> rg_rosenbrock{{-1.5, 2}, {-0.5, 5}};
     compare(rosenbrock, rg_rosenbrock, "Rosenbrock");
 
     // vector<pair<double, double>> rg_sphere(3, {-10, 10});

@@ -1,6 +1,6 @@
 % 优化算法实现报告
 % Author: [lvwenlong_lambda@qq.com](mailto:lvwenlong_lambda@qq.com)
-% Last Modified: 2016/06/19-20:28:24
+% Last Modified: 2016/06/19-23:35:19
 
 
 
@@ -876,9 +876,9 @@ Solution NelderMead::optimize() noexcept
 }
 ```
 
-### Powell Method
+### 鲍威尔法
 
-Powell Method 的实现代码如下：
+鲍威尔法的实现代码如下：
 
 ```cpp
 Solution Powell::optimize() noexcept
@@ -922,3 +922,41 @@ Solution Powell::optimize() noexcept
     return sol;
 }
 ```
+<div style='display:none'>
+$\pagebreak$
+</div>
+
+## Benchmark
+
+使用Rosenbrock函数来比较不同优化算法的性能。Rosenbrock 函数如下定义：
+
+$$
+f(x, y) = (1-x)^2 + 100 * (y - x^2)^2
+$$
+
+Figure 2 为 Rosenbrock 函数的等高线图，为增强显示效果，图中函数值对 10 取对数，即 $val = \log_{10}f(x, y)$
+
+![Contour of $\log_{10}f(x, y)$](./img/rosenbrock_contour.jpg)
+
+将 $(-0.76, 2.55)$ 设为初始点 （单纯形法除外，单纯形法初始需要 N + 1 个点，N 为维度），程序运行结果以及图示见下表以及下图。其中 `NumLineSearch` 表示程序做一维搜索的次数，即为图上点的数量。而对于梯度法以及鲍威尔法，确定搜索方向后，要找到下一个点，还需要在一维搜索上话费数次函数执行，表中 `NumEvaluation` 一列表示算法优化过程中实际的函数执行次数。可以看出，梯度下降法表现最差，而单纯形法表现最好。
+
+需要说明的是，表中数据只是不同算法对 Rosenbrock 函数以及 $(-0.76, 2.55)$ 这一个初始点的性能，换一个比较函数，换一个初始点，都可能会有不同的结果。
+
+Algorithm        |Fom     |NumLineSearch|NumEvaluation
+-----------------|--------|-------------|-------------
+GradientDescent  |1.42e-4 |639          |   6516
+ConjugateGradient|5.29e-9 |48           |   694
+Newton           |1.01e-5 |11           |   200
+DFP              |2.68e-6 |25           |   367
+BFGS             |3.82e-6 |29           |   430
+Simplex          |2.44e-11|0            |   170
+Powell           |9.46e-11|70           |   739
+
+Table: Compare of different algorithms
+
+![Compare of Algorithms](./img/rosenbrock_compare_algo1.jpg)
+![Compare of Algorithms](./img/rosenbrock_compare_algo2.jpg)
+
+
+
+
