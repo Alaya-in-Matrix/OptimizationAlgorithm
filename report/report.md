@@ -1,6 +1,6 @@
 % 优化算法实现报告
 % Author: [lvwenlong_lambda@qq.com](mailto:lvwenlong_lambda@qq.com)
-% Last Modified: 2016/06/19-13:41:55
+% Last Modified: 2016/06/19-16:22:53
 
 ## 1. project 简介 
 
@@ -766,6 +766,29 @@ Solution DFP::optimize() noexcept
 ```
 ### 6.5 单纯形法
 
+
+算法参数: 
+
+* $\alpha > 0$
+* $\gamma > 0$
+* $0 < \rho\leq0.5$
+* $0<\sigma\leq1$
+
+单纯形法算法描述如下:
+
+1. 初始化，选取 $dim+1$ 个初始点，并对其求值，组成集合 $S$
+2. 若达到最大迭代次数，或者达到收敛条件，算法终止。
+3. $S$ 中的结果进行排序，选出最差结果 $w$, 第二差的结果 $s$，以及最好的结果 $b$。
+4. 算 $S$ 中，除了 $w$ 以外的其他所有点的中点 $c$
+5. 算反射点 $r = c + \alpha (c - w)$。
+6. 若 $f(b) \le f(r) \leq f(s)$, 则用 $r$ 在 $S$ 中更新 $w$，并转 step 2
+7. 若 $f(r) < f(b)$，则计算 $e = 2 c + \gamma (r - c)$, 并用 $f(e)$ 与 $f(r)$ 中较小的一组解更新 $w$，并转 step 2
+8. 计算 ${cr} = c + \rho (w - c)$。
+9. 若 $f({cr}) < f(w)$，则用 ${cr}$ 更新 $w$，并转 step 2
+10. 否则，更新所有点，将所有点向 $b$ 靠拢，对 $S$ 中的任意点 $p$，更新 $p = b + \sigma * (p - b)$。
+
+
+单纯形法实现的代码如下：
 ```cpp
 double NelderMead::update_sols(size_t idx,
                                const Solution& new_sol) noexcept
@@ -853,6 +876,8 @@ Solution NelderMead::optimize() noexcept
 ```
 
 ### 6.6 Powell Method
+
+Powell Method 的实现代码如下：
 
 ```cpp
 Solution Powell::optimize() noexcept
