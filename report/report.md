@@ -1,9 +1,8 @@
 % 优化算法实现报告
 % Author: [lvwenlong_lambda@qq.com](mailto:lvwenlong_lambda@qq.com)
-% Last Modified: 2016/06/19-19:28:59
+% Last Modified: 2016/06/19-20:28:24
 
 
-$\pagebreak$
 
 ## project 简介 
 
@@ -39,7 +38,6 @@ cd ..
 * `-DDEBUG_OPTIMIZER=ON/OFF`，是否开启debug模式，如果为 `ON`，则会使用统一的随机数发生器种子，这样保证每次运行，都得到相同的结果。
 
 许多算法都需要矩阵运算，在 project 中，矩阵运算调用 [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) 实现
-$\pagebreak$
 
 ## 基本数据结构
 
@@ -84,7 +82,6 @@ typedef std::function<Solution(const Paras&)> ObjFunc;
 
 对于目标函数的表示，我采用了 c\+\+11 中函数式编程的特性。在 c\+\+11 中，可以用 lambda expression 来表示一个函数，这样表示的函数可以作为数据处理，可以作为另一个函数的输入参数，也可以作为一个函数的返回值。在这个 project 中，目标函数表示为一个输入为`const Paras&`，输出类型为`Solution`的函数。这个函数由用户定义，并作为 optimizer 的构造函数的一个参数。
 
-$\pagebreak$
 
 ## 一维优化算法
 
@@ -339,7 +336,6 @@ Solution Extrapolation::optimize() noexcept
     return GoldenSelection(_func, xa, xc, gso_iter).optimize();
 }
 ```
-$\pagebreak$
 
 ## 不精确线搜索 
 
@@ -367,7 +363,6 @@ Figure 1 是 strong wolfe condition 的一个例子，对于图中一维函数�
 
 Strong wolfe condition 不精确线搜索算法代码，可以去 src/Optimizer/StrongWolfe.cpp 中查看。
 
-$\pagebreak$
 
 ## 多维函数优化
 
@@ -927,4 +922,3 @@ Solution Powell::optimize() noexcept
     return sol;
 }
 ```
-$\pagebreak$
