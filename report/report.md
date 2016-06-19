@@ -1,8 +1,11 @@
 % 优化算法实现报告
 % Author: [lvwenlong_lambda@qq.com](mailto:lvwenlong_lambda@qq.com)
-% Last Modified: 2016/06/19-16:22:53
+% Last Modified: 2016/06/19-19:28:59
 
-## 1. project 简介 
+
+$\pagebreak$
+
+## project 简介 
 
 这个 project 是杜建洪老师课程中介绍的优化算法的 c++ 实现。实现了如下算法：
 
@@ -14,8 +17,6 @@
 * 拟牛顿法法（Quasi Newton Method），包括 BFGS 算法与 DFP 算法。
 * 单纯形法（Simplex Method）
 * 鲍威尔法（Powell Method）
-
-## 2. 编译与构建
 
 这个 project 使用 **CMake** 来 build，使用者需要在系统中事先安装 CMake，程序是在 ubuntu 操作系统下编写与测试，在 g++ 4.8 版本编译器与clang 3.7 中编译测试成功。CMake 也可以生成 Windows 下 Visual Studio 的工程文件，具体的使用请参考 CMake 手册。
 
@@ -38,8 +39,9 @@ cd ..
 * `-DDEBUG_OPTIMIZER=ON/OFF`，是否开启debug模式，如果为 `ON`，则会使用统一的随机数发生器种子，这样保证每次运行，都得到相同的结果。
 
 许多算法都需要矩阵运算，在 project 中，矩阵运算调用 [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) 实现
+$\pagebreak$
 
-## 3. 基本数据结构
+## 基本数据结构
 
 这个 project 关注的重点在算法运行的迭代次数。因此，并没对算法运行时采用的数据结构进行优化。
 
@@ -82,7 +84,9 @@ typedef std::function<Solution(const Paras&)> ObjFunc;
 
 对于目标函数的表示，我采用了 c\+\+11 中函数式编程的特性。在 c\+\+11 中，可以用 lambda expression 来表示一个函数，这样表示的函数可以作为数据处理，可以作为另一个函数的输入参数，也可以作为一个函数的返回值。在这个 project 中，目标函数表示为一个输入为`const Paras&`，输出类型为`Solution`的函数。这个函数由用户定义，并作为 optimizer 的构造函数的一个参数。
 
-## 4. 一维优化算法
+$\pagebreak$
+
+## 一维优化算法
 
 一维函数优化是优化算法的基本，即使是多元函数，在确定了下一步搜索方向之后，也往往在搜索方向上进行线搜索（line search），在这个 project 中，实现了 Fibonacci 法，黄金分割法和外推这三个优化算法。
 
@@ -104,7 +108,7 @@ class Optimizer1D
 
 `Optimizer1D::optimize()`是一个纯虚类，所有继承 `Optimizer1D` 类的派生类都需要实现这个方法，具体的一维优化算法就实现在这里。
 
-### 4.1 Fibonacci 法
+### Fibonacci 法
 
 Fibonacci 法的类型声明如下:
 
@@ -175,7 +179,7 @@ Solution FibOptimizer::optimize() noexcept
 ```
 
 
-### 4.2 黄金分割法
+### 黄金分割法
 
 黄金分割法的类型声明如下, 其类型声明以与 Fibonacci 法一致。
 
@@ -241,7 +245,7 @@ Solution GoldenSelection::optimize() noexcept
 }
 ```
 
-### 4.3 外推法
+### 外推法
 
 黄金分割法与 Fibonacci 法都需要事先知道最优点的范围，而外推法则可以适用于最优点范围不知道的情况，它先寻找一个最优点的范围，然后再去调用其他优化算法，比如黄金分隔法或二次插值法在找到的范围内进行优化。
 
@@ -335,8 +339,9 @@ Solution Extrapolation::optimize() noexcept
     return GoldenSelection(_func, xa, xc, gso_iter).optimize();
 }
 ```
+$\pagebreak$
 
-## 5. 不精确线搜索 
+## 不精确线搜索 
 
 上一节实现的一维优化算法，都是期望找到在搜索方向上的最优点。但是，很多时候，找到严格意义上的最优点，往往需要很多次迭代; 而且, 因为搜索方向上的最优点并不是多元函数的最优点，在多元函数优化过程中，找到搜索方向上的最优点也没有必要。只要保证步长使得函数在搜索方向上下降足够多就可以了。因此，在实际的多元函数优化中，当需要确定在搜索方向上的步长时，常常并不采用精确的一元函数优化算法，而是规定一个“在搜索方向上足够下降”的标准，然后只要找到满足这样标准的点即可。
 
@@ -362,8 +367,9 @@ Figure 1 是 strong wolfe condition 的一个例子，对于图中一维函数�
 
 Strong wolfe condition 不精确线搜索算法代码，可以去 src/Optimizer/StrongWolfe.cpp 中查看。
 
+$\pagebreak$
 
-## 6. 多维函数优化
+## 多维函数优化
 
 首先定义了两个基类, `MultiDimOptimizer` 与 `GradientMethod`，其中，`MultiDimOptimizer` 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数维度、最大迭代次数，最大与最小步长等。
 
@@ -445,7 +451,7 @@ public:
 };
 ```
 
-### 6.1 梯度下降法
+### 梯度下降法
 
 梯度下降法假定函数在搜索域内总是一阶可导，对一个函数 $f$，给定一个初始点$~x_k$，梯度$~g_k=\nabla f(x_k)$，则搜索方向$~d_k=-g_k$，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。
 
@@ -491,7 +497,7 @@ Solution GradientDescent::optimize() noexcept
     return sol;
 }
 ```
-### 6.2 共轭梯度法
+### 共轭梯度法
 
 当目标函数在极值点附近的条件数（即 Hessian 矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象, 导致收敛较慢。共轭梯度法（Conjugate Gradient Method）可以克服这种问题，它选择共轭梯度方向作为搜索方向。
 
@@ -558,7 +564,7 @@ Solution ConjugateGradient::optimize() noexcept
 }
 ```
 
-### 6.3 牛顿法
+### 牛顿法
 
 梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian 矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。
 
@@ -610,7 +616,7 @@ Solution Newton::optimize() noexcept
 }
 ```
 
-### 6.4 拟牛顿法：BFGS法与DFP法
+### 拟牛顿法：BFGS法与DFP法
 
 Newton 法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出 Hessian 矩阵，则要用有限差分的方法近似 Hessian 矩阵。对于N维的问题，其复杂度为 $O(N^2)$，当目标函数的维度上升时，求 Hessian 矩阵的代价就会变得不可接受。拟牛顿法（Quasi-Newton Method）通过迭代的方法，来近似 Hessian 矩阵。常见的拟牛顿法有 DFP 法与 BFGS 法。
 
@@ -764,7 +770,7 @@ Solution DFP::optimize() noexcept
     return sol;
 }
 ```
-### 6.5 单纯形法
+### 单纯形法
 
 
 算法参数: 
@@ -875,7 +881,7 @@ Solution NelderMead::optimize() noexcept
 }
 ```
 
-### 6.6 Powell Method
+### Powell Method
 
 Powell Method 的实现代码如下：
 
@@ -921,3 +927,4 @@ Solution Powell::optimize() noexcept
     return sol;
 }
 ```
+$\pagebreak$
