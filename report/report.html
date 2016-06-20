@@ -1,0 +1,1363 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style>
+/*! normalize.css v2.1.3 | MIT License | git.io/normalize */
+
+/* ==========================================================================
+   HTML5 display definitions
+   ========================================================================== */
+
+/**
+ * Correct `block` display not defined in IE 8/9.
+ */
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+main,
+nav,
+section,
+summary {
+    display: block;
+}
+
+/**
+ * Correct `inline-block` display not defined in IE 8/9.
+ */
+
+audio,
+canvas,
+video {
+    display: inline-block;
+}
+
+/**
+ * Prevent modern browsers from displaying `audio` without controls.
+ * Remove excess height in iOS 5 devices.
+ */
+
+audio:not([controls]) {
+    display: none;
+    height: 0;
+}
+
+/**
+ * Address `[hidden]` styling not present in IE 8/9.
+ * Hide the `template` element in IE, Safari, and Firefox < 22.
+ */
+
+[hidden],
+template {
+    display: none;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+/**
+ * 1. Set default font family to sans-serif.
+ * 2. Prevent iOS text size adjust after orientation change, without disabling
+ *    user zoom.
+ */
+
+html {
+    font-family: sans-serif; /* 1 */
+    -ms-text-size-adjust: 100%; /* 2 */
+    -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/**
+ * Remove default margin.
+ */
+
+body {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Links
+   ========================================================================== */
+
+/**
+ * Remove the gray background color from active links in IE 10.
+ */
+
+a {
+    background: transparent;
+}
+
+/**
+ * Address `outline` inconsistency between Chrome and other browsers.
+ */
+
+a:focus {
+    outline: thin dotted;
+}
+
+/**
+ * Improve readability when focused and also mouse hovered in all browsers.
+ */
+
+a:active,
+a:hover {
+    outline: 0;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+/**
+ * Address variable `h1` font-size and margin within `section` and `article`
+ * contexts in Firefox 4+, Safari 5, and Chrome.
+ */
+
+h1 {
+    font-size: 2em;
+    margin: 0.67em 0;
+}
+
+/**
+ * Address styling not present in IE 8/9, Safari 5, and Chrome.
+ */
+
+abbr[title] {
+    border-bottom: 1px dotted;
+}
+
+/**
+ * Address style set to `bolder` in Firefox 4+, Safari 5, and Chrome.
+ */
+
+b,
+strong {
+    font-weight: bold;
+}
+
+/**
+ * Address styling not present in Safari 5 and Chrome.
+ */
+
+dfn {
+    font-style: italic;
+}
+
+/**
+ * Address differences between Firefox and other browsers.
+ */
+
+hr {
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    height: 0;
+}
+
+/**
+ * Address styling not present in IE 8/9.
+ */
+
+mark {
+    background: #ff0;
+    color: #000;
+}
+
+/**
+ * Correct font family set oddly in Safari 5 and Chrome.
+ */
+
+code,
+kbd,
+pre,
+samp {
+    font-family: monospace, serif;
+    font-size: 1em;
+}
+
+/**
+ * Improve readability of pre-formatted text in all browsers.
+ */
+
+pre {
+    white-space: pre-wrap;
+}
+
+/**
+ * Set consistent quote types.
+ */
+
+q {
+    quotes: "\201C" "\201D" "\2018" "\2019";
+}
+
+/**
+ * Address inconsistent and variable font size in all browsers.
+ */
+
+small {
+    font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` affecting `line-height` in all browsers.
+ */
+
+sub,
+sup {
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
+}
+
+sup {
+    top: -0.5em;
+}
+
+sub {
+    bottom: -0.25em;
+}
+
+/* ==========================================================================
+   Embedded content
+   ========================================================================== */
+
+/**
+ * Remove border when inside `a` element in IE 8/9.
+ */
+
+img {
+    border: 0;
+}
+
+/**
+ * Correct overflow displayed oddly in IE 9.
+ */
+
+svg:not(:root) {
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Figures
+   ========================================================================== */
+
+/**
+ * Address margin not present in IE 8/9 and Safari 5.
+ */
+
+figure {
+    margin: 0;
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+/**
+ * Define consistent border, margin, and padding.
+ */
+
+fieldset {
+    border: 1px solid #c0c0c0;
+    margin: 0 2px;
+    padding: 0.35em 0.625em 0.75em;
+}
+
+/**
+ * 1. Correct `color` not being inherited in IE 8/9.
+ * 2. Remove padding so people aren't caught out if they zero out fieldsets.
+ */
+
+legend {
+    border: 0; /* 1 */
+    padding: 0; /* 2 */
+}
+
+/**
+ * 1. Correct font family not being inherited in all browsers.
+ * 2. Correct font size not being inherited in all browsers.
+ * 3. Address margins set differently in Firefox 4+, Safari 5, and Chrome.
+ */
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit; /* 1 */
+    font-size: 100%; /* 2 */
+    margin: 0; /* 3 */
+}
+
+/**
+ * Address Firefox 4+ setting `line-height` on `input` using `!important` in
+ * the UA stylesheet.
+ */
+
+button,
+input {
+    line-height: normal;
+}
+
+/**
+ * Address inconsistent `text-transform` inheritance for `button` and `select`.
+ * All other form control elements do not inherit `text-transform` values.
+ * Correct `button` style inheritance in Chrome, Safari 5+, and IE 8+.
+ * Correct `select` style inheritance in Firefox 4+ and Opera.
+ */
+
+button,
+select {
+    text-transform: none;
+}
+
+/**
+ * 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio`
+ *    and `video` controls.
+ * 2. Correct inability to style clickable `input` types in iOS.
+ * 3. Improve usability and consistency of cursor style between image-type
+ *    `input` and others.
+ */
+
+button,
+html input[type="button"], /* 1 */
+input[type="reset"],
+input[type="submit"] {
+    -webkit-appearance: button; /* 2 */
+    cursor: pointer; /* 3 */
+}
+
+/**
+ * Re-set default cursor for disabled elements.
+ */
+
+button[disabled],
+html input[disabled] {
+    cursor: default;
+}
+
+/**
+ * 1. Address box sizing set to `content-box` in IE 8/9/10.
+ * 2. Remove excess padding in IE 8/9/10.
+ */
+
+input[type="checkbox"],
+input[type="radio"] {
+    box-sizing: border-box; /* 1 */
+    padding: 0; /* 2 */
+}
+
+/**
+ * 1. Address `appearance` set to `searchfield` in Safari 5 and Chrome.
+ * 2. Address `box-sizing` set to `border-box` in Safari 5 and Chrome
+ *    (include `-moz` to future-proof).
+ */
+
+input[type="search"] {
+    -webkit-appearance: textfield; /* 1 */
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box; /* 2 */
+    box-sizing: content-box;
+}
+
+/**
+ * Remove inner padding and search cancel button in Safari 5 and Chrome
+ * on OS X.
+ */
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/**
+ * Remove inner padding and border in Firefox 4+.
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/**
+ * 1. Remove default vertical scrollbar in IE 8/9.
+ * 2. Improve readability and alignment in all browsers.
+ */
+
+textarea {
+    overflow: auto; /* 1 */
+    vertical-align: top; /* 2 */
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+/**
+ * Remove most spacing between table cells.
+ */
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.go-top {
+position: fixed;
+bottom: 2em;
+right: 2em;
+text-decoration: none;
+background-color: #E0E0E0;
+font-size: 12px;
+padding: 1em;
+display: inline;
+}
+
+/* Github css */
+
+html,body{        margin: auto;
+    padding-right: 1em;
+    padding-left: 1em;
+    max-width: 70em; color:black;}*:not('#mkdbuttons'){margin:0;padding:0}body{font:13.34px helvetica,arial,freesans,clean,sans-serif;-webkit-font-smoothing:subpixel-antialiased;line-height:1.4;padding:3px;background:#fff;border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px}p{margin:1em 0}a{color:#4183c4;text-decoration:none}body{background-color:#fff;padding:30px;margin:15px;font-size:14px;line-height:1.6}body>*:first-child{margin-top:0!important}body>*:last-child{margin-bottom:0!important}@media screen{body{box-shadow:0 0 0 1px #cacaca,0 0 0 4px #eee}}h1,h2,h3,h4,h5,h6{margin:20px 0 10px;padding:0;font-weight:bold;-webkit-font-smoothing:subpixel-antialiased;cursor:text}h1{font-size:28px;color:#000}h2{font-size:24px;border-bottom:1px solid #ccc;color:#000}h3{font-size:18px;color:#333}h4{font-size:16px;color:#333}h5{font-size:14px;color:#333}h6{color:#777;font-size:14px}p,blockquote,table,pre{margin:15px 0}ul{padding-left:30px}ol{padding-left:30px}ol li ul:first-of-type{margin-top:0}hr{background:transparent url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OENDRjNBN0E2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OENDRjNBN0I2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4Q0NGM0E3ODY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4Q0NGM0E3OTY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqqezsUAAAAfSURBVHjaYmRABcYwBiM2QSA4y4hNEKYDQxAEAAIMAHNGAzhkPOlYAAAAAElFTkSuQmCC) repeat-x 0 0;border:0 none;color:#ccc;height:4px;padding:0}body>h2:first-child{margin-top:0;padding-top:0}body>h1:first-child{margin-top:0;padding-top:0}body>h1:first-child+h2{margin-top:0;padding-top:0}body>h3:first-child,body>h4:first-child,body>h5:first-child,body>h6:first-child{margin-top:0;padding-top:0}a:first-child h1,a:first-child h2,a:first-child h3,a:first-child h4,a:first-child h5,a:first-child h6{margin-top:0;padding-top:0}h1+p,h2+p,h3+p,h4+p,h5+p,h6+p,ul li>:first-child,ol li>:first-child{margin-top:0}dl{padding:0}dl dt{font-size:14px;font-weight:bold;font-style:italic;padding:0;margin:15px 0 5px}dl dt:first-child{padding:0}dl dt>:first-child{margin-top:0}dl dt>:last-child{margin-bottom:0}dl dd{margin:0 0 15px;padding:0 15px}dl dd>:first-child{margin-top:0}dl dd>:last-child{margin-bottom:0}blockquote{border-left:4px solid #DDD;padding:0 15px;color:#777}blockquote>:first-child{margin-top:0}blockquote>:last-child{margin-bottom:0}table{border-collapse:collapse;border-spacing:0;font-size:100%;font:inherit}table th{font-weight:bold;border:1px solid #ccc;padding:6px 13px}table td{border:1px solid #ccc;padding:6px 13px}table tr{border-top:1px solid #ccc;background-color:#fff}table tr:nth-child(2n){background-color:#f8f8f8}img{max-width:100%}code,tt{margin:0 2px;padding:0 5px;white-space:nowrap;border:1px solid #eaeaea;background-color:#f8f8f8;border-radius:3px;font-family:Consolas,'Liberation Mono',Courier,monospace;font-size:12px;color:#333}pre>code{margin:0;padding:0;white-space:pre;border:0;background:transparent}.highlight pre{background-color:#f8f8f8;border:1px solid #ccc;font-size:13px;line-height:19px;overflow:auto;padding:6px 10px;border-radius:3px}pre{background-color:#f8f8f8;border:1px solid #ccc;font-size:13px;line-height:19px;overflow:auto;padding:6px 10px;border-radius:3px}pre code,pre tt{background-color:transparent;border:0}.poetry pre{font-family:Georgia,Garamond,serif!important;font-style:italic;font-size:110%!important;line-height:1.6em;display:block;margin-left:1em}.poetry pre code{font-family:Georgia,Garamond,serif!important;word-break:break-all;word-break:break-word;-webkit-hyphens:auto;-moz-hyphens:auto;hyphens:auto;white-space:pre-wrap}sup,sub,a.footnote{font-size:1.4ex;height:0;line-height:1;vertical-align:super;position:relative}sub{vertical-align:sub;top:-1px}@media print{body{background:#fff}img,pre,blockquote,table,figure{page-break-inside:avoid}body{background:#fff;border:0}code{background-color:#fff;color:#333!important;padding:0 .2em;border:1px solid #dedede}pre{background:#fff}pre code{background-color:white!important;overflow:visible}}@media screen{body.inverted{color:#eee!important;border-color:#555;box-shadow:none}.inverted body,.inverted hr .inverted p,.inverted td,.inverted li,.inverted h1,.inverted h2,.inverted h3,.inverted h4,.inverted h5,.inverted h6,.inverted th,.inverted .math,.inverted caption,.inverted dd,.inverted dt,.inverted blockquote{color:#eee!important;border-color:#555;box-shadow:none}.inverted td,.inverted th{background:#333}.inverted h2{border-color:#555}.inverted hr{border-color:#777;border-width:1px!important}::selection{background:rgba(157,193,200,0.5)}h1::selection{background-color:rgba(45,156,208,0.3)}h2::selection{background-color:rgba(90,182,224,0.3)}h3::selection,h4::selection,h5::selection,h6::selection,li::selection,ol::selection{background-color:rgba(133,201,232,0.3)}code::selection{background-color:rgba(0,0,0,0.7);color:#eee}code span::selection{background-color:rgba(0,0,0,0.7)!important;color:#eee!important}a::selection{background-color:rgba(255,230,102,0.2)}.inverted a::selection{background-color:rgba(255,230,102,0.6)}td::selection,th::selection,caption::selection{background-color:rgba(180,237,95,0.5)}.inverted{background:#0b2531;background:#252a2a}.inverted body{background:#252a2a}.inverted a{color:#acd1d5}}.highlight .c{color:#998;font-style:italic}.highlight .err{color:#a61717;background-color:#e3d2d2}.highlight .k,.highlight .o{font-weight:bold}.highlight .cm{color:#998;font-style:italic}.highlight .cp{color:#999;font-weight:bold}.highlight .c1{color:#998;font-style:italic}.highlight .cs{color:#999;font-weight:bold;font-style:italic}.highlight .gd{color:#000;background-color:#fdd}.highlight .gd .x{color:#000;background-color:#faa}.highlight .ge{font-style:italic}.highlight .gr{color:#a00}.highlight .gh{color:#999}.highlight .gi{color:#000;background-color:#dfd}.highlight .gi .x{color:#000;background-color:#afa}.highlight .go{color:#888}.highlight .gp{color:#555}.highlight .gs{font-weight:bold}.highlight .gu{color:#800080;font-weight:bold}.highlight .gt{color:#a00}.highlight .kc,.highlight .kd,.highlight .kn,.highlight .kp,.highlight .kr{font-weight:bold}.highlight .kt{color:#458;font-weight:bold}.highlight .m{color:#099}.highlight .s{color:#d14}.highlight .na{color:#008080}.highlight .nb{color:#0086b3}.highlight .nc{color:#458;font-weight:bold}.highlight .no{color:#008080}.highlight .ni{color:#800080}.highlight .ne,.highlight .nf{color:#900;font-weight:bold}.highlight .nn{color:#555}.highlight .nt{color:#000080}.highlight .nv{color:#008080}.highlight .ow{font-weight:bold}.highlight .w{color:#bbb}.highlight .mf,.highlight .mh,.highlight .mi,.highlight .mo{color:#099}.highlight .sb,.highlight .sc,.highlight .sd,.highlight .s2,.highlight .se,.highlight .sh,.highlight .si,.highlight .sx{color:#d14}.highlight .sr{color:#009926}.highlight .s1{color:#d14}.highlight .ss{color:#990073}.highlight .bp{color:#999}.highlight .vc,.highlight .vg,.highlight .vi{color:#008080}.highlight .il{color:#099}.highlight .gc{color:#999;background-color:#eaf2f5}.type-csharp .highlight .k,.type-csharp .highlight .kt{color:#00F}.type-csharp .highlight .nf{color:#000;font-weight:normal}.type-csharp .highlight .nc{color:#2b91af}.type-csharp .highlight .nn{color:#000}.type-csharp .highlight .s,.type-csharp .highlight .sc{color:#a31515}
+    </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Author: lvwenlong_lambda@qq.com" />
+  <title>优化算法实现报告</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    img{
+        max-width:80%;
+        display:block;
+        margin-left:auto;
+        margin-right:auto;
+    }
+    table{
+        margin-left:auto;
+        margin-right:auto;
+    }
+  </style>
+  <script src="./MathJax-master/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+</head>
+<body>
+<div id="header">
+<h1 class="title">优化算法实现报告</h1>
+<h2 class="author">Author: <script type="text/javascript">
+<!--
+h='&#x71;&#x71;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#108;&#118;&#x77;&#x65;&#110;&#108;&#x6f;&#110;&#x67;&#x5f;&#108;&#x61;&#x6d;&#98;&#100;&#x61;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#108;&#118;&#x77;&#x65;&#110;&#108;&#x6f;&#110;&#x67;&#x5f;&#108;&#x61;&#x6d;&#98;&#100;&#x61;&#32;&#x61;&#116;&#32;&#x71;&#x71;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript></h2>
+<h3 class="date">Last Modified: 2016/06/20-10:04:27</h3>
+</div>
+<h2 id="project-简介">project 简介</h2>
+<p>这个 project 是杜建洪老师课程中介绍的优化算法的 c++ 实现。实现了如下算法：</p>
+<ul>
+<li>各种一维查找算法，如斐波那契法、黄金分割法、外推法</li>
+<li>基于 strong wolfe condition 的不精确线搜索方法</li>
+<li>梯度下降法（Gradient Descent Method）</li>
+<li>共轭梯度法（Conjugate Gradient Method）</li>
+<li>牛顿法（Newton Method）</li>
+<li>拟牛顿法法（Quasi Newton Method），包括 BFGS 算法与 DFP 算法。</li>
+<li>单纯形法（Simplex Method）</li>
+<li>鲍威尔法（Powell Method）</li>
+</ul>
+<p>这个 project 使用 <strong>CMake</strong> 来 build，使用者需要在系统中事先安装 CMake，程序是在 ubuntu 操作系统下编写与测试，在 g++ 4.8 版本编译器与clang 3.7 中编译测试成功。CMake 也可以生成 Windows 下 Visual Studio 的工程文件，具体的使用请参考 CMake 手册。</p>
+<p>使用者可以使用如下方式来编译：</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> /path/to/this/project/src
+<span class="kw">mkdir</span> out_build
+<span class="kw">cd</span> out_build
+<span class="kw">cmake</span> ..
+<span class="kw">make</span>
+<span class="kw">cd</span> ..</code></pre></div>
+<p>要安装 CMake，在 ubuntu 系统中，可以直接 <code>sudo apt-get install cmake</code> 来执行，在 Windows 系统中，可以去网站下载安装包。在其他系统中，可以查看 CMake 网站相关帮助。</p>
+<p>在运行 <code>cmake ..</code> 命令时，可以通过下列的两个命令行选项来控制程序的行为：</p>
+<ul>
+<li><code>-DWRITE_LOG=ON/OFF</code>，是否在优化时对每个点进行记录，如果为 <code>OFF</code> 则只记录最终的最优点</li>
+<li><code>-DDEBUG_OPTIMIZER=ON/OFF</code>，是否开启debug模式，如果为 <code>ON</code>，则会使用统一的随机数发生器种子，这样保证每次运行，都得到相同的结果。</li>
+</ul>
+<p>许多算法都需要矩阵运算，在 project 中，矩阵运算调用 <a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen</a> 实现</p>
+<h2 id="基本数据结构">基本数据结构</h2>
+<p>这个 project 关注的重点在算法运行的迭代次数。因此，并没对算法运行时采用的数据结构进行优化。</p>
+<p>用来表示函数输入参数、函数返回结果、以及待优化函数的数据类型定义如下：</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// Input parameter for objective function</span>
+<span class="kw">typedef</span> std::vector&lt;<span class="dt">double</span>&gt; Paras;
+<span class="co">// Result evaluated by objective function</span>
+<span class="kw">class</span> Solution { <span class="co">// Para与evaluated result放在一个class中，方便(partial) sort</span>
+    Paras _solution;
+    std::vector&lt;<span class="dt">double</span>&gt; _violation;  <span class="co">// sum of constraint violation</span>
+    <span class="dt">double</span> _fom;
+
+    <span class="kw">public</span>:
+    Solution(<span class="dt">const</span> Paras&amp; s, <span class="dt">const</span> std::vector&lt;<span class="dt">double</span>&gt;&amp; cv, <span class="dt">double</span> fom) <span class="kw">noexcept</span>;
+    Solution() =<span class="kw">delete</span>;
+    <span class="dt">double</span> fom() <span class="dt">const</span> <span class="kw">noexcept</span>;
+    <span class="dt">double</span> sum_violation() <span class="dt">const</span> <span class="kw">noexcept</span>;
+    <span class="dt">const</span> std::vector&lt;<span class="dt">double</span>&gt;&amp; violations() <span class="dt">const</span> <span class="kw">noexcept</span>;
+    <span class="dt">const</span> Paras&amp; solution() <span class="dt">const</span> <span class="kw">noexcept</span>;
+    Solution&amp; <span class="kw">operator</span>=(<span class="dt">const</span> Solution&amp;) =<span class="kw">default</span>;
+    <span class="dt">bool</span> <span class="kw">operator</span>&lt;(<span class="dt">const</span> Solution&amp; s) <span class="dt">const</span> <span class="kw">noexcept</span> 
+    { 
+        <span class="kw">return</span> _fom &lt; s.fom(); 
+    }
+    <span class="dt">bool</span> <span class="kw">operator</span>&lt;=(<span class="dt">const</span> Solution&amp; s) <span class="dt">const</span> <span class="kw">noexcept</span> 
+    { 
+        <span class="kw">return</span> _fom &lt;= s.fom(); 
+    }
+};
+<span class="co">// type signature of objective function</span>
+<span class="kw">typedef</span> std::function&lt;Solution(<span class="dt">const</span> Paras&amp;)&gt; ObjFunc;</code></pre></div>
+<p>使用<code>std::vector&lt;double&gt;</code>来表示待优化函数的输入参数，并将其<code>typedef</code>为<code>Paras</code>。</p>
+<p>将输入参数、目标函数的值fom，以及约束violation打包成一个class <code>Solution</code>，这样会带来额外的拷贝开销，但好处是编程时更加方便，比如，可以很方便的对一组函数的解进行 排序，选出最好或者最差的解，如果把输入参数跟目标函数输出分开存储，则如果要对目标函数的解进行排序，则需要额外处理输入参数与目标函数输出的同步问题。</p>
+<p>对于目标函数的表示，我采用了 c++11 中函数式编程的特性。在 c++11 中，可以用 lambda expression 来表示一个函数，这样表示的函数可以作为数据处理，可以作为另一个函数的输入参数，也可以作为一个函数的返回值。在这个 project 中，目标函数表示为一个输入为<code>const Paras&amp;</code>，输出类型为<code>Solution</code>的函数。这个函数由用户定义，并作为 optimizer 的构造函数的一个参数。</p>
+<h2 id="一维优化算法">一维优化算法</h2>
+<p>一维函数优化是优化算法的基本，即使是多元函数，在确定了下一步搜索方向之后，也往往在搜索方向上进行线搜索（line search），在这个 project 中，实现了 Fibonacci 法，黄金分割法和外推这三个优化算法。</p>
+<p>首先定义一维函数优化的基类:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Optimizer1D
+{
+    <span class="kw">protected</span>:
+        ObjFunc _func;
+
+    <span class="kw">public</span>:
+        Optimizer1D(ObjFunc func) <span class="kw">noexcept</span> : _func(func) {}
+        <span class="kw">virtual</span> Solution optimize() <span class="kw">noexcept</span> = <span class="dv">0</span>;
+};</code></pre></div>
+<p><code>Optimizer1D</code> 的构造函数接受一个 <code>ObjFunc</code> 类型，<code>ObjFunc</code> 即上一节介绍过的表示目标函数的类型，这里的目标函数必须是一维函数，否则，程序可能会出错。</p>
+<p><code>Optimizer1D::optimize()</code>是一个纯虚类，所有继承 <code>Optimizer1D</code> 类的派生类都需要实现这个方法，具体的一维优化算法就实现在这里。</p>
+<h3 id="fibonacci-法">Fibonacci 法</h3>
+<p>Fibonacci 法的类型声明如下:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> FibOptimizer : <span class="kw">public</span> Optimizer1D
+{
+    <span class="dt">const</span> <span class="dt">double</span> _lb;
+    <span class="dt">const</span> <span class="dt">double</span> _ub;
+    <span class="dt">const</span> size_t _iter;
+
+    <span class="kw">public</span>:
+    FibOptimizer(ObjFunc f,<span class="dt">double</span> lb,<span class="dt">double</span> ub,size_t iter) <span class="kw">noexcept</span>;
+    Solution optimize() <span class="kw">noexcept</span>;
+    ~FibOptimizer() {}
+};</code></pre></div>
+<p>Fibonacci 法需要提供一个一维目标函数，同时，需要提供搜索的下界与上界，Fibonacci 最终的精度随迭代次数指数下降，因此还需要提供一个迭代次数，设置迭代次数默认为 16。</p>
+<p>Fibonacci 的基本思路是，希望在区间 <span class="math inline">\([a_1,a_2]\)</span> 内寻找函数 <span class="math inline">\(f\)</span> 的最小值，则在 <span class="math inline">\([a_1, a_2]\)</span> 内找两个点 <span class="math inline">\(a_3\)</span> 与 <span class="math inline">\(a_4\)</span> ，分别计算 <span class="math inline">\(y_3 = f(a_3)\)</span> 与 <span class="math inline">\(y_4 = f(a_4)\)</span> ，比较 <span class="math inline">\(y_3\)</span> 与 <span class="math inline">\(y_4\)</span> 的值，若 <span class="math inline">\(y_3 &lt; y_4\)</span>，则说明最小值在 <span class="math inline">\([a_1, a_4]\)</span> 区间内，若 <span class="math inline">\(y_3 &gt; y_4\)</span>, 则说明最小值在 <span class="math inline">\([a_3, a_2]\)</span> 区间内，然后依此递归。</p>
+<p>Fibonacci 法靠 Fibonacci 数列来确定 <span class="math inline">\(a_3\)</span> 与 <span class="math inline">\(a_4\)</span> 的值，因为迭代次数 <span class="math inline">\(iter\)</span> 已经确定，因此可以事先计算出从 0 到 <span class="math inline">\(iter\)</span> 的 Fibonacci 数列，对于第 i 次迭代（从 0 开始），计算 <span class="math inline">\(r=\tfrac{F_{iter-1-i}}{F_{iter-i}}\)</span>，然后，令 <span class="math inline">\(a3 = a2 - r (a2 - a1)\)</span>，令 <span class="math inline">\(a4 = a1 + r (a2 - a1)\)</span>。 Fibonacci 法实现代码如下:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">
+Solution FibOptimizer::optimize() <span class="kw">noexcept</span>
+{
+    <span class="co">// 1-D function</span>
+    <span class="dt">double</span> a1 = _lb;
+    <span class="dt">double</span> a2 = _ub;
+    <span class="kw">if</span> (a1 &gt; a2)
+    {
+        cerr &lt;&lt; <span class="st">&quot;Range error&quot;</span> &lt;&lt; endl;
+        exit(EXIT_FAILURE);
+    }
+    vector&lt;<span class="dt">double</span>&gt; fib_list{<span class="dv">1</span>, <span class="dv">1</span>};
+    <span class="kw">if</span> (_iter &gt; <span class="dv">2</span>)
+    {
+        <span class="kw">for</span> (size_t i = <span class="dv">2</span>; i &lt; _iter + <span class="dv">1</span>; ++i) 
+            fib_list.push_back(fib_list[i - <span class="dv">1</span>] + fib_list[i - <span class="dv">2</span>]);
+    }
+    <span class="dt">double</span> y1, y2;
+    <span class="kw">for</span>(size_t i = <span class="dv">0</span>; i &lt; _iter - <span class="dv">1</span>; ++i)
+    {
+        <span class="dt">const</span> <span class="dt">double</span> f1   = fib_list[_iter - <span class="dv">1</span> - i];
+        <span class="dt">const</span> <span class="dt">double</span> f2   = fib_list[_iter - i];
+        <span class="dt">const</span> <span class="dt">double</span> rate = f1 / f2;
+        <span class="dt">const</span> <span class="dt">double</span> a3   = a2 - rate * (a2 - a1);
+        <span class="dt">const</span> <span class="dt">double</span> a4   = a1 + rate * (a2 - a1);
+        <span class="dt">const</span> <span class="dt">double</span> y3   = _func({a3}).fom();
+        <span class="dt">const</span> <span class="dt">double</span> y4   = _func({a4}).fom();
+        <span class="kw">if</span> (y3 &lt; y4)
+        {
+            a2 = a4;
+            y2 = y4;
+        }
+        <span class="kw">else</span>
+        {
+            a1 = a3;
+            y1 = y3;
+        }
+    }
+    <span class="kw">return</span> _func({a1});
+}</code></pre></div>
+<h3 id="黄金分割法">黄金分割法</h3>
+<p>黄金分割法的类型声明如下，其类型声明以与 Fibonacci 法一致。</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> GoldenSelection : <span class="kw">public</span> Optimizer1D
+{
+    <span class="dt">const</span> <span class="dt">double</span> _lb;
+    <span class="dt">const</span> <span class="dt">double</span> _ub;
+    <span class="dt">const</span> size_t _iter;
+
+    <span class="kw">public</span>:
+    GoldenSelection(ObjFunc f, 
+        <span class="dt">double</span> lb,
+        <span class="dt">double</span> ub,
+        size_t iter = <span class="dv">16</span>) <span class="kw">noexcept</span>;
+    Solution optimize() <span class="kw">noexcept</span>;
+    ~GoldenSelection() {}
+};</code></pre></div>
+<p>黄金分割法的优化算法实现如下，它的思路与 Fibonacci 法一致，不同的是它使用黄金分割数 0.618 作为固定的区间收缩比例。</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution GoldenSelection::optimize() <span class="kw">noexcept</span>
+{
+    <span class="co">// 1-D function</span>
+    <span class="co">// function shoulde be convex function</span>
+    <span class="dt">double</span> a1 = _lb;
+    <span class="dt">double</span> a2 = _ub;
+    <span class="kw">if</span> (a1 &gt; a2)
+    {
+        cerr &lt;&lt; <span class="st">&quot;Range error&quot;</span> &lt;&lt; endl;
+        exit(EXIT_FAILURE);
+    }
+
+    <span class="dt">const</span> <span class="dt">double</span> rate = (sqrt(<span class="dv">5</span>) - <span class="dv">1</span>) / <span class="dv">2</span>;
+    <span class="dt">double</span> y1, y2;
+    <span class="kw">for</span> (size_t i = _iter - <span class="dv">1</span>; i &gt; <span class="dv">0</span>; --i)
+    {
+        <span class="dt">const</span> <span class="dt">double</span> interv_len = a2 - a1;
+        <span class="dt">const</span> <span class="dt">double</span> a3 = a2 - rate * interv_len;
+        <span class="dt">const</span> <span class="dt">double</span> a4 = a1 + rate * interv_len;
+        <span class="kw">if</span> (a3 == a4)
+            <span class="kw">break</span>;
+        <span class="kw">else</span>
+        {
+            assert(a3 &lt; a4);
+            <span class="dt">const</span> <span class="dt">double</span> y3 = _func({a3}).fom();
+            <span class="dt">const</span> <span class="dt">double</span> y4 = _func({a4}).fom();
+            <span class="kw">if</span> (y3 &lt; y4)
+            {
+                a2 = a4;
+                y2 = y4;
+            }
+            <span class="kw">else</span>
+            {
+                a1 = a3;
+                y1 = y3;
+            }
+        }
+    }
+    <span class="kw">return</span> y1 &lt; y2 ? _func({a1}) : _func({a2});
+}</code></pre></div>
+<h3 id="外推法">外推法</h3>
+<p>黄金分割法与 Fibonacci 法都需要事先知道最优点的范围，而外推法则可以适用于最优点范围不知道的情况，它先寻找一个最优点的范围，然后再去调用其他优化算法，比如黄金分隔法或二次插值法在找到的范围内进行优化。</p>
+<p>下面是外推法的类声明以及算法实现：</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> Extrapolation : <span class="kw">public</span> Optimizer1D
+{
+    <span class="dt">const</span> Paras  _init;
+    <span class="dt">const</span> <span class="dt">double</span> _min_len;  <span class="co">// min extrapolation step</span>
+    <span class="dt">const</span> <span class="dt">double</span> _max_len;  <span class="co">// max extrapolation step</span>
+    <span class="kw">public</span>:
+    Extrapolation(ObjFunc f,
+        Paras i,
+        <span class="dt">double</span> min_len,
+        <span class="dt">double</span> max_len
+    ) <span class="kw">noexcept</span>;
+    Solution optimize() <span class="kw">noexcept</span>;
+    ~Extrapolation() {}
+};
+
+Solution Extrapolation::optimize() <span class="kw">noexcept</span>
+{
+    <span class="co">// 1-D function</span>
+    <span class="dt">double</span> step = _min_len;
+    <span class="dt">double</span> x1 = _init[<span class="dv">0</span>];
+    <span class="dt">double</span> x2 = x1 + step;
+    <span class="dt">double</span> y1 = _func({x1}).fom();
+    <span class="dt">double</span> y2 = _func({x2}).fom();
+
+    <span class="dt">double</span> lb = x1;
+    <span class="dt">double</span> ub = x1 + _max_len;
+    <span class="kw">if</span> (y2 &gt; y1)
+    {
+        step *= <span class="dv">-1</span>;
+        ub = x1 - _min_len;
+        lb = x1 - _max_len;
+        x2 = x1 + step;
+        y2 = _func({x2}).fom();
+        <span class="kw">if</span> (y2 &gt; y1) <span class="kw">return</span> _func({x1});
+    }
+    <span class="dt">double</span> factor = <span class="dv">2</span>;
+    <span class="dt">double</span> x3 = x2 + factor * step;
+    <span class="dt">double</span> y3 = _func({x3}).fom();
+    <span class="dt">double</span> xa, xc;
+    <span class="dt">double</span> ya, yc;
+    <span class="kw">if</span> (y3 &gt; y2)
+    {
+        xa = x1;
+        xc = x3;
+        ya = y1;
+        yc = y3;
+    }
+    <span class="kw">else</span>
+    {
+        <span class="kw">while</span> (y3 &lt; y2 &amp;&amp; (lb &lt; x3 &amp;&amp; x3 &lt; ub))
+        {
+            factor *= <span class="dv">2</span>;
+            x3 += factor * step;
+            <span class="kw">if</span> (x3 &gt;= ub) x3 = ub;
+            <span class="kw">if</span> (x3 &lt;= lb) x3 = lb;
+            y3 = _func({x3}).fom();
+        }
+        <span class="dt">double</span> xtmp1 = x3 - factor * step;
+        <span class="dt">double</span> xtmp2 = x3 - (factor / <span class="dv">2</span>) * step;
+        <span class="dt">double</span> ytmp1 = _func({xtmp1}).fom();
+        <span class="dt">double</span> ytmp2 = _func({xtmp2}).fom();
+        <span class="kw">if</span> (ytmp1 &lt; ytmp2)
+        {
+            xa = x2;
+            xc = xtmp2;
+            ya = y2;
+            yc = ytmp2;
+        }
+        <span class="kw">else</span>
+        {
+            xa = xtmp1;
+            xc = x3;
+            ya = ytmp1;
+            yc = y3;
+        }
+    }
+
+    <span class="kw">if</span> (xa &gt; xc)
+    {
+        std::swap(xa, xc);
+        std::swap(ya, yc);
+    }
+    <span class="dt">const</span> <span class="dt">double</span> len = xc - xa;
+    <span class="dt">const</span> size_t gso_iter = <span class="dv">2</span> + (log10(_min_len / len) / log10(<span class="fl">0.618</span>));
+    <span class="kw">return</span> GoldenSelection(_func, xa, xc, gso_iter).optimize();
+}</code></pre></div>
+<h2 id="不精确线搜索">不精确线搜索</h2>
+<p>上一节实现的一维优化算法，都是期望找到在搜索方向上的最优点。但是，很多时候，找到严格意义上的最优点，往往需要很多次迭代; 而且, 因为搜索方向上的最优点并不是多元函数的最优点，在多元函数优化过程中，找到搜索方向上的最优点也没有必要。只要保证步长使得函数在搜索方向上下降足够多就可以了。因此，在实际的多元函数优化中，当需要确定在搜索方向上的步长时，常常并不采用精确的一元函数优化算法，而是规定一个“在搜索方向上足够下降”的标准，然后只要找到满足这样标准的点即可。</p>
+<p><a href="https://www.wikiwand.com/en/Wolfe_conditions"><strong>Strong wolfe condition</strong></a> 是一个常用的不精确线搜索的判据，其判据如下：</p>
+<p><span class="math display">\[
+\left\{
+\begin{array}{lll}
+f(x_k + \alpha_k p_k)&amp;\leq&amp;f(x_k) + c_1 \alpha_k \nabla f_k^T p_k\\
+|\nabla f(x_k + \alpha_k p_k)^T p_k|&amp;\leq&amp;c_2 |\nabla f_k^T|
+\end{array}
+\right.
+\]</span></p>
+<p>在上式中，<span class="math inline">\(c_1\)</span> 与 <span class="math inline">\(c_2\)</span> 满足 <span class="math inline">\(0&lt;c_1&lt;c_2&lt;1\)</span>，其中，第一个不等式被称作 <strong>sufficient decrease condition</strong>，第二个不等式被称作 <strong>curvature condition</strong>。如果步长满足 sufficient decrease condition，则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。</p>
+<p>Figure 1 是 strong wolfe condition 的一个例子，对于图中一维函数，只要最终步长选在位于&quot;acceptable&quot;的区间内即可。</p>
+<div class="figure">
+<img src="./img/strong-wolfe-illustration.png" alt="Example of wolfe condition" />
+</div>
+<p>本次 project 实现了寻找满足 strong wolfe condition 的搜索步长的算法，其基本思路是，先通过插值与外推的方法，尝试一系列递增的 trial step，找到一个满足 strong wolfe condition 的区间。再在这个区间内，进行二次或三次插值，直到找到满蓄 strong wolfe condition 的步长。</p>
+<p>Strong wolfe condition 不精确线搜索算法代码，可以去 src/Optimizer/StrongWolfe.cpp 中查看。</p>
+<h2 id="多维函数优化">多维函数优化</h2>
+<p>首先定义了两个基类，<code>MultiDimOptimizer</code> 与 <code>GradientMethod</code>，其中，<code>MultiDimOptimizer</code> 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数维度、最大迭代次数，最大与最小步长等。</p>
+<p><code>GradientMethod</code> 是<code>MultiDimOptimizer</code> 的一个派生类，它是所有基于梯度法的算法的基类，包括梯度下降法、共轭梯度法、牛顿法和拟牛顿法。</p>
+<p>在 <code>GradientMethod</code> 中定义了一些与梯度有关的变量与函数，如求梯度的<code>GradientMethod::get_gradient</code>，求 Hessian 矩阵的 <code>GradientMethod::hessian</code>，这两个函数都是虚函数，可以被派生类重载。<code>MultiDimOptimizer</code> 中还定义了一些与梯度相关的成员变量，如用数值法求梯度时用到的 <code>_epsilon</code>。以及判定收敛（梯度为零）的最小梯度等。</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">class</span> MultiDimOptimizer
+{
+<span class="kw">protected</span>:
+    <span class="dt">const</span> size_t      _dim;
+    <span class="dt">const</span> size_t      _max_iter;
+    <span class="dt">const</span> <span class="dt">double</span>      _min_walk;
+    <span class="dt">const</span> <span class="dt">double</span>      _max_walk;
+    <span class="dt">const</span> std::string _func_name;
+    <span class="dt">const</span> std::string _algo_name;
+    std::ofstream     _log;
+
+    <span class="kw">virtual</span> Solution run_func(<span class="dt">const</span> Paras&amp;) <span class="kw">noexcept</span>;
+    <span class="kw">virtual</span> Solution run_line_search(
+        <span class="dt">const</span> Solution&amp; s,
+        <span class="dt">const</span> Eigen::VectorXd&amp; direction
+    ) <span class="kw">noexcept</span>;
+
+<span class="kw">private</span>:
+    ObjFunc     _func;
+    StrongWolfe _line_searcher;
+    size_t      _eval_counter;
+    size_t      _linesearch_counter;
+
+<span class="kw">public</span>:
+    <span class="dt">void</span> clear_counter() <span class="kw">noexcept</span> 
+    { 
+        _eval_counter = <span class="dv">0</span>;
+        _linesearch_counter = <span class="dv">0</span>;
+    }
+    size_t eval_counter() <span class="kw">noexcept</span> { <span class="kw">return</span> _eval_counter; }
+    size_t linesearch_counter() <span class="kw">noexcept</span> 
+    { 
+        <span class="kw">return</span> _linesearch_counter; 
+    }
+    MultiDimOptimizer(
+        ObjFunc f,
+        size_t d,
+        size_t max_iter,
+        <span class="dt">double</span> min_walk,
+        <span class="dt">double</span> max_walk,
+        std::string func_name,
+        std::string algo_name) <span class="kw">noexcept</span>;
+    <span class="kw">virtual</span> ~MultiDimOptimizer(){}
+};
+<span class="kw">class</span> GradientMethod : <span class="kw">public</span> MultiDimOptimizer
+{
+<span class="kw">protected</span>:
+    <span class="dt">const</span> Paras  _init;
+    <span class="dt">const</span> <span class="dt">double</span> _epsilon; <span class="co">// use _epsilon to calc gradient</span>
+    <span class="dt">const</span> <span class="dt">double</span> _zero_grad; <span class="co">// threshold for zero gradient </span>
+
+    <span class="kw">virtual</span> Eigen::VectorXd get_gradient(<span class="dt">const</span> Solution&amp; s) <span class="kw">noexcept</span>;
+    <span class="kw">virtual</span> Eigen::MatrixXd hessian(
+        <span class="dt">const</span> Solution&amp; point,
+        <span class="dt">const</span> Eigen::VectorXd&amp; grad
+    ) <span class="kw">noexcept</span>;
+
+<span class="kw">public</span>:
+    GradientMethod(
+        ObjFunc f,
+        size_t d,
+        Paras i,
+        <span class="dt">double</span> epsi,
+        <span class="dt">double</span> zgrad,
+        <span class="dt">double</span> minwalk,
+        <span class="dt">double</span> maxwalk,
+        size_t max_iter,
+        std::string fname,
+        std::string aname) <span class="kw">noexcept</span>;
+    <span class="kw">virtual</span> ~GradientMethod() { <span class="kw">if</span>(_log.is_open()) _log.close(); } 
+};</code></pre></div>
+<h3 id="梯度下降法">梯度下降法</h3>
+<p>梯度下降法假定函数在搜索域内总是一阶可导，对一个函数 <span class="math inline">\(f\)</span>，给定一个初始点<span class="math inline">\(~x_k\)</span>，梯度<span class="math inline">\(~g_k=\nabla f(x_k)\)</span>，则搜索方向<span class="math inline">\(~d_k=-g_k\)</span>，当梯度为零时判定收敛，此时，找到了函数在这个区域的极小值。</p>
+<p>梯度下降法算法描述如下：</p>
+<ol style="list-style-type: decimal">
+<li>对初始点 <span class="math inline">\(x_k\)</span>，求出其梯度 <span class="math inline">\(g_k = \nabla f(x_k)\)</span>，若 <span class="math inline">\(g_k \leq g_{zero}\)</span>，或者达到 <span class="math inline">\(max\_iter\)</span>，则判定收敛。</li>
+<li>搜索方向 <span class="math inline">\(d_k = -g_k\)</span></li>
+<li>在搜索方向上做一维搜索，找出最优步长 <span class="math inline">\(\lambda_k=\arg\min_{\lambda}~f(x_k + \lambda d_k)\)</span></li>
+<li><span class="math inline">\(x_{k+1} = x_k + \lambda_k d_k\)</span>，置 <span class="math inline">\(k = k+1\)</span>，转 step 1。</li>
+</ol>
+<p>梯度下降法实现代码如下：</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution GradientDescent::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    _log &lt;&lt; _func_name &lt;&lt; endl;
+
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    <span class="dt">double</span>   grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    <span class="dt">double</span>   len_walk  = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+    <span class="kw">while</span> (grad_norm        &gt; _zero_grad 
+          &amp;&amp; eval_counter() &lt; _max_iter 
+          &amp;&amp; len_walk       &gt; _min_walk)
+    {
+        <span class="co">// LOG is a macro used to record evaluated function input</span>
+        LOG(sol, grad);
+        <span class="dt">const</span> Solution new_sol = run_line_search(sol, <span class="dv">-1</span> * grad);
+        len_walk  = vec_norm(new_sol.solution() - sol.solution());
+        sol       = new_sol;
+        grad      = get_gradient(sol);
+        grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    }
+    _log &lt;&lt; <span class="st">&quot;=======================================&quot;</span> &lt;&lt; endl;
+    write_log(sol, grad);
+    _log &lt;&lt; <span class="st">&quot;len_walk:    &quot;</span> &lt;&lt; len_walk &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;eval:        &quot;</span> &lt;&lt; eval_counter() &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;line search: &quot;</span> &lt;&lt; linesearch_counter() &lt;&lt; endl;
+    <span class="kw">if</span> (eval_counter() &gt;= _max_iter) 
+        _log &lt;&lt; <span class="st">&quot;max iter reached&quot;</span> &lt;&lt; endl;
+    <span class="kw">return</span> sol;
+}</code></pre></div>
+<h3 id="共轭梯度法">共轭梯度法</h3>
+<p>当目标函数在极值点附近的条件数（即 Hessian 矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象，导致收敛较慢。共轭梯度法（Conjugate Gradient Method）可以克服这种问题，它选择共轭梯度方向作为搜索方向。</p>
+<p>可以证明，如果目标函数在极值点附近是二次的，对于 N 维函数，则只需要 N 次一维查找，就可以找到极值点。当然上面的一维查找指的是精确的一维查找。如果使用不精确一维查找或者问题的阶数高于二阶，N 维问题需要的查找次数会大于N。</p>
+<p>对于一个 N 维矩阵 <span class="math inline">\(A\)</span>，如果向量 <span class="math inline">\(u\)</span>，<span class="math inline">\(v\)</span>，满足 <span class="math inline">\(u^T A v = 0\)</span>，则这两个向量对于矩阵 <span class="math inline">\(A\)</span> 共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索 N 步。如果 N 步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索 N 步。如此循环，直至找到极值点。</p>
+<p>共轭梯度法算法描述如下:</p>
+<ol style="list-style-type: decimal">
+<li><span class="math inline">\(k=1\)</span>，<span class="math inline">\(x_k\)</span> 为初始点，计算梯度<span class="math inline">\(~g_k = \nabla f(x_k)\)</span>，若 <span class="math inline">\(g_k \leq g_{zero}\)</span> 或者达到最大迭代次数，则算法终止。否则，选择搜索方向 <span class="math inline">\(d_k = -g_k\)</span></li>
+<li>搜索方向上做一维搜索，找到最优步长
+<ul>
+<li><span class="math inline">\(\lambda_k= \arg\min_\lambda~f(x_k + \lambda d_k)\)</span></li>
+<li><span class="math inline">\(x_{k+1} = x_k + \lambda_k d_k\)</span>。</li>
+</ul></li>
+<li>计算 <span class="math inline">\(x_{k+1}\)</span> 点的梯度 <span class="math inline">\(g_{k+1} = \nabla f(x_{k+1})\)</span>，计算<span class="math inline">\(d_{k+1}\)</span>:
+<ul>
+<li><span class="math inline">\(\beta = \frac{|g_{k+1}|^2}{|g_k|^2}\)</span></li>
+<li><span class="math inline">\(d_{k+1} = -g_{k+1} + \beta d_k\)</span>。</li>
+</ul></li>
+<li><span class="math inline">\(k=k+1\)</span>，若<span class="math inline">\(k \leq dim-1\)</span>，则转step 2，否则，若 <span class="math inline">\(g_k \leq g_{zero}\)</span>，则算法终止，否则转 step 1。</li>
+</ol>
+<p>共轭梯度法的实现代码如下:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution ConjugateGradient::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    _log &lt;&lt; _func_name &lt;&lt; endl;
+
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    VectorXd conj_grad = grad;
+    <span class="dt">double</span> grad_norm   = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    <span class="dt">double</span> len_walk    = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+    assert(sol.solution().size() == _dim);
+    <span class="kw">while</span> (grad_norm &gt; _zero_grad     &amp;&amp; 
+           eval_counter() &lt; _max_iter &amp;&amp; 
+           len_walk &gt; _min_walk)
+    {
+        conj_grad = grad;
+        <span class="kw">for</span> (size_t i = <span class="dv">0</span>; i &lt; _dim; ++i)
+        {
+            LOG(sol, grad, conj_grad);
+            <span class="dt">const</span> Solution new_sol = run_line_search(
+                sol,
+                <span class="dv">-1</span> * conj_grad);
+            VectorXd new_grad = get_gradient(new_sol);
+            <span class="dt">double</span> beta = pow(new_grad.lpNorm&lt;<span class="dv">2</span>&gt;()/grad.lpNorm&lt;<span class="dv">2</span>&gt;(),<span class="dv">2</span>);
+
+            len_walk  = vec_norm(new_sol.solution() - sol.solution());
+            sol       = new_sol;
+            conj_grad = new_grad + beta * conj_grad;
+            grad      = new_grad;
+            grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+            <span class="kw">if</span> (!(grad_norm &gt; _zero_grad)) <span class="kw">break</span>;
+        }
+    }
+    _log &lt;&lt; <span class="st">&quot;=======================================&quot;</span> &lt;&lt; endl;
+    write_log(sol, grad, conj_grad);
+    _log &lt;&lt; <span class="st">&quot;len_walk:    &quot;</span> &lt;&lt; len_walk             &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;eval:        &quot;</span> &lt;&lt; eval_counter()       &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;line search: &quot;</span> &lt;&lt; linesearch_counter() &lt;&lt; endl;
+    <span class="kw">if</span> (eval_counter() &gt;= _max_iter) 
+        _log &lt;&lt; <span class="st">&quot;max iter reached&quot;</span> &lt;&lt; endl;
+    <span class="kw">return</span> sol;
+}</code></pre></div>
+<h3 id="牛顿法">牛顿法</h3>
+<p>梯度下降法与共轭梯度法都是利用函数的梯度，而牛顿法利用函数的二阶导（Hessian 矩阵），因而能够达到比梯度下降法与共轭梯度法更快的收敛速度。</p>
+<p>牛顿法算法描述如下：</p>
+<ol style="list-style-type: decimal">
+<li>对于初始点 <span class="math inline">\(x_k\)</span>，求出梯度 <span class="math inline">\(g_k=\nabla f(x_k)\)</span>，若 <span class="math inline">\(g_k \leq g_{zero}\)</span>，则判定收敛，算法终止。</li>
+<li>求出 Hessian 矩阵 <span class="math inline">\(H_k\)</span>，计算搜索方向 <span class="math inline">\(d_k = -H_k g_k\)</span>。</li>
+<li>在搜索方向上做一维搜索，计算最优步长 <span class="math inline">\(\lambda_k = \arg\min_\lambda~f(x_k + \lambda d_k)\)</span></li>
+<li><span class="math inline">\(x_{k+1} = x_k + \lambda_k d_k\)</span>，转 step 1。</li>
+</ol>
+<p>牛顿法的实现代码如下:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution Newton::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    _log &lt;&lt; <span class="st">&quot;func: &quot;</span> &lt;&lt; _func_name &lt;&lt; endl;
+    Solution sol       = run_func(_init);
+    VectorXd grad      = get_gradient(sol);
+    MatrixXd hess      = hessian(sol, grad);
+    <span class="dt">double</span>   grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    <span class="dt">double</span>   len_walk  = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+    <span class="kw">while</span> (grad_norm &gt; _zero_grad &amp;&amp; 
+           eval_counter() &lt; _max_iter &amp;&amp; 
+           len_walk &gt; _min_walk)
+    {
+        VectorXd direction = <span class="dv">-1</span>*hess.colPivHouseholderQr().solve(grad);
+        <span class="dt">double</span>   judge     = grad.transpose() * direction;
+        <span class="dt">double</span>   dir       = judge &lt; <span class="dv">0</span> ? <span class="dv">1</span> : <span class="dv">-1</span>;
+        LOG(sol, grad, hess);
+        direction *= dir;
+        Solution new_sol = run_line_search(sol, direction);
+        len_walk  = vec_norm(new_sol.solution() - sol.solution());
+        sol       = new_sol;
+        grad      = get_gradient(sol);
+        hess      = hessian(sol, grad);
+        grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    }
+    _log &lt;&lt; <span class="st">&quot;=======================================&quot;</span> &lt;&lt; endl;
+    write_log(sol, grad, hess);
+    _log &lt;&lt; <span class="st">&quot;len_walk:    &quot;</span> &lt;&lt; len_walk             &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;iter:        &quot;</span> &lt;&lt; eval_counter()       &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;line search: &quot;</span> &lt;&lt; linesearch_counter() &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;eigenvalues of hess: &quot;</span> &lt;&lt; endl 
+    _log &lt;&lt; hess.eigenvalues()      &lt;&lt; endl;
+    <span class="kw">if</span> (eval_counter() &gt;= _max_iter) 
+        _log &lt;&lt; <span class="st">&quot;max iter reached&quot;</span> &lt;&lt; endl;
+    <span class="kw">return</span> sol;
+}</code></pre></div>
+<h3 id="拟牛顿法bfgs法与dfp法">拟牛顿法：BFGS法与DFP法</h3>
+<p>Newton 法是二阶收敛，因此在理论上会比梯度法更快。但是如果目标函数无法直接给出 Hessian 矩阵，则要用有限差分的方法近似 Hessian 矩阵。对于N维的问题，其复杂度为 <span class="math inline">\(O(N^2)\)</span>，当目标函数的维度上升时，求 Hessian 矩阵的代价就会变得不可接受。拟牛顿法（Quasi-Newton Method）通过迭代的方法，来近似 Hessian 矩阵。常见的拟牛顿法有 DFP 法与 BFGS 法。</p>
+<p>在牛顿法迭代过程中，Hessian 矩阵满足如下关系:</p>
+<p><span class="math display">\[
+g_{k+1} - g_k = H_k (x_{k+1} - x_k)
+\]</span></p>
+<p>记 <span class="math inline">\(y_k = g_{k+1} - g_k\)</span>，<span class="math inline">\(\delta_k = x_{k+1} - x_k\)</span>，则:</p>
+<p><span class="math display">\[
+y_k = H_k \delta_k
+\]</span></p>
+<p>或者:</p>
+<p><span class="math display">\[
+\delta_k = H_k^{-1} y_k
+\]</span></p>
+<p>上面两式称作<strong>拟牛顿条件</strong>。如果 <span class="math inline">\(H_k\)</span> 是正定的，则搜索方向 <span class="math inline">\(d_k = -H_k g_k\)</span> 是一个下降方向。</p>
+<p>选定初始的正定矩阵 <span class="math inline">\(G_0\)</span>，对于空间中点 <span class="math inline">\(x_k\)</span>，其梯度 <span class="math inline">\(g_k\)</span></p>
+<p>对 DFP 法，G 矩阵如此确定</p>
+<p><span class="math display">\[
+G_{k+1} = G_k + \frac{\delta_k \delta_k^T}{\delta_k^T y_k} - \frac{G_k y_k y_k^T G_k}{y_k^T G_k y_k}
+\]</span></p>
+<p>对BFGS</p>
+<p><span class="math display">\[
+\left\{
+\begin{array}{lll}
+\mu_k   &amp; = &amp; 1   + \frac{y_k^TH_ky_k}{\delta_ky_k}\\
+G_{k+1} &amp; = &amp; G_k + \frac{\mu_k\delta_k\delta_k^T - H_ky_k\delta_k^T - \delta_ky_k^TH_k}{\delta_k^T y_k}\\
+\end{array}
+\right.
+\]</span></p>
+<p>搜索方向 <span class="math display">\[d_k = -H_k g_k\]</span></p>
+<p>BFGS法的实现代码如下:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution BFGS::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    _log &lt;&lt; <span class="st">&quot;func: &quot;</span> &lt;&lt; _func_name &lt;&lt; endl;
+
+    Solution sol = run_func(_init);
+    VectorXd grad = get_gradient(sol);
+    MatrixXd quasi_hess = MatrixXd::Identity(_dim, _dim);
+    <span class="dt">double</span> grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    <span class="dt">double</span> len_walk = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+
+    <span class="kw">while</span> (grad_norm &gt; _zero_grad &amp;&amp; eval_counter() &lt; _max_iter &amp;&amp;
+           len_walk &gt; _min_walk)
+    {
+        LOG(sol, grad, quasi_hess);
+        <span class="dt">const</span> VectorXd direction =
+            <span class="dv">-1</span> * (quasi_hess.colPivHouseholderQr().solve(grad));
+        <span class="dt">const</span> Solution new_sol = run_line_search(sol, direction);
+        <span class="dt">const</span> VectorXd new_grad = get_gradient(new_sol);
+        <span class="dt">const</span> vector&lt;<span class="dt">double</span>&gt; delta_x =
+            new_sol.solution() - sol.solution();
+        <span class="dt">const</span> VectorXd ev_dg = new_grad - grad;
+        <span class="dt">const</span> Map&lt;<span class="dt">const</span> VectorXd&gt; ev_dx(&amp;delta_x[<span class="dv">0</span>], _dim, <span class="dv">1</span>);
+        len_walk = vec_norm(delta_x);
+        <span class="kw">if</span> (len_walk &gt; <span class="dv">0</span>)
+        {
+            quasi_hess +=
+                (ev_dg * ev_dg.transpose()) /
+                    (ev_dg.transpose() * ev_dx) -
+                (quasi_hess * ev_dx * ev_dx.transpose() *
+                 quasi_hess) /
+                    (ev_dx.transpose() * quasi_hess * ev_dx);
+
+            sol = new_sol;
+            grad = new_grad;
+            grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+        }
+    }
+    _log &lt;&lt; <span class="st">&quot;=======================================&quot;</span> &lt;&lt; endl;
+    write_log(sol, grad, quasi_hess);
+    _log &lt;&lt; <span class="st">&quot;len_walk:    &quot;</span> &lt;&lt; len_walk &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;eval:        &quot;</span> &lt;&lt; eval_counter() &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;line search: &quot;</span> &lt;&lt; linesearch_counter() &lt;&lt; endl;
+
+    <span class="kw">if</span> (eval_counter() &gt;= _max_iter)
+        _log &lt;&lt; <span class="st">&quot;max iter reached&quot;</span> &lt;&lt; endl;
+    <span class="kw">return</span> sol;
+}</code></pre></div>
+<p>DFP法的实现代码如下：</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution DFP::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    _log &lt;&lt; <span class="st">&quot;func: &quot;</span> &lt;&lt; _func_name &lt;&lt; endl;
+
+    Solution sol = run_func(_init);
+    VectorXd grad = get_gradient(sol);
+    <span class="dt">double</span> grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+    <span class="dt">double</span> len_walk = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+    MatrixXd quasi_hess_inverse = MatrixXd::Identity(_dim, _dim);
+
+    <span class="kw">while</span> (grad_norm &gt; _zero_grad &amp;&amp; eval_counter() &lt; _max_iter &amp;&amp;
+           len_walk &gt; _min_walk)
+    {
+        LOG(sol, grad, quasi_hess_inverse);
+        VectorXd dvec = <span class="dv">-1</span> * (quasi_hess_inverse * grad);
+<span class="ot">#ifdef WRITE_LOG</span>
+        <span class="dt">const</span> <span class="dt">double</span> judge = grad.transpose() * dvec;
+        _log &lt;&lt; <span class="st">&quot;judge: &quot;</span> &lt;&lt; judge &lt;&lt; endl;
+        <span class="kw">if</span> (judge &gt; <span class="dv">0</span>) _log &lt;&lt; <span class="st">&quot;judge greater than zero&quot;</span> &lt;&lt; endl;
+<span class="ot">#endif</span>
+        <span class="dt">const</span> Solution new_sol = run_line_search(sol, dvec);
+        <span class="dt">const</span> VectorXd new_grad = get_gradient(new_sol);
+        <span class="dt">const</span> vector&lt;<span class="dt">double</span>&gt; delta_x =
+            new_sol.solution() - sol.solution();
+        <span class="dt">const</span> VectorXd ev_dg = new_grad - grad;
+        len_walk = vec_norm(delta_x);
+        <span class="dt">const</span> Map&lt;<span class="dt">const</span> VectorXd&gt; ev_dx(&amp;delta_x[<span class="dv">0</span>], _dim, <span class="dv">1</span>);
+        <span class="kw">if</span> (len_walk &gt; <span class="dv">0</span>)
+        {
+            quasi_hess_inverse +=
+                (ev_dx * ev_dx.transpose()) /
+                    (ev_dx.transpose() * ev_dg) -
+                (quasi_hess_inverse * ev_dg * ev_dg.transpose() *
+                 quasi_hess_inverse) /
+                    (ev_dg.transpose() * quasi_hess_inverse * ev_dg);
+
+            sol = new_sol;
+            grad = new_grad;
+            grad_norm = grad.lpNorm&lt;<span class="dv">2</span>&gt;();
+        }
+    }
+    _log &lt;&lt; <span class="st">&quot;=======================================&quot;</span> &lt;&lt; endl;
+    write_log(sol, grad, quasi_hess_inverse);
+    _log &lt;&lt; <span class="st">&quot;len_walk:    &quot;</span> &lt;&lt; len_walk &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;eval:        &quot;</span> &lt;&lt; eval_counter() &lt;&lt; endl;
+    _log &lt;&lt; <span class="st">&quot;line search: &quot;</span> &lt;&lt; linesearch_counter() &lt;&lt; endl;
+    <span class="kw">if</span> (eval_counter() &gt;= _max_iter)
+        _log &lt;&lt; <span class="st">&quot;max iter reached&quot;</span> &lt;&lt; endl;
+    <span class="kw">return</span> sol;
+}</code></pre></div>
+<h3 id="单纯形法">单纯形法</h3>
+<p>算法参数:</p>
+<ul>
+<li><span class="math inline">\(\alpha &gt; 0\)</span></li>
+<li><span class="math inline">\(\gamma &gt; 0\)</span></li>
+<li><span class="math inline">\(0 &lt; \rho\leq0.5\)</span></li>
+<li><span class="math inline">\(0&lt;\sigma\leq1\)</span></li>
+</ul>
+<p>单纯形法算法描述如下:</p>
+<ol style="list-style-type: decimal">
+<li>初始化，选取 <span class="math inline">\(dim+1\)</span> 个初始点，并对其求值，组成集合 <span class="math inline">\(S\)</span></li>
+<li>若达到最大迭代次数，或者达到收敛条件，算法终止。</li>
+<li><span class="math inline">\(S\)</span> 中的结果进行排序，选出最差结果 <span class="math inline">\(w\)</span>，第二差的结果 <span class="math inline">\(s\)</span>，以及最好的结果 <span class="math inline">\(b\)</span>。</li>
+<li>算 <span class="math inline">\(S\)</span> 中，除了 <span class="math inline">\(w\)</span> 以外的其他所有点的中点 <span class="math inline">\(c\)</span></li>
+<li>算反射点 <span class="math inline">\(r = c + \alpha (c - w)\)</span>。</li>
+<li>若 <span class="math inline">\(f(b) \le f(r) \leq f(s)\)</span>，则用 <span class="math inline">\(r\)</span> 在 <span class="math inline">\(S\)</span> 中更新 <span class="math inline">\(w\)</span>，并转 step 2</li>
+<li>若 <span class="math inline">\(f(r) &lt; f(b)\)</span>，则计算 <span class="math inline">\(e = 2 c + \gamma (r - c)\)</span>，并用 <span class="math inline">\(f(e)\)</span> 与 <span class="math inline">\(f(r)\)</span> 中较小的一组解更新 <span class="math inline">\(w\)</span>，并转 step 2</li>
+<li>计算 <span class="math inline">\({cr} = c + \rho (w - c)\)</span>。</li>
+<li>若 <span class="math inline">\(f({cr}) &lt; f(w)\)</span>，则用 <span class="math inline">\({cr}\)</span> 更新 <span class="math inline">\(w\)</span>，并转 step 2</li>
+<li>否则，更新所有点，将所有点向 <span class="math inline">\(b\)</span> 靠拢，对 <span class="math inline">\(S\)</span> 中的任意点 <span class="math inline">\(p\)</span>，更新 <span class="math inline">\(p = b + \sigma * (p - b)\)</span>。</li>
+</ol>
+<p>单纯形法实现的代码如下：</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">double</span> NelderMead::update_sols(size_t idx,
+                               <span class="dt">const</span> Solution&amp; new_sol) <span class="kw">noexcept</span>
+{
+    assert(_sols.size() == _dim + <span class="dv">1</span>);
+    assert(idx &lt;= _dim);
+    <span class="dt">const</span> <span class="dt">double</span> walk_len =
+        vec_norm(new_sol.solution() - _sols[idx].solution());
+    _sols[idx] = new_sol;
+    <span class="kw">return</span> walk_len;
+}
+Solution NelderMead::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    _log &lt;&lt; _func_name &lt;&lt; endl;
+    _sols.clear();
+    _sols.reserve(_dim + <span class="dv">1</span>);
+    <span class="kw">for</span> (size_t i = <span class="dv">0</span>; i &lt; _dim + <span class="dv">1</span>; ++i)
+        _sols.push_back(run_func(_inits[i]));
+    <span class="dt">double</span> walk_len = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+    <span class="kw">while</span> (eval_counter() &lt; _max_iter &amp;&amp; walk_len &gt; _min_walk)
+    {
+        <span class="co">// 1. order</span>
+        std::sort(_sols.begin(), _sols.end(), std::less&lt;Solution&gt;());
+        <span class="dt">const</span> Solution&amp; worst = _sols[_dim];
+        <span class="dt">const</span> Solution&amp; sec_worst = _sols[_dim - <span class="dv">1</span>];
+        <span class="dt">const</span> Solution&amp; best = _sols[<span class="dv">0</span>];
+
+        <span class="co">// 2. centroid calc</span>
+        Paras centroid(_dim, <span class="dv">0</span>);
+        <span class="kw">for</span> (size_t i = <span class="dv">0</span>; i &lt; _dim; ++i)
+            centroid = centroid + _sols[i].solution();
+        centroid = <span class="fl">1.0</span> / <span class="kw">static_cast</span>&lt;<span class="dt">double</span>&gt;(_dim) * centroid;
+
+        <span class="co">// 3. reflection</span>
+        Solution reflect = run_func(
+            centroid + _alpha * (centroid - worst.solution()));
+        LOG(reflect);
+        <span class="kw">if</span> (best &lt;= reflect &amp;&amp; reflect &lt; sec_worst)
+        {
+            walk_len = update_sols(_dim, reflect);
+        }
+        <span class="kw">else</span> <span class="kw">if</span> (reflect &lt; best)  <span class="co">// 4. expansion</span>
+        {
+            Solution expanded = run_func(
+                centroid + _gamma * (reflect.solution() - centroid));
+            LOG(expanded);
+            <span class="dt">const</span> Solution&amp; new_sol =
+                expanded &lt; reflect ? expanded : reflect;
+            walk_len = update_sols(_dim, new_sol);
+        }
+        <span class="kw">else</span>  <span class="co">// 5. contract</span>
+        {
+            assert(!(reflect &lt; sec_worst));
+            Solution contracted = run_func(
+                centroid + _rho * (worst.solution() - centroid));
+            LOG(contracted);
+            <span class="kw">if</span> (contracted &lt; worst)
+            {
+                walk_len = update_sols(_dim, contracted);
+            }
+            <span class="kw">else</span>  <span class="co">// 6. shrink</span>
+            {
+<span class="ot">#ifdef WRITE_LOG</span>
+                _log &lt;&lt; <span class="st">&quot;shrink: &quot;</span> &lt;&lt; endl;
+<span class="ot">#endif</span>
+                walk_len = <span class="dv">0</span>;
+                <span class="kw">for</span> (size_t i = <span class="dv">1</span>; i &lt; _dim + <span class="dv">1</span>; ++i)
+                {
+                    Paras p = best.solution() -
+                              _sigma * (_sols[i].solution() -
+                                        best.solution());
+                    <span class="dt">double</span> tmp_walk = update_sols(i, run_func(p));
+                    walk_len = max(tmp_walk, walk_len);
+                    LOG(_sols[i]);
+                }
+            }
+        }
+    }
+    std::sort(_sols.begin(), _sols.end(), std::less&lt;Solution&gt;());
+    _log &lt;&lt; <span class="st">&quot;=========================================&quot;</span> &lt;&lt; endl;
+    write_log(_sols[<span class="dv">0</span>]);
+    <span class="kw">return</span> _sols[<span class="dv">0</span>];
+}</code></pre></div>
+<h3 id="鲍威尔法">鲍威尔法</h3>
+<p>鲍威尔法的实现代码如下：</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">Solution Powell::optimize() <span class="kw">noexcept</span>
+{
+    clear_counter();
+    Solution sol = run_func(_init);
+    <span class="dt">double</span> walk_len = numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+
+    <span class="co">// initial search directions are axes</span>
+    vector&lt;VectorXd&gt; search_direction(_dim, VectorXd(_dim));
+    <span class="kw">for</span> (size_t i = <span class="dv">0</span>; i &lt; _dim; ++i)
+    {
+        <span class="kw">for</span> (size_t j = <span class="dv">0</span>; j &lt; _dim; ++j)
+            search_direction[i][j] = i == j ? <span class="fl">1.0</span> : <span class="fl">0.0</span>;
+    }
+    <span class="kw">while</span> (eval_counter() &lt; _max_iter &amp;&amp; walk_len &gt; _min_walk)
+    {
+        <span class="dt">double</span> max_delta_y = <span class="dv">-1</span> * numeric_limits&lt;<span class="dt">double</span>&gt;::infinity();
+        size_t max_delta_id;
+        Paras backup_point = sol.solution();
+        <span class="kw">for</span> (size_t i = <span class="dv">0</span>; i &lt; _dim; ++i)
+        {
+            LOG(sol);
+            Solution search_sol =
+                run_line_search(sol, search_direction[i]);
+            <span class="kw">if</span> (sol.fom() - search_sol.fom() &gt; max_delta_y)
+            {
+                max_delta_y = sol.fom() - search_sol.fom();
+                max_delta_id = i;
+            }
+            sol = search_sol;
+        }
+        Paras new_direc = sol.solution() - backup_point;
+        VectorXd new_direc_vxd = Map&lt;VectorXd&gt;(&amp;new_direc[<span class="dv">0</span>], _dim);
+        walk_len = new_direc_vxd.lpNorm&lt;<span class="dv">2</span>&gt;();
+        search_direction[max_delta_id] = new_direc_vxd;
+    }
+    _log &lt;&lt; endl
+         &lt;&lt; <span class="st">&quot;==========================================&quot;</span> &lt;&lt; endl;
+    write_log(sol);
+    <span class="kw">return</span> sol;
+}</code></pre></div>
+<div style="display:none">
+<p><span class="math inline">\(\pagebreak\)</span></p>
+</div>
+<h2 id="benchmark">Benchmark</h2>
+<p>使用 Rosenbrock 函数来比较不同优化算法的性能。Rosenbrock 函数如下定义：</p>
+<p><span class="math display">\[
+f(x, y) = (1-x)^2 + 100 * (y - x^2)^2
+\]</span></p>
+<p>Figure 2 为 Rosenbrock 函数的等高线图，为增强显示效果，图中函数值对 10 取对数，即 <span class="math inline">\(val = \log_{10}f(x, y)\)</span></p>
+<div class="figure">
+<img src="./img/rosenbrock_contour.jpg" alt="Contour of \log_{10}f(x, y)" />
+</div>
+<p>将 <span class="math inline">\((-0.76, 2.55)\)</span> 设为初始点 （单纯形法除外，单纯形法初始需要 N + 1 个点，N 为维度），程序运行结果以及图示见下表以及下图。其中 <code>NumLineSearch</code> 表示程序做一维搜索的次数，即为图上点的数量。而对于梯度法以及鲍威尔法，确定搜索方向后，要找到下一个点，还需要在一维搜索上话费数次函数执行，表中 <code>NumEvaluation</code> 一列表示算法优化过程中实际的函数执行次数。可以看出，梯度下降法表现最差，而单纯形法表现最好。</p>
+<p>需要说明的是，表中数据只是不同算法对 Rosenbrock 函数以及 <span class="math inline">\((-0.76, 2.55)\)</span> 这一个初始点的性能，换一个比较函数，换一个初始点，都可能会有不同的结果。</p>
+<table>
+<caption>Compare of different algorithms</caption>
+<thead>
+<tr class="header">
+<th align="left">Algorithm</th>
+<th align="left">Fom</th>
+<th align="left">NumLineSearch</th>
+<th align="left">NumEvaluation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">GradientDescent</td>
+<td align="left">1.42e-4</td>
+<td align="left">639</td>
+<td align="left">6516</td>
+</tr>
+<tr class="even">
+<td align="left">ConjugateGradient</td>
+<td align="left">5.29e-9</td>
+<td align="left">48</td>
+<td align="left">694</td>
+</tr>
+<tr class="odd">
+<td align="left">Newton</td>
+<td align="left">1.01e-5</td>
+<td align="left">11</td>
+<td align="left">200</td>
+</tr>
+<tr class="even">
+<td align="left">DFP</td>
+<td align="left">2.68e-6</td>
+<td align="left">25</td>
+<td align="left">367</td>
+</tr>
+<tr class="odd">
+<td align="left">BFGS</td>
+<td align="left">3.82e-6</td>
+<td align="left">29</td>
+<td align="left">430</td>
+</tr>
+<tr class="even">
+<td align="left">Simplex</td>
+<td align="left">2.44e-11</td>
+<td align="left">0</td>
+<td align="left">170</td>
+</tr>
+<tr class="odd">
+<td align="left">Powell</td>
+<td align="left">9.46e-11</td>
+<td align="left">70</td>
+<td align="left">739</td>
+</tr>
+</tbody>
+</table>
+<p><img src="./img/rosenbrock_compare_algo1.jpg" alt="Compare of Algorithms" /> <img src="./img/rosenbrock_compare_algo2.jpg" alt="Compare of Algorithms" /></p>
+</body>
+</html>
+

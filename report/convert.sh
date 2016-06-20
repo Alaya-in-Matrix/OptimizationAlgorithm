@@ -9,7 +9,7 @@ pandoc report.md \
        -V mainfont="Noto Sans CJK SC" \
        -V geometry:margin=1in \
        --toc \
-       -o report.pdf
+       -o test.pdf
 echo docx
 pandoc report.md \
        -f markdown -t docx \
