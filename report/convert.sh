@@ -1,13 +1,4 @@
 #!/bin/bash
-pandoc report.md \
-       -f markdown \
-       -t latex \
-       --latex-engine=xelatex \
-       --template=template.tex \
-       -S \
-       -V mainfont="Noto Sans CJK SC" \
-       -V geometry:margin=1in \
-       -o test.latex
 echo pdf
 pandoc report.md \
        -f markdown \
@@ -18,7 +9,7 @@ pandoc report.md \
        -V mainfont="Noto Sans CJK SC" \
        -V geometry:margin=1in \
        --toc \
-       -o test.pdf
+       -o report.pdf
 echo docx
 pandoc report.md \
        -f markdown -t docx \

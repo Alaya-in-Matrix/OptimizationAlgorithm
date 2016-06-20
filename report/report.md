@@ -1,6 +1,6 @@
 % 优化算法实现报告
 % Author: [lvwenlong_lambda@qq.com](mailto:lvwenlong_lambda@qq.com)
-% Last Modified: 2016/06/19-23:35:19
+% Last Modified: 2016/06/20-10:04:27
 
 
 
@@ -127,8 +127,8 @@ Fibonacci 法需要提供一个一维目标函数，同时，需要提供搜索�
 
 Fibonacci 的基本思路是，希望在区间 $[a_1,a_2]$ 内寻找函数 $f$ 的最小值，则在 $[a_1, a_2]$ 内找两个点 $a_3$ 与 $a_4$ ，分别计算 $y_3 = f(a_3)$ 与 $y_4 = f(a_4)$ ，比较 $y_3$ 与 $y_4$ 的值，若 $y_3 < y_4$，则说明最小值在 $[a_1, a_4]$ 区间内，若 $y_3 > y_4$, 则说明最小值在 $[a_3, a_2]$ 区间内，然后依此递归。
 
-Fibonacci 法靠 Fibonacci 数列来确定 $a_3$ 与 $a_4$ 的值，因为迭代次数 $iter$ 已经确定，因此可以事先计算出从 0 到 $iter$ 的 Fibonacci 数列，对于第`i`次迭代（从 0 开始），计算 $rate=fib_{iter-1-i} / fib_{iter-i}$，然后，令 $a3 = a2 - rate * (a2 - a1)$, 令 $a4 = a1 + rate * (a2 - a1)$。
 
+Fibonacci 法靠 Fibonacci 数列来确定 $a_3$ 与 $a_4$ 的值，因为迭代次数 $iter$ 已经确定，因此可以事先计算出从 0 到 $iter$ 的 Fibonacci 数列，对于第 i 次迭代（从 0 开始），计算 $r=\tfrac{F_{iter-1-i}}{F_{iter-i}}$，然后，令 $a3 = a2 - r (a2 - a1)$，令 $a4 = a1 + r (a2 - a1)$。
 Fibonacci 法实现代码如下:
 
 ```cpp
@@ -178,7 +178,7 @@ Solution FibOptimizer::optimize() noexcept
 
 ### 黄金分割法
 
-黄金分割法的类型声明如下, 其类型声明以与 Fibonacci 法一致。
+黄金分割法的类型声明如下，其类型声明以与 Fibonacci 法一致。
 
 ```cpp
 class GoldenSelection : public Optimizer1D
@@ -353,9 +353,9 @@ f(x_k + \alpha_k p_k)&\leq&f(x_k) + c_1 \alpha_k \nabla f_k^T p_k\\
 \right.
 $$
 
-在上式中，$c_1$ 与 $c_2$ 满足 $0<c_1<c_2<1$, 其中，第一个不等式被称作 **sufficient decrease condition**，第二个不等式被称作 **curvature condition**。如果步长满足 sufficient decrease condition，则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
+在上式中，$c_1$ 与 $c_2$ 满足 $0<c_1<c_2<1$，其中，第一个不等式被称作 **sufficient decrease condition**，第二个不等式被称作 **curvature condition**。如果步长满足 sufficient decrease condition，则说明在步长处，函数已经有了足够的下降，而 curvature condition 则是要求函数在搜索方向上的梯度也有足够大的下降，因为很显然，如果在步长处函数的梯度仍然很大，则说明在这个方向上仍有进一步改变步长的余地。
 
-Figure 1 是 strong wolfe condition 的一个例子，对于图中一维函数，只要最终步长选在位于"acceptable"的区间内即可。:
+Figure 1 是 strong wolfe condition 的一个例子，对于图中一维函数，只要最终步长选在位于"acceptable"的区间内即可。
 
 ![Example of wolfe condition](./img/strong-wolfe-illustration.png)
 
@@ -366,11 +366,11 @@ Strong wolfe condition 不精确线搜索算法代码，可以去 src/Optimizer/
 
 ## 多维函数优化
 
-首先定义了两个基类, `MultiDimOptimizer` 与 `GradientMethod`，其中，`MultiDimOptimizer` 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数维度、最大迭代次数，最大与最小步长等。
+首先定义了两个基类，`MultiDimOptimizer` 与 `GradientMethod`，其中，`MultiDimOptimizer` 是一切多元函数优化算法的基类，在其中定义了一些辅助性质的成员变量与函数，如函数维度、最大迭代次数，最大与最小步长等。
 
-`GradientMethod`是`MultiDimOptimizer`的一个派生类，它是所有基于梯度法的Optimizer的基类，包括梯度下降法、共轭梯度法、牛顿法和拟牛顿法。
+`GradientMethod` 是` MultiDimOptimizer` 的一个派生类，它是所有基于梯度法的算法的基类，包括梯度下降法、共轭梯度法、牛顿法和拟牛顿法。
 
-在`GradientMethod`中定义了一些与梯度有关的变量与函数，如求梯度的`GradientMethod::get_gradient`，求Hessian矩阵的`GradientMethod::hessian`，这两个函数都是虚函数，可以被派生类重载。`MultiDimOptimizer`中还定义了一些与梯度相关的成员变量，如用数值法求梯度时用到的`_epsilon`。以及判定收敛（梯度为零）的最小梯度等。
+在 `GradientMethod` 中定义了一些与梯度有关的变量与函数，如求梯度的`GradientMethod::get_gradient`，求 Hessian 矩阵的 `GradientMethod::hessian`，这两个函数都是虚函数，可以被派生类重载。`MultiDimOptimizer` 中还定义了一些与梯度相关的成员变量，如用数值法求梯度时用到的 `_epsilon`。以及判定收敛（梯度为零）的最小梯度等。
 
 ```cpp
 class MultiDimOptimizer
@@ -455,8 +455,8 @@ public:
 
 1. 对初始点 $x_k$，求出其梯度 $g_k = \nabla f(x_k)$，若 $g_k \leq g_{zero}$，或者达到 $max\_iter$，则判定收敛。
 2. 搜索方向 $d_k = -g_k$
-3. 在搜索方向上做一维搜索，找出最优步长$~\lambda_k=\arg\min_{\lambda}~f(x_k + \lambda d_k)$
-4. $x_{k+1} = x_k + \lambda_k d_k$，置$k = k+1$，转 step 1。
+3. 在搜索方向上做一维搜索，找出最优步长 $\lambda_k=\arg\min_{\lambda}~f(x_k + \lambda d_k)$
+4. $x_{k+1} = x_k + \lambda_k d_k$，置 $k = k+1$，转 step 1。
 
 梯度下降法实现代码如下：
 
@@ -494,22 +494,22 @@ Solution GradientDescent::optimize() noexcept
 ```
 ### 共轭梯度法
 
-当目标函数在极值点附近的条件数（即 Hessian 矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象, 导致收敛较慢。共轭梯度法（Conjugate Gradient Method）可以克服这种问题，它选择共轭梯度方向作为搜索方向。
+当目标函数在极值点附近的条件数（即 Hessian 矩阵最大特征值与最小特征值之比）过大时，梯度下降法在极值点附近会出现来回折叠现象，导致收敛较慢。共轭梯度法（Conjugate Gradient Method）可以克服这种问题，它选择共轭梯度方向作为搜索方向。
 
 可以证明，如果目标函数在极值点附近是二次的，对于 N 维函数，则只需要 N 次一维查找，就可以找到极值点。当然上面的一维查找指的是精确的一维查找。如果使用不精确一维查找或者问题的阶数高于二阶，N 维问题需要的查找次数会大于N。
 
-对于一个 N 维矩阵 $A$, 如果向量 $u$, $v$，满足 $u^T A v = 0$，则这两个向量对于矩阵 $A$ 共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索 N 步。如果 N 步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索 N 步。如此循环，直至找到极值点。
+对于一个 N 维矩阵 $A$，如果向量 $u$，$v$，满足 $u^T A v = 0$，则这两个向量对于矩阵 $A$ 共轭。N维空间中，共有N个互相共轭的向量。共轭梯度法第一步以梯度方向为搜索方向，而后每一步的搜索方向都与之前的搜索方向互相共轭，如此搜索 N 步。如果 N 步之后，仍然没有找到极值点。则再以梯度方向为搜索方向，再搜索 N 步。如此循环，直至找到极值点。
 
 共轭梯度法算法描述如下:
 
 1.  $k=1$，$x_k$ 为初始点，计算梯度$~g_k = \nabla f(x_k)$，若 $g_k \leq g_{zero}$ 或者达到最大迭代次数，则算法终止。否则，选择搜索方向 $d_k = -g_k$
 2.  搜索方向上做一维搜索，找到最优步长 
-	* $\lambda_k= \arg\min_\lambda~f(x_k + \lambda * d_k)$
+	* $\lambda_k= \arg\min_\lambda~f(x_k + \lambda d_k)$
 	* $x_{k+1} = x_k + \lambda_k d_k$。
 3.  计算 $x_{k+1}$ 点的梯度 $g_{k+1} = \nabla f(x_{k+1})$，计算$d_{k+1}$:
 	* $\beta = \frac{|g_{k+1}|^2}{|g_k|^2}$
     * $d_{k+1} = -g_{k+1} + \beta d_k$。
-4.  $k=k+1$，若$k \leq dim-1$，则转step 2, 否则，若 $g_k \leq g_{zero}$, 则算法终止，否则转 step 1。
+4.  $k=k+1$，若$k \leq dim-1$，则转step 2，否则，若 $g_k \leq g_{zero}$，则算法终止，否则转 step 1。
 
 
 共轭梯度法的实现代码如下:
@@ -779,11 +779,11 @@ Solution DFP::optimize() noexcept
 
 1. 初始化，选取 $dim+1$ 个初始点，并对其求值，组成集合 $S$
 2. 若达到最大迭代次数，或者达到收敛条件，算法终止。
-3. $S$ 中的结果进行排序，选出最差结果 $w$, 第二差的结果 $s$，以及最好的结果 $b$。
+3. $S$ 中的结果进行排序，选出最差结果 $w$，第二差的结果 $s$，以及最好的结果 $b$。
 4. 算 $S$ 中，除了 $w$ 以外的其他所有点的中点 $c$
 5. 算反射点 $r = c + \alpha (c - w)$。
-6. 若 $f(b) \le f(r) \leq f(s)$, 则用 $r$ 在 $S$ 中更新 $w$，并转 step 2
-7. 若 $f(r) < f(b)$，则计算 $e = 2 c + \gamma (r - c)$, 并用 $f(e)$ 与 $f(r)$ 中较小的一组解更新 $w$，并转 step 2
+6. 若 $f(b) \le f(r) \leq f(s)$，则用 $r$ 在 $S$ 中更新 $w$，并转 step 2
+7. 若 $f(r) < f(b)$，则计算 $e = 2 c + \gamma (r - c)$，并用 $f(e)$ 与 $f(r)$ 中较小的一组解更新 $w$，并转 step 2
 8. 计算 ${cr} = c + \rho (w - c)$。
 9. 若 $f({cr}) < f(w)$，则用 ${cr}$ 更新 $w$，并转 step 2
 10. 否则，更新所有点，将所有点向 $b$ 靠拢，对 $S$ 中的任意点 $p$，更新 $p = b + \sigma * (p - b)$。
@@ -928,7 +928,7 @@ $\pagebreak$
 
 ## Benchmark
 
-使用Rosenbrock函数来比较不同优化算法的性能。Rosenbrock 函数如下定义：
+使用 Rosenbrock 函数来比较不同优化算法的性能。Rosenbrock 函数如下定义：
 
 $$
 f(x, y) = (1-x)^2 + 100 * (y - x^2)^2
